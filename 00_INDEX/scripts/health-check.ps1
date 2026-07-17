@@ -1,5 +1,5 @@
 ﻿# health-check.ps1
-# Zweck: Read-only Diagnose des gesamten KI_REPO-Systems. Veraendert NICHTS am Repo.
+# Zweck: Read-only Diagnose des gesamten Leo-Systems. Veraendert NICHTS am Repo.
 # Denkt NICHT selbst nach: rein deterministische, mechanische Pruefungen, keine Halluzination.
 #
 # WICHTIG: Vor diesem Health Check IMMER zuerst build-index-geruest.ps1 laufen lassen,
@@ -98,9 +98,9 @@ Write-Output "Git-Checks erledigt."
 # ---------------------------------------------------------------------------
 $cat = "Scheduled Tasks"
 try {
-    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "(Leo|KI[-_]?REPO)" }
+    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "Leo" }
     if (-not $tasks -or $tasks.Count -eq 0) {
-        Add-Check "WARN" $cat "Keine Scheduled Task mit 'Leo' (oder alt 'KI-REPO') im Namen gefunden - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
+        Add-Check "WARN" $cat "Keine Scheduled Task mit 'Leo' im Namen gefunden - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
     } else {
         foreach ($t in $tasks) {
             $info = Get-ScheduledTaskInfo -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue
@@ -197,12 +197,11 @@ Write-Output "Themenordner-Checks erledigt."
 # ---------------------------------------------------------------------------
 $cat = "Index-Abdeckung"
 $excludedMeta = @("AGENTS.md", "README.md", "_INDEX.md")
-# Mit Florian explizit abgestimmte Dauer-Ausnahmen (2026-07-07): zu gross/zu viele
-# Einzeldateien fuer sinnvolle Einzelbeschreibungen. Format: "Themenordner/relativer Pfad"
-# oder "Themenordner/Unterordner/*" als Wildcard fuer einen ganzen Unterordner.
+# Dauer-Ausnahmen von der Beschreibungspflicht: Dateien/Ordner, die zu gross oder zu
+# zahlreich fuer sinnvolle Einzelbeschreibungen sind (z.B. ein langes Manuskript, ein
+# Archiv-Ordner). Hier bewusst leer; bei Bedarf selbst eintragen. Format:
+# "Themenordner/relativer Pfad" oder "Themenordner/Unterordner/*" (Wildcard).
 $knownCoverageExclusions = @(
-    "21_Buch/Manuskript-DER-SAVANT-Band-1-Toedliche-Gabe.md",
-    "21_Buch/Archiv Sessions mit KI/*"
 )
 
 foreach ($t in $themen) {
@@ -272,9 +271,8 @@ foreach ($sd in $systemCoverageDirs) {
 # Gegenrichtung: eine kuratierte Beschreibung verweist auf eine Datei, die es gar
 # nicht gibt. Das faellt sonst niemandem auf, weil der Eintrag ja "da" ist - der
 # Verweis laeuft aber ins Leere und keine Agentic Search findet die Datei je.
-# Befund 2026-07-17: Der Eintrag zu "Florian Persoenlichkeit und Muster.md" trug
-# nach einer Umlaut-Korrektur den Dateinamen mit "oe" -> "ö", ohne dass die Datei
-# selbst umbenannt wurde. Sammeleintraege ("...") matcht die Regex nicht.
+# Typischer Fall: Eine Beschreibung wurde nach einer Umbenennung nicht nachgezogen
+# und zeigt auf den alten Dateinamen. Sammeleintraege ("...") matcht die Regex nicht.
 $orphanedRoot = @($describedInRoot | Where-Object { -not (Test-Path (Join-Path $repo $_)) })
 if ($orphanedRoot.Count -gt 0) {
     Add-Check "FAIL" $cat "$($orphanedRoot.Count) kuratierte Beschreibung(en) in 00_INDEX\INDEX.md verweisen auf nicht existierende Dateien: $($orphanedRoot -join ', ')"
@@ -330,12 +328,13 @@ if ($driftFiles.Count -gt 0) {
 # als lebende Arbeitsdokumente definiert ist. Bewusst WARN, nicht FAIL.
 $dynamicNamePattern = '(aufgaben|taskliste|tasks|status|todo|to-do|verlauf|backlog|pendenzen|checklist|plan)'
 $dynamicContentPattern = '(^\s*[-*] \[[ xX]\] )|(\|\s*Status\s*\|)'
-$dynamicDirPattern = '\\21_Buch\\Arbeitsdokumente Band 2\\'
-# Mit Florian abgestimmte Ausnahmen: dynamisch klingender Name/Inhalt/Ort, aber statisch.
+# Ordner mit lebenden Arbeitsdokumenten (Heuristik c). Hier ein nicht-matchender
+# Platzhalter; trag deinen eigenen Pfad ein, sobald du einen solchen Ordner hast,
+# z.B. '\\21_Projekt\\Arbeitsdokumente\\'.
+$dynamicDirPattern = '\\__KEIN_LEBEND_ORDNER_DEFINIERT__\\'
+# Ausnahmen: dynamisch klingender Name/Inhalt/Ort, aber tatsaechlich statisch.
+# Hier bewusst leer; bei Bedarf selbst eintragen. Format: "Themenordner/relativer Pfad".
 $knownStaticExceptions = @(
-    "21_Buch/Arbeitsdokumente Band 2/Flo Voice and Style.md",
-    "21_Buch/Arbeitsdokumente Band 2/Referenz_Savant_und_NDE.md",
-    "22_Gesundheit/Prophylaxe/2026-04-08_Briefing_Strategien-Herz-Kreislauf-Praevention-Langlebigkeit.md"
 )
 $untagged = @()
 Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File |
