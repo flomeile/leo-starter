@@ -62,7 +62,7 @@ Vorgehen:
 Grundsatz: Nutze die nativen Werkzeuge deines Harness. PowerShell nur dort, wo ein natives Werkzeug fehlt.
 
 - **Coding-Agent** (Claude Code, Codex, Gemini CLI etc.): native Lese-, Such- (Grep/Glob) und Schreibwerkzeuge für alles. PowerShell nur für Git, Zeitstempel und das Index-Skript.
-- **Chat-Harness** (z.B. Msty Studio): Filesystem-Tool (lesen, schreiben, listen) plus PowerShell. Achtung: `search_files` des Filesystem-Tools sucht NUR Dateinamen. Inhaltssuche IMMER via PowerShell `Select-String`.
+- **Chat-Harness** (ein Chat-Programm mit Datei- und Werkzeug-Zugriff auf den Ordner): Filesystem-Tool (lesen, schreiben, listen) plus PowerShell. Achtung: `search_files` des Filesystem-Tools sucht NUR Dateinamen. Inhaltssuche IMMER via PowerShell `Select-String`.
 
 Zeitstempel nie raten, immer per Werkzeug holen (`Get-Date -Format "yyyy-MM-dd HH:mm"` oder natives Äquivalent).
 

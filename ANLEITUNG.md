@@ -112,7 +112,7 @@ Damit das Skript auch pusht, muss Git ohne Passwortabfrage pushen können (GitHu
 
 ### Schritt 7: Dein LLM anbinden
 - **Claude Code, Claude Desktop, Codex, Gemini CLI:** finden `AGENTS.md` bzw. `CLAUDE.md`/`GEMINI.md` automatisch, sobald sie auf `C:\Leo` zeigen. Nichts weiter zu tun.
-- **Reiner Chat-Harness (z.B. Msty Studio):** ein Projekt auf `C:\Leo` anlegen, Datei- und PowerShell-Zugriff aktivieren (ohne PowerShell keine Volltextsuche), ein tool-fähiges Modell wählen und genau diesen einen Satz als Systemprompt setzen:
+- **Reiner Chat-Harness (ein Chat-Programm mit Datei- und Werkzeug-Zugriff):** ein Projekt auf `C:\Leo` anlegen, Datei- und PowerShell-Zugriff aktivieren (ohne PowerShell keine Volltextsuche), ein tool-fähiges Modell wählen und genau diesen einen Satz als Systemprompt setzen:
   ```
   Lies zuerst C:\Leo\AGENTS.md vollständig und befolge sie für die gesamte Session.
   ```

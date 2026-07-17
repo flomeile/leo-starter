@@ -16,7 +16,7 @@ Für die einmalige Ersteinrichtung (Repo, Git, Scheduler, Harness) siehe `ANLEIT
 
 | Aufgabe | Werkzeug | Warum |
 |---|---|---|
-| Wissensfragen, Alltag, kleine Textarbeit | Chat-Harness auf `C:\Leo` (z.B. Msty Studio) mit günstigem Modell | Günstigster Weg: gezieltes Lesen, Cent-Bereich pro Frage |
+| Wissensfragen, Alltag, kleine Textarbeit | Chat-Harness auf `C:\Leo` mit günstigem Modell | Günstigster Weg: gezieltes Lesen, Cent-Bereich pro Frage |
 | Dasselbe im Claude-Abo | Claude Desktop / Claude Code auf den Ordner | Liest CLAUDE.md/AGENTS.md automatisch, kein Setup |
 | Bau- und Wartungsarbeit am System (Struktur, Skripte, viele Dateien, Git) | Coding-Agent (z.B. Claude Code) | Native Such-/Editier-Werkzeuge, testet Skripte selbst |
 | Deep Research | Gemini / Claude (extern) | Bericht als Markdown in `90_Inbox` ablegen, danach hier weiterverarbeiten |
