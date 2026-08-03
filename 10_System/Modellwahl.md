@@ -1,7 +1,7 @@
 ---
 titel: Modellwahl
 zweck: Aktuelle Modellempfehlungen für den Betrieb des Systems
-type: referenz
+type: systemdoku
 stand: 2026-07-17
 ---
 

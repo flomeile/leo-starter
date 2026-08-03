@@ -1,9 +1,9 @@
 ---
 titel: Zielsetzung
 zweck: Das anwender- und value-orientierte Zielbild des KI-Systems
-type: zielsetzung
-version: 1.0-starter
-letzte_aenderung: 2026-07-17
+type: systemdoku
+version: 1.1-starter
+letzte_aenderung: 2026-08-03
 ---
 
 # Zielsetzung: Warum dieses System existiert

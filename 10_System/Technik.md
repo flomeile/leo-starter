@@ -1,9 +1,9 @@
 ---
 titel: Technik
 zweck: Technische Lösungen und Stolperfallen des Systems, mit Problem, Lösung, Begründung
-type: technik
-version: 1.0-starter
-letzte_aenderung: 2026-07-17
+type: systemdoku
+version: 1.1-starter
+letzte_aenderung: 2026-08-03
 ---
 
 # Technik: Probleme, Lösungen, Begründungen

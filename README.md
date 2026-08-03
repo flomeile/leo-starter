@@ -6,13 +6,13 @@ type: readme
 
 # Leo: Dein Second Brain
 
-Lokales, harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematischen Ordnern; jedes LLM mit Datei- und PowerShell-Zugriff kann darauf arbeiten.
+Harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematischen Ordnern; jedes LLM mit Datei- und Werkzeug-Zugriff kann darauf arbeiten.
 
-Dies ist ein leeres Grundgerüst (Starter Pack). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
+Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.1). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
 
 ## Zuerst lesen
 
-**`ANLEITUNG.md`** im Root: Sinn, Funktionsweise und die Schritt-für-Schritt-Einrichtung. Das ist dein Startpunkt.
+**`ANLEITUNG.md`** im Root: Sinn, Funktionsweise und die Schritt-für-Schritt-Einrichtung. Das ist dein Startpunkt. Sie deckt zwei Wege ab, einen mit eigenem Windows-Rechner und einen ohne eigenen Rechner (nur Tablet), und markiert Erklärungen für Einsteiger als **Grundlagen**-Kästen, die ein erfahrener Leser überspringen kann.
 
 ## Einstieg (nach der Einrichtung)
 

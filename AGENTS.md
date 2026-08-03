@@ -2,8 +2,8 @@
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 1.0-starter
-letzte_aenderung: 2026-07-17
+version: 1.1-starter
+letzte_aenderung: 2026-08-03
 ---
 
 # AGENTS.md: Master-Anweisung für Leo
@@ -66,6 +66,8 @@ Grundsatz: Nutze die nativen Werkzeuge deines Harness. PowerShell nur dort, wo e
 
 Zeitstempel nie raten, immer per Werkzeug holen (`Get-Date -Format "yyyy-MM-dd HH:mm"` oder natives Äquivalent).
 
+Fehlerausgabe in einer Bash-Shell immer mit `2>/dev/null` unterdrücken, nie mit `2>nul`. `nul` ist die Schreibweise von cmd.exe und PowerShell; in der Bash-Shell legt sie eine echte Datei namens `nul` im Repo-Root an, die PowerShell danach nicht mehr sehen oder löschen kann, weil der Name unter Windows ein reservierter Gerätename ist. Aufräumen geht dann nur über die Bash-Shell.
+
 ## 4. Suchstrategie (bei jeder Wissensfrage, in dieser Reihenfolge)
 
 1. **Root-Index lesen:** `00_INDEX\INDEX.md` (Ordnerbaum + Bereiche + Systemdateien).
@@ -81,9 +83,11 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 
 ## 5. Ablageregeln
 
-- **Eine Information hat genau einen Ort.** Jede Aussage gehört in genau eine zuständige Datei; überall sonst steht ein Verweis, nie eine Kopie. Grund: Kopien driften auseinander, und dann tragen zwei Dateien zwei Wahrheiten, ohne dass erkennbar ist, welche die überholte ist.
+- **Eine Information hat genau einen Ort.** Jede Aussage gehört in genau eine zuständige Datei; überall sonst steht ein Verweis, nie eine Kopie. Grund: Kopien driften auseinander, und dann tragen zwei Dateien zwei Wahrheiten, ohne dass erkennbar ist, welche die überholte ist. Die übrigen Regeln dieses Abschnitts sind Anwendungen davon, ebenso die Auto-Block-Pflicht für Strukturaussagen (Abschnitt 7) und das Verbot eines zweiten Gedächtnisses in externen Systemen (Abschnitt 16).
+- **Verweise zwischen Wissensdateien sind echte Links mit Begründung, keine Pfadnennungen.** Wenn eine Wissensdatei auf eine andere zeigt, wird der Verweis als Obsidian-Wikilink gesetzt (`[[Dateiname]]` im selben Ordner, sonst `[[Vollpfad ohne .md]]`, immer mit Schrägstrichen) und bekommt einen Halbsatz, WARUM er da steht ("dort dieselbe Dynamik aus der anderen Sicht", "dort steht der Mailtext"). Der Halbsatz ist der eigentliche Wert: Er sagt dem LLM, ob sich das Öffnen lohnt, und er findet Zusammenhänge, die eine Volltextsuche verfehlt, weil beide Dateien andere Wörter benutzen. Ein Link ohne Begründung ist eine Linie im Graphen und sonst nichts. Zwei Gegenausnahmen: (a) In Systemdateien (`AGENTS.md`, Skills, `10_System`, `00_INDEX`, `04_Changelog`) bleiben Pfade als Text in Backticks stehen, dort sind sie Anweisung ans LLM und kein inhaltlicher Verweis. (b) Beziehungen gehören nie ins Frontmatter: Ein `verwandt:`-Feld dupliziert den Verweis, der im Fliesstext schon steht, und die beiden driften auseinander. Tote Verweise fängt der System-Health-Check mechanisch ab (Kategorie "Links").
 - Neue Wissensdateien in den thematisch passenden Ordner bzw. Unterordner. Unklares zuerst in `90_Inbox`.
 - Dateinamen: sprechend, ohne Sonderzeichen wie `& ! ?`. Zeitgebundene Dokumente mit Prefix `YYYY-MM-DD_`.
+- **Jede NEU angelegte Datei bekommt Frontmatter, und zwar einheitlich.** Pflichtfelder: `titel` (sprechender Name), `zweck` (ein Satz: was beantwortet diese Datei), `type` (aus der Liste unten), dazu `stand: YYYY-MM-DD`, sobald die Datei veränderlichen Zustand trägt (Abschnitt 7). Erlaubte `type`-Werte: `wissensnotiz` (kuratiertes Themenwissen), `rohquelle` (unverändert übernommene Quelle), `synthese` (verdichtendes, lebendes Dokument über mehrere Quellen), `arbeitsdokument` (lebendes Arbeitspapier), `rollen-regeln` (lokale AGENTS.md), `themen-index`, `readme`, `basiskontext`, `systemdoku` (`10_System`, Changelog). Ausgenommen sind Dateiklassen mit eigenem, in sich einheitlichem Schema, das ein Skill fest vorgibt: Skills (`name`, `trigger`, `zweck`, `type: skill`), Sessionlogs (`date`, `time`, `topic`, `context`, `tags`, `type: session-summary`) und die generierten Indexdateien. Die folgen bereits ihrem eigenen Standard, eine zweite Vorgabe darüber würde nur kollidieren. Braucht ein Fall wirklich einen neuen Wert, wird er hier ergänzt, nicht spontan erfunden: Ein frei wachsendes Vokabular macht `type` als Filter wertlos. Der System-Health-Check prüft das mechanisch (Kategorie `Frontmatter`); den Stichtag, ab dem die Pflicht greift, stellst du dort ein.
 - **Rohquellen aus der Inbox nach Verarbeitung löschen, nicht in den Themenordner verschieben.** Werden Dateien aus `90_Inbox` (Mails, PDFs, Scans, Exportformate) zu einer konsolidierten Wissensdatei verarbeitet, gilt: Die Information wird vollständig und präzise in die konsolidierte Datei übernommen, danach wird die Rohquelle gelöscht. Themenordner enthalten kuratiertes Wissen, keine Rohdateisammlung. In der Zieldatei wird die Quelle weiterhin nachvollziehbar zitiert (Absender, Datum, Betreff). Ausnahme: Hat eine Rohquelle eigenständigen Wert über die Konsolidierung hinaus, wird sie als sauberer Text (`.md`), nie als PDF, Scan oder Bilddatei, im Themenordner abgelegt. Im Zweifel nachfragen.
 - **Die Formatregel gilt auch für selbst erzeugte Dateien.** Erzeugst du auf Wunsch ein Ausgabeformat (PDF, DOCX, PPTX, Bild), etwa ein druckfertiges Handout, ist das ein Wegwerf-Artefakt für einen konkreten Anlass, kein Wissen: Es gehört in den Scratchpad oder an einen Ort ausserhalb des Repos, nicht in den Themenordner. Der Themenordner trägt Markdown, und die Datei dupliziert die Information, die im `.md` schon steht.
 - Neue Themenordner NUR über den Skill `leo-themenordner-anlegen` (denkt an README, AGENTS.md, Index; die Rollen-Tabelle oben zieht das Index-Skript mechanisch nach).
@@ -96,6 +100,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 - Index-Beschreibungen beschreiben NUR, was real in der einen Datei steht.
 - Bei Unsicherheit: explizit kennzeichnen oder nachfragen. Nie Unsicheres als Fakt darstellen.
 - **Eine Lücke in der Datei ist kein Fakt über die Wirklichkeit.** Was eine Notiz nicht erwähnt, hat deswegen nicht stattgefunden oder gefehlt. Aus dem Schweigen einer Quelle wird nie ein Mangel abgeleitet, schon gar nicht ein Mangel am Vorgehen von `[NAME]`. Solche Sätze sind Unterstellungen im Gewand einer Beobachtung. Wenn eine Information für eine Empfehlung nötig ist und in den Dateien fehlt: fragen, nicht annehmen. Notizen sind Gedächtnisstützen, keine Vollprotokolle.
+- **Keine Warnung ohne geprüften Zustand.** Ein Risiko in einem System ausserhalb des Repos wird nur benannt, wenn der Zustand tatsächlich erhoben wurde. Was nicht geprüft werden kann (Freigabeeinstellungen eines Cloud-Ordners, Zugriffsrechte, Konfiguration eines fremden Systems), wird als Frage gestellt, nicht als Befund. Eine Warnung ins Blaue kostet eine Rückfrage und entwertet die Warnungen, die berechtigt sind.
 
 ## 7. Aktualität und dynamische Inhalte
 
@@ -134,6 +139,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 ## 12. Versionierung
 
 - Git läuft automatisch: Task Scheduler (Index-Sync + Push, täglich) und optional Obsidian-Git (vault backup). Die Skills `leo-wrap-up` und `leo-system-health-check` committen und pushen zusätzlich ohne Rückfrage; Sicherheit kommt aus der Versionierung, nicht aus Bestätigungen.
+- **Nur die eigenen Pfade stagen, nie `git add -A`.** Es können mehrere Sessions gleichzeitig auf dem Repo arbeiten, und sobald grössere Bauarbeiten bewusst auf mehrere Sessions aufgeteilt werden, ist das der Normalfall statt der Ausnahme. `git add -A` nimmt alles mit, was gerade offen ist, also auch den halbfertigen Zwischenstand einer anderen Session und deine eigene, noch nicht abgeschlossene Bearbeitung in Obsidian. Das zerstört zwar keine Inhalte, aber die Nachvollziehbarkeit: Der Commit behauptet dann etwas anderes, als er enthält. Richtig ist, die in dieser Session tatsächlich bearbeiteten Dateien einzeln zu stagen und vor dem Commit einmal `git status` zu lesen. Taucht dort eine Datei auf, die du nicht angefasst hast, gehört sie nicht in deinen Commit; im Zweifel liegen lassen und im Bericht erwähnen, statt sie mitzunehmen.
 - Rollback ohne Kommandozeile: Obsidian-Git-Plugin oder GitHub-Weboberfläche.
 - **Die Gegenrichtung gilt genauso: Vor dem Wiederherstellen, Rückgängigmachen oder "Reparieren" von etwas, das `[NAME]` von Hand entfernt oder geändert hat, wird gefragt.** Eine Löschung ohne Begleitnotiz ist kein Versehen, sondern zuerst einmal eine Entscheidung; die Erklärung dafür steht oft gar nicht im Repo, weil sie aus einer Regel folgt, die `[NAME]` im Kopf hat. Wiederherstellen ist nie dringend, die Datei liegt in Git; Fragen kostet eine Zeile.
 - Vor Löschen oder Überschreiben bestehender Wissensdateien: ankündigen und Bestätigung abwarten. Zwei Ausnahmen: (a) Rohquellen in `90_Inbox` nach einem Ingest-Auftrag; dort ist der Auftrag selbst die Löschfreigabe. (b) Das Fortschreiben von Wissensdateien in der Lernschleife des Wrap-Ups: Stammt die neue Information aus der Session von `[NAME]` selbst, ist das die Freigabe, die überholte Passage zu überschreiben (alte Fassung bleibt in Git und Log). Ganze Dateien löschen sowie `01_Basiskontext` brauchen auch dann die explizite Bestätigung.

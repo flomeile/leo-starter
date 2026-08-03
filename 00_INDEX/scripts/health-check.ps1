@@ -1,5 +1,5 @@
 ﻿# health-check.ps1
-# Zweck: Read-only Diagnose des gesamten Leo-Systems. Veraendert NICHTS am Repo.
+# Zweck: Read-only Diagnose des gesamten KI_REPO-Systems. Veraendert NICHTS am Repo.
 # Denkt NICHT selbst nach: rein deterministische, mechanische Pruefungen, keine Halluzination.
 #
 # WICHTIG: Vor diesem Health Check IMMER zuerst build-index-geruest.ps1 laufen lassen,
@@ -98,9 +98,9 @@ Write-Output "Git-Checks erledigt."
 # ---------------------------------------------------------------------------
 $cat = "Scheduled Tasks"
 try {
-    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "Leo" }
+    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "(Leo|KI[-_]?REPO)" }
     if (-not $tasks -or $tasks.Count -eq 0) {
-        Add-Check "WARN" $cat "Keine Scheduled Task mit 'Leo' im Namen gefunden - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
+        Add-Check "WARN" $cat "Keine Scheduled Task mit 'Leo' (oder alt 'KI-REPO') im Namen gefunden - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
     } else {
         foreach ($t in $tasks) {
             $info = Get-ScheduledTaskInfo -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue
@@ -271,8 +271,9 @@ foreach ($sd in $systemCoverageDirs) {
 # Gegenrichtung: eine kuratierte Beschreibung verweist auf eine Datei, die es gar
 # nicht gibt. Das faellt sonst niemandem auf, weil der Eintrag ja "da" ist - der
 # Verweis laeuft aber ins Leere und keine Agentic Search findet die Datei je.
-# Typischer Fall: Eine Beschreibung wurde nach einer Umbenennung nicht nachgezogen
-# und zeigt auf den alten Dateinamen. Sammeleintraege ("...") matcht die Regex nicht.
+# Typischer Ausloeser: Eine Datei wird umbenannt (z.B. Umlaut-Korrektur), der
+# Index-Eintrag traegt aber weiter den alten Namen. Sammeleintraege ("...") matcht
+# die Regex nicht.
 $orphanedRoot = @($describedInRoot | Where-Object { -not (Test-Path (Join-Path $repo $_)) })
 if ($orphanedRoot.Count -gt 0) {
     Add-Check "FAIL" $cat "$($orphanedRoot.Count) kuratierte Beschreibung(en) in 00_INDEX\INDEX.md verweisen auf nicht existierende Dateien: $($orphanedRoot -join ', ')"
@@ -287,6 +288,23 @@ Write-Output "Index-Abdeckungs-Checks erledigt."
 $cat = "Aktualitaet"
 $staleFiles = @()
 $driftFiles = @()
+# Drift-Ausnahmen: Rohquellen, deren 'stand:' bewusst das Datum des Ursprungsdokuments
+# traegt (z.B. Datum einer eingelesenen PDF), nicht das Datum der letzten Git-Aenderung
+# (die oft nur die Uebernahme ins Repo ist). Hier bewusst leer; bei Bedarf selbst
+# eintragen, Format "Themenordner/relativer Pfad".
+$knownDriftExceptions = @(
+)
+# Rein mechanische Commits, die den Inhalt einer Datei NICHT veraendert haben und
+# deshalb bei der Drift-Berechnung uebersprungen werden. Hintergrund: Ein Massenlauf
+# ueber viele Dateien (z.B. eine Umstellung der Linkschreibweise) aendert keine
+# einzige Aussage darin. Wuerde man dafuer ueberall 'stand:' auf den Umstellungstag
+# setzen, behaupteten anschliessend auch alte Notizen, sie seien heute geprueft
+# worden, also genau die Fehlinformation, die 'stand:' verhindern soll. Umgekehrt
+# wuerde eine Dauer-Warnung ueber alle betroffenen Dateien den Check unbrauchbar
+# machen. Deshalb: Commit ueberspringen, 'stand:' unangetastet lassen. Eintraege sind
+# die kurzen Commit-Hashes, NUR fuer nachweislich inhaltsneutrale Massenlaeufe.
+$mechanicalCommits = @(
+)
 Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name -ne "_INDEX.md" -and $_.FullName -notmatch $excludedDirPattern } | ForEach-Object {
     $m = Select-String -Path $_.FullName -Pattern '^stand:\s*(\d{4}-\d{2}-\d{2})' -List -ErrorAction SilentlyContinue
     if ($m) {
@@ -298,8 +316,23 @@ Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name
         }
         # 6b) Drift: Datei wurde laut Git DEUTLICH nach dem eingetragenen stand:
         # geaendert (> 7 Tage) - stand: wurde beim Bearbeiten nicht nachgefuehrt.
-        $gitDateRaw = & git -C $repo log -1 --format=%ad --date=format:%Y-%m-%d -- "$($_.FullName)" 2>$null
-        if ($LASTEXITCODE -eq 0 -and "$gitDateRaw" -match '^\d{4}-\d{2}-\d{2}$') {
+        $rel = $_.FullName.Substring($repo.Length + 1).Replace('\', '/')
+        if ($knownDriftExceptions -contains $rel) { return }
+        # Juengste Aenderung suchen, die kein rein mechanischer Commit war.
+        $gitDateRaw = $null
+        $hist = & git -C $repo log --format="%H %ad" --date=format:%Y-%m-%d -- "$($_.FullName)" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            foreach ($line in @($hist)) {
+                $parts = "$line".Split(' ')
+                if ($parts.Count -lt 2) { continue }
+                $skip = $false
+                foreach ($mc in $mechanicalCommits) { if ($parts[0].StartsWith($mc)) { $skip = $true; break } }
+                if ($skip) { continue }
+                $gitDateRaw = $parts[1]
+                break
+            }
+        }
+        if ("$gitDateRaw" -match '^\d{4}-\d{2}-\d{2}$') {
             $gitDate = [datetime]::ParseExact("$gitDateRaw", "yyyy-MM-dd", $null)
             $lagDays = (New-TimeSpan -Start $d -End $gitDate).Days
             if ($lagDays -gt 7) {
@@ -328,9 +361,6 @@ if ($driftFiles.Count -gt 0) {
 # als lebende Arbeitsdokumente definiert ist. Bewusst WARN, nicht FAIL.
 $dynamicNamePattern = '(aufgaben|taskliste|tasks|status|todo|to-do|verlauf|backlog|pendenzen|checklist|plan)'
 $dynamicContentPattern = '(^\s*[-*] \[[ xX]\] )|(\|\s*Status\s*\|)'
-# Ordner mit lebenden Arbeitsdokumenten (Heuristik c). Hier ein nicht-matchender
-# Platzhalter; trag deinen eigenen Pfad ein, sobald du einen solchen Ordner hast,
-# z.B. '\\21_Projekt\\Arbeitsdokumente\\'.
 $dynamicDirPattern = '\\__KEIN_LEBEND_ORDNER_DEFINIERT__\\'
 # Ausnahmen: dynamisch klingender Name/Inhalt/Ort, aber tatsaechlich statisch.
 # Hier bewusst leer; bei Bedarf selbst eintragen. Format: "Themenordner/relativer Pfad".
@@ -442,11 +472,20 @@ Write-Output "Encoding-Checks erledigt."
 # 9) INBOX
 # ---------------------------------------------------------------------------
 $cat = "Inbox"
-$inboxFiles = Get-ChildItem -Path (Join-Path $repo "90_Inbox") -File -Filter "*.md" -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "README.md" }
+# Rekursiv und ueber alle Dateitypen: In der Inbox liegen typischerweise PDFs, Scans und
+# Office-Dateien, und seit dem 30.07.2026 auch Unterordner. Eine Pruefung nur auf *.md
+# direkt im Ordner meldete eine volle Inbox als leer.
+$inboxRoot = Join-Path $repo "90_Inbox"
+$inboxFiles = Get-ChildItem -Path $inboxRoot -File -Recurse -ErrorAction SilentlyContinue |
+    ForEach-Object { $_.FullName.Substring($inboxRoot.Length + 1) } |
+    Where-Object { $_ -ne "README.md" }
 if ($inboxFiles.Count -gt 0) {
-    Add-Check "WARN" $cat "$($inboxFiles.Count) unsortierte Datei(en) in 90_Inbox: $($inboxFiles.Name -join ', ') - wird im Skill 'leo-system-health-check' (Schritt Inbox) behandelt."
+    $shown = $inboxFiles | Select-Object -First 10
+    $liste = $shown -join ', '
+    if ($inboxFiles.Count -gt $shown.Count) { $liste += ", ... und $($inboxFiles.Count - $shown.Count) weitere" }
+    Add-Check "WARN" $cat "$($inboxFiles.Count) unsortierte Datei(en) in 90_Inbox: $liste - wird im Skill 'leo-system-health-check' (Schritt Inbox) behandelt."
 } else {
-    Add-Check "OK" $cat "90_Inbox leer (bis auf README.md)."
+    Add-Check "OK" $cat "90_Inbox leer (bis auf README.md), inkl. Unterordner und Nicht-Markdown-Dateien."
 }
 Write-Output "Inbox-Check erledigt."
 
@@ -489,12 +528,44 @@ foreach ($f in @("CLAUDE.md", "GEMINI.md", ".clinerules")) {
         Add-Check "OK" $cat "$f vorhanden und verweist auf AGENTS.md."
     }
 }
-# Body-Vergleich ohne die erste Zeile (Titel "# CLAUDE.md" / "# GEMINI.md" darf sich
-# legitim unterscheiden, der Rest sollte identisch sein) und ohne Zeilenumbruch-Rauschen.
-$claudeBody = (Get-Content -Path (Join-Path $repo "CLAUDE.md") -Encoding UTF8 -ErrorAction SilentlyContinue | Select-Object -Skip 1) -join "`n"
-$geminiBody = (Get-Content -Path (Join-Path $repo "GEMINI.md") -Encoding UTF8 -ErrorAction SilentlyContinue | Select-Object -Skip 1) -join "`n"
-if ($claudeBody -and $geminiBody -and $claudeBody -ne $geminiBody) {
-    Add-Check "WARN" $cat "CLAUDE.md und GEMINI.md unterscheiden sich inhaltlich (ausser der Titelzeile) - sollten identische Weiterleitungs-Vorlagen sein."
+# Seit E21/E22 duerfen sich CLAUDE.md und GEMINI.md im Wortlaut unterscheiden: Claude Code
+# importiert mit "@Pfad", Gemini CLI verlangt "@./Pfad" (Memory Import Processor), und
+# GEMINI.md traegt zusaetzlich einen Verifikations-Hinweis. Ein Byte-Vergleich wuerde das
+# als Fehler melden und waere ab sofort Dauerrauschen. Geprueft wird deshalb die Eigenschaft,
+# auf die es wirklich ankommt: Beide Dateien muessen dieselbe Menge an Dateien importieren
+# (AGENTS.md plus alle Dateien in 01_Basiskontext), damit der Basiskontext-Zwang in jedem
+# Harness greift und nicht nur in Claude Code.
+function Get-ImportSet([string]$file) {
+    $set = New-Object System.Collections.Generic.HashSet[string]
+    $raw = Get-Content -Path $file -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $raw) { return ,$set }
+    $raw = [regex]::Replace($raw, '`[^`\r\n]*`', '')   # Beispiele in Backticks ignorieren
+    foreach ($line in ($raw -split "`r?`n")) {
+        if ($line -match '^\s*@(\.{1,2}/)?(.+?)\s*$') {
+            [void]$set.Add(($matches[2] -replace '\\', '/').Trim().ToLower())
+        }
+    }
+    # Komma-Operator: verhindert, dass PowerShell die Menge beim Return entrollt. Ohne
+    # ihn kommt bei einem LEEREN Set $null zurueck, der Contains-Aufruf unten wirft, und
+    # der Check meldet danach faelschlich OK - also ausgerechnet dann gruen, wenn gar
+    # kein Import vorhanden ist.
+    return ,$set
+}
+$claudeImports = Get-ImportSet (Join-Path $repo "CLAUDE.md")
+$geminiImports = Get-ImportSet (Join-Path $repo "GEMINI.md")
+$expected = New-Object System.Collections.Generic.HashSet[string]
+[void]$expected.Add("agents.md")
+Get-ChildItem -Path (Join-Path $repo "01_Basiskontext") -Filter "*.md" -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ne "README.md" } |
+    ForEach-Object { [void]$expected.Add("01_basiskontext/$($_.Name.ToLower())") }
+
+foreach ($pair in @(@{ n = "CLAUDE.md"; s = $claudeImports }, @{ n = "GEMINI.md"; s = $geminiImports })) {
+    $missing = @($expected | Where-Object { -not $pair.s.Contains($_) })
+    if ($missing.Count -gt 0) {
+        Add-Check "WARN" $cat "$($pair.n) importiert $($missing.Count) Pflichtdatei(en) nicht: $($missing -join ', '). Ohne Import ist der Basiskontext-Zwang aus E21 in diesem Harness wirkungslos."
+    } else {
+        Add-Check "OK" $cat "$($pair.n) importiert AGENTS.md und alle $($expected.Count - 1) Basiskontext-Dateien (E21)."
+    }
 }
 Write-Output "Portabilitaets-Checks erledigt."
 
@@ -528,6 +599,157 @@ if (-not (Test-Path $memPath)) {
     }
 }
 Write-Output "Harness-Memory-Check erledigt."
+Write-Output ""
+
+
+# ---------------------------------------------------------------------------
+# 13) TOTE LINKS (Wikilinks und Markdown-Links auf .md-Dateien)
+# ---------------------------------------------------------------------------
+# Hintergrund: Seit 26.07.2026 sind Querverweise zwischen Wissensdateien echte
+# Obsidian-Links statt Pfadnennungen in Backticks (Root-AGENTS.md Abschnitt 5,
+# Entscheid E22). Der Nutzen dieser Umstellung haengt daran, dass die Links auch
+# stimmen: Ein toter Verweis kostet das LLM eine Fehlsuche und ist im Fliesstext
+# unsichtbar. Beim Umstellungslauf waren 26 der bestehenden Pfadnennungen bereits
+# verrottet (umbenannte, versionierte oder geloeschte Ziele). Diese Pruefung
+# faengt genau das mechanisch ab.
+#
+# Aufloesung wie in Obsidian: exakter vault-relativer Pfad ODER eindeutiger
+# Dateiname. Reine Abschnittslinks ([[#Ueberschrift]]) werden uebersprungen,
+# ebenso alles in Code-Bloecken und Inline-Code (dort stehen Beispiele, keine
+# echten Verweise).
+$cat = "Links"
+$mdAll = Get-ChildItem -Path $repo -Recurse -File -Filter "*.md" |
+    Where-Object { $_.FullName -notmatch $excludedDirPattern }
+
+$relByLower = @{}
+$byBase = @{}
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    $relByLower[$rel.ToLower()] = $rel
+    $bn = $f.Name.ToLower()
+    if (-not $byBase.ContainsKey($bn)) { $byBase[$bn] = New-Object System.Collections.Generic.List[string] }
+    $byBase[$bn].Add($rel)
+}
+
+$deadLinks = New-Object System.Collections.Generic.List[string]
+$linkCount = 0
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    $raw = Get-Content -Path $f.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $raw) { continue }
+    # Code-Bloecke und Inline-Code entfernen, damit Beispiele nicht als Verweis zaehlen.
+    $txt = [regex]::Replace($raw, '(?s)```.*?```', '')
+    $txt = [regex]::Replace($txt, '`[^`\r\n]*`', '')
+
+    foreach ($m in [regex]::Matches($txt, '\[\[([^\]]+)\]\]')) {
+        $target = ($m.Groups[1].Value -split '\|')[0]
+        $target = ($target -split '#')[0].Trim()
+        if ([string]::IsNullOrWhiteSpace($target)) { continue }   # reiner Abschnittslink
+        $linkCount++
+        $probe = ($target + '.md').ToLower()
+        if ($relByLower.ContainsKey($probe)) { continue }
+        $bn = (Split-Path $probe -Leaf)
+        if ($byBase.ContainsKey($bn) -and $byBase[$bn].Count -eq 1) { continue }
+        $deadLinks.Add("$rel -> [[$target]]")
+    }
+
+    foreach ($m in [regex]::Matches($txt, '\]\(([^)]+\.md)\)')) {
+        $t = $m.Groups[1].Value
+        if ($t -match '^(https?|mailto):') { continue }
+        $linkCount++
+        $t = [uri]::UnescapeDataString(($t -split '#')[0])
+        $combined = Join-Path (Split-Path $f.FullName -Parent) ($t -replace '/', '\')
+        $norm = try { [System.IO.Path]::GetFullPath($combined) } catch { $null }
+        if ($norm -and (Test-Path -LiteralPath $norm)) { continue }
+        if ($relByLower.ContainsKey($t.ToLower() -replace '\\', '/')) { continue }
+        $deadLinks.Add("$rel -> ($t)")
+    }
+}
+
+if ($deadLinks.Count -gt 0) {
+    $sample = ($deadLinks | Select-Object -First 10) -join ' | '
+    Add-Check "WARN" $cat "$($deadLinks.Count) tote(r) Verweis(e) von $linkCount geprueften Links. Ziel umbenannt, versioniert oder geloescht - Verweis nachziehen oder entfernen, nicht stehen lassen. Erste Treffer: $sample"
+} else {
+    Add-Check "OK" $cat "Alle $linkCount Verweise (Wikilinks und Markdown-Links auf .md) loesen auf eine real existierende Datei auf."
+}
+Write-Output "Link-Check erledigt."
+Write-Output ""
+
+
+# ---------------------------------------------------------------------------
+# 14) FRONTMATTER-STANDARD FUER NEUE DATEIEN
+# ---------------------------------------------------------------------------
+# Hintergrund: NEU angelegte Dateien sollen zuverlaessig und einheitlich Frontmatter
+# tragen (Root-AGENTS.md Abschnitt 5). Geprueft werden nur Dateien, die laut Git AM
+# oder NACH dem Stichtag unten erstmals hinzugefuegt wurden.
+# Stichtag: In einem frisch aufgesetzten Repo gibt es keinen Altbestand, deshalb steht
+# er hier auf 1970 und die Pflicht gilt fuer alles. Hast du spaeter Dateien ohne
+# Frontmatter, die bewusst so bleiben sollen (Bestandsschutz), setzt du hier das Datum
+# ein, ab dem die Regel greifen soll, z.B. ParseExact("2027-01-01", ...).
+$cat = "Frontmatter"
+$fmCutoff = [datetime]::ParseExact("1970-01-01", "yyyy-MM-dd", $null)
+$fmRequired = @("titel", "zweck", "type")
+$fmAllowedTypes = @("wissensnotiz", "rohquelle", "synthese", "arbeitsdokument",
+                    "rollen-regeln", "themen-index", "readme", "basiskontext", "systemdoku")
+# Ausgenommen: Dateiklassen mit eigenem, in sich einheitlichem Schema, das ein Skill
+# fest vorgibt (Skills: name/trigger/zweck/type; Sessionlogs: date/time/topic/context/
+# tags/type; Indexdateien: vom Generator erzeugt). Diese Regel hier gilt fuer
+# Wissensdateien, nicht fuer generierte oder schablonierte Systemdateien, sonst wuerde
+# der Check jeden neuen Sessionlog und jeden neuen Skill anmeckern, obwohl beide ihrem
+# eigenen Standard exakt folgen.
+$fmExemptPrefix = @("02_Skills/", "03_Sessionlogs/", "00_INDEX/", "04_Changelog/")
+$fmExemptNames  = @("AGENTS.md", "CLAUDE.md", "GEMINI.md", "_INDEX.md", "README.md")
+# Anlagedatum je Datei in EINEM git-Aufruf bestimmen (pro Datei waere es ~250 Aufrufe).
+$addDates = @{}
+$logOut = & git -C $repo log --diff-filter=A --date=format:%Y-%m-%d --format="D:%ad" --name-only -- "*.md" 2>$null
+if ($LASTEXITCODE -eq 0) {
+    $curDate = $null
+    foreach ($line in @($logOut)) {
+        $l = "$line".Trim()
+        if ($l -match '^D:(\d{4}-\d{2}-\d{2})$') { $curDate = $matches[1]; continue }
+        if ($l -eq "" -or -not $curDate) { continue }
+        # git log laeuft von neu nach alt, das Ueberschreiben laesst am Ende den AELTESTEN
+        # Add stehen. Genau der ist gewollt: das echte Anlagedatum, nicht ein spaeterer
+        # Re-Add nach einer Umbenennung.
+        $addDates[$l] = $curDate
+    }
+}
+$fmIssues = @()
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    if (-not $addDates.ContainsKey($rel)) { continue }   # noch nie committet: erst nach dem Commit pruefbar
+    $added = [datetime]::ParseExact($addDates[$rel], "yyyy-MM-dd", $null)
+    if ($added -lt $fmCutoff) { continue }               # Bestandsschutz
+    if ($fmExemptNames -contains $f.Name) { continue }
+    $isExempt = $false
+    foreach ($p in $fmExemptPrefix) { if ($rel.StartsWith($p)) { $isExempt = $true; break } }
+    if ($isExempt) { continue }
+    $head = Get-Content -Path $f.FullName -TotalCount 25 -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $head -or $head[0].Trim() -ne "---") {
+        $fmIssues += "$rel (kein Frontmatter)"
+        continue
+    }
+    $keys = @()
+    $typeVal = $null
+    for ($i = 1; $i -lt $head.Count; $i++) {
+        if ($head[$i].Trim() -eq "---") { break }
+        if ($head[$i] -match '^([a-zA-Z_]+):\s*(.*)$') {
+            $keys += $matches[1]
+            if ($matches[1] -eq "type") { $typeVal = $matches[2].Trim().Trim('"') }
+        }
+    }
+    $missing = @($fmRequired | Where-Object { $keys -notcontains $_ })
+    if ($missing.Count -gt 0) { $fmIssues += "$rel (fehlt: $($missing -join ', '))" }
+    elseif ($typeVal -and ($fmAllowedTypes -notcontains $typeVal)) {
+        $fmIssues += "$rel (type '$typeVal' nicht in der Liste aus AGENTS.md Abschnitt 5)"
+    }
+}
+if ($fmIssues.Count -gt 0) {
+    Add-Check "WARN" $cat "$($fmIssues.Count) Datei(en) erfuellen den Frontmatter-Standard nicht: $($fmIssues -join ' | ')"
+} else {
+    Add-Check "OK" $cat "Alle seit dem Stichtag angelegten Dateien tragen titel, zweck und einen zulaessigen type."
+}
+Write-Output "Frontmatter-Check erledigt."
 Write-Output ""
 
 

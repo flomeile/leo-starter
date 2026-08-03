@@ -3,7 +3,7 @@ name: leo-wrap-up
 trigger: '"wrap up", "session speichern", "zusammenfassen und ablegen", "session beenden", "log this"'
 zweck: Session zusammenfassen, ablegen, Lernschleife (Dauerwissen ins Repo zurückschreiben, notfalls neue Wissensdateien anlegen, sofort indexieren), Index leichtgewichtig aktuell halten, vollen System-Health-Check nur bei Bedarf anstossen
 type: skill
-version: 1.0-starter
+version: 1.1-starter
 ---
 
 # Skill: Leo Wrap-Up
@@ -60,7 +60,7 @@ type: session-summary
 **Lernschleife (Pflichtteil dieses Schritts, Root-AGENTS.md Abschnitt 10):** Das Log allein ist Archiv; damit das System wirklich mitlernt, wird jede Korrektur und jede Erkenntnis aus der Session einer von drei Kategorien zugeordnet und die ersten beiden werden SOFORT zurückgeschrieben, nicht nur notiert:
 1. **Dauerhaftes Verhalten** (Ton, Regel, Arbeitsweise, wiederkehrender Fehler): betroffenen Skill oder die zuständige AGENTS.md direkt nachziehen (Skill-Version hochzählen). Änderungen an `01_Basiskontext` nur mit expliziter Bestätigung plus Changelog.
 2. **Wissen mit Dauerwert** (Entscheidung, Fakt, Status): zuständige Wissensdatei im Themenordner fortschreiben (`stand:` aktualisieren), nicht nur ins Log. Dabei gilt:
-   - **Fehlt eine passende Wissensdatei, wird sie ANGELEGT** (thematisch richtiger Ordner, sprechender Name nach Ablageregeln, Frontmatter mit `stand:`). Dauerwissen bleibt nie nur im Log. Nur wenn die thematische Zuordnung wirklich unklar ist, kurz nachfragen.
+   - **Fehlt eine passende Wissensdatei, wird sie ANGELEGT** (thematisch richtiger Ordner, sprechender Name nach Ablageregeln). Dauerwissen bleibt nie nur im Log. Nur wenn die thematische Zuordnung wirklich unklar ist, kurz nachfragen. Für jede so angelegte Datei gilt der volle Standard aus Root-`AGENTS.md` Abschnitt 5: Frontmatter mit `titel`, `zweck`, `type` aus der geschlossenen Liste, dazu `stand:` bei veränderlichem Inhalt, und Querverweise mit Begründung in beide Richtungen, wo eine belegbare Beziehung besteht. Eine neu angelegte Wissensdatei ohne Anknüpfung wird von der nächsten Session nur per Zufallstreffer gefunden.
    - **Fortschreiben heisst ersetzen, nicht anhängen:** Revidierte Entscheidungen und überholte Aussagen werden in der Wissensdatei überschrieben bzw. entfernt, so dass die Datei widerspruchsfrei nur den letzten Stand trägt. Die Freigabe dafür ist die Session selbst: Stammt die neue Information in dieser Session vom Repo-Besitzer, braucht das Überschreiben der überholten Passage keine separate Rückfrage (Root-AGENTS.md Abschnitt 12); die alte Fassung bleibt über Git und Log erhalten. Ganze Dateien löschen sowie alles in `01_Basiskontext` brauchen weiterhin die explizite Bestätigung.
    - **Verlaufswert vor dem Ersetzen prüfen:** Hat der alte Stand eigenen Wissenswert als Historie (z.B. ausgeschlossene Verdachtsdiagnosen, Roadmap-Verschiebungen, Preisentwicklungen, Strategiewechsel), bleibt er als datierte Verlaufszeile in der Datei stehen, klar als überholt gekennzeichnet. Ersatzlos entfernt wird nur, was als Historie nichts erklärt. Im Zweifel behalten und kennzeichnen.
    - **Konsistenz-Suche bei überholten Fakten (Pflicht):** Ein Fakt lebt oft in mehreren kuratierten Dateien. Für jeden überholten Fakt deshalb eine Synonym-Volltextsuche (Grep: Name, Begriff, Synonyme) über das Repo ausser `03_Sessionlogs` und `04_Changelog` laufen lassen und ALLE Fundstellen nachziehen: Wissensdateien und lokale AGENTS.md direkt, Fundstellen in `01_Basiskontext` per aktivem Vorschlag, Auto-Blöcke nie anfassen. Erst wenn keine kuratierte Datei den alten Stand mehr als aktuell ausgibt, ist der Fakt sauber fortgeschrieben.
@@ -97,11 +97,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-ind
 `stand:` der in dieser Session bearbeiteten Dateien auf das heutige Datum setzen, falls noch nicht geschehen. Kuratierte Beschreibungen für neu angelegte oder wesentlich geänderte Wissensdateien in der zuständigen `_INDEX.md` ergänzen (nur Delta). Dann committen und pushen:
 ```powershell
 cd C:\Leo
-git add -A
+git status                       # zuerst lesen: was ist offen, und was davon ist wirklich meins?
+git add "<pfad1>" "<pfad2>"      # NUR die in dieser Session bearbeiteten Dateien, nie -A
 git commit -m "Wrap-Up: <Thema>"
 git pull --rebase
 git push
 ```
+
+**Die mechanischen Indexdateien gehören in denselben Commit.** Das Index-Skript oben ändert alle `_INDEX.md` sowie `00_INDEX\INDEX.md` und `00_INDEX\INDEX-Geruest.md`, auch in Themenordnern, die du inhaltlich nicht angefasst hast. Diese Änderungen sind Ergebnis deines eigenen Laufs und werden mitgestaged, per Pfad wie alles andere; das Verbot betrifft `git add -A`, nicht das Stagen von Skript-Output. Wer sie liegen lässt, läuft in `error: cannot pull with rebase: You have unstaged changes`. Fremde Änderungen, die nicht aus deinem Lauf stammen, bleiben liegen und werden im Bericht erwähnt.
 
 ### 7. Bestätigen
 Bei 6a: "Abgelegt in 03_Sessionlogs\<Unterordner>\<Dateiname>. Voller System-Check gelaufen, Index aktualisiert, committet und gepusht."

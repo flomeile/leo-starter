@@ -1,9 +1,9 @@
 ---
 titel: Architektur
 zweck: Die Zielarchitektur des KI-Systems
-type: architektur
-version: 1.0-starter
-letzte_aenderung: 2026-07-17
+type: systemdoku
+version: 1.1-starter
+letzte_aenderung: 2026-08-03
 ---
 
 # Architektur des KI-Systems

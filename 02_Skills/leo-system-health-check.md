@@ -3,7 +3,7 @@ name: leo-system-health-check
 trigger: '"system health check", "health check", "system prüfen", "systemcheck", "ist alles gesund", "gesundheitscheck system", "alles aktuell", "system aktualisieren", "auf vordermann bringen", "index aktualisieren", "index neu bauen", "inbox aufraeumen", "ablage aufraeumen", "hygiene"'
 zweck: One-Button-Wartung des Gesamtsystems - prüft alles, behebt sicher Behebbares selbst (Index-Beschreibungen, stand-Daten, Register), behandelt die Inbox, schreibt den Health-Check-Zeitstempel und schliesst mit Commit + Push ab
 type: skill
-version: 1.0-starter
+version: 1.1-starter
 ---
 
 # Skill: System Health Check
@@ -27,7 +27,7 @@ Damit die Diagnose den aktuellen Stand prüft. Falls das Skript einen Datei-Sper
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\health-check.ps1"
 ```
-Das Skript ist rein lesend und prüft deterministisch: Git/Versionierung, Scheduled Task, Auto-Block-Integrität, Themenordner-Registrierung, Index-Abdeckung (kuratierte Beschreibungen), Skill-Registry, Encoding, Inbox, Basiskontext, Portabilitätsdateien, Harness-Memory-Füllstand (meldet jeden Fund als Handlungsbedarf, weil ein harness-eigener Memory-Speicher für Leo nicht zugelassen ist: Root-`AGENTS.md` Abschnitt 1) sowie den kompletten `stand:`-Workflow für dynamische Dokumente: (a) veraltete Stände (> 60 Tage), (b) nicht nachgeführte Stände, (c) fehlende Kennzeichnung. Jede Zeile trägt `[OK]`, `[INFO]`, `[WARN]` oder `[FAIL]`; am Ende steht ein VERDIKT (Exit Code 0/1/2).
+Das Skript ist rein lesend und prüft deterministisch: Git/Versionierung, Scheduled Task, Auto-Block-Integrität, Themenordner-Registrierung, Index-Abdeckung (kuratierte Beschreibungen), Skill-Registry, Encoding, Inbox, Basiskontext, Portabilitätsdateien, Harness-Memory-Füllstand (meldet jeden Fund als Handlungsbedarf, weil ein harness-eigener Memory-Speicher für Leo nicht zugelassen ist: Root-`AGENTS.md` Abschnitt 1), tote Verweise (Wikilinks und Markdown-Links auf `.md`-Dateien), den Frontmatter-Standard für neu angelegte Dateien sowie den kompletten `stand:`-Workflow für dynamische Dokumente: (a) veraltete Stände (> 60 Tage), (b) nicht nachgeführte Stände, (c) fehlende Kennzeichnung. Jede Zeile trägt `[OK]`, `[INFO]`, `[WARN]` oder `[FAIL]`; am Ende steht ein VERDIKT (Exit Code 0/1/2).
 
 ### 3. Sicher Behebbares direkt beheben (nicht fragen, machen)
 Für jeden Befund zuerst einordnen: bekannte, abgestimmte Ausnahme (im Bericht kennzeichnen, keine Aktion) oder echter Handlungsbedarf. Dann direkt beheben, was mechanisch sicher ist:
@@ -37,6 +37,8 @@ Für jeden Befund zuerst einordnen: bekannte, abgestimmte Ausnahme (im Bericht k
 - **`stand:` in dieser Session bearbeiteter Dateien:** auf das echte Tagesdatum aktualisieren, falls versäumt.
 - **Gemeldeter `stand:`-Drift:** Datei kurz anlesen, `stand:` auf das Datum der letzten Git-Änderung setzen.
 - **Register-/Registry-Lücken:** fehlender Registereintrag für eine existierende Skill-Datei nachtragen; kaputte Verweise korrigieren.
+- **Tote Verweise:** Zeigt ein Wikilink oder Markdown-Link auf eine `.md`-Datei, die es nicht gibt, zuerst per Volltextsuche prüfen, ob die Zieldatei umbenannt oder verschoben wurde. Gefunden: Link korrigieren. Nicht gefunden: nicht raten, sondern im Abschlussbericht zur Entscheidung vorlegen.
+- **Fehlendes oder unzulässiges Frontmatter:** Fehlt `titel`, `zweck` oder `type`, die Datei lesen und die Felder aus dem realen Inhalt ergänzen, nie erfinden. Trägt `type` einen Wert ausserhalb der Liste aus Root-`AGENTS.md` Abschnitt 5, auf den passenden zulässigen Wert setzen. Braucht der Fall wirklich einen neuen Wert, im Bericht vorschlagen, statt die Liste eigenmächtig zu erweitern.
 - **Datei-Sperr-Fehler:** Skript einfach erneut laufen lassen.
 - **Bug im mechanischen Skript selbst:** beheben und die neue Logik kurz bestätigen lassen, nicht nur den Symptomausschlag wegklicken.
 
@@ -63,11 +65,14 @@ Damit weiss `leo-wrap-up`, wann der letzte volle Check lief. Diese Datei wird mi
 ### 8. Committen und pushen (ohne Rückfrage)
 ```powershell
 cd C:\Leo
-git add -A
+git status                       # zuerst lesen: was ist offen, und was davon ist wirklich meins?
+git add "<pfad1>" "<pfad2>"      # NUR die in dieser Session bearbeiteten Dateien, nie -A
 git commit -m "System-Refresh: <Kurzbeschreibung>"
 git pull --rebase
 git push
 ```
+**Die mechanischen Indexdateien gehören in denselben Commit.** Schritt 1 ändert alle `_INDEX.md` sowie `00_INDEX\INDEX.md` und `00_INDEX\INDEX-Geruest.md`, auch in Themenordnern, die du inhaltlich nicht angefasst hast; die Diagnose meldet sie als "erwartete Index-Drift". Sie sind Ergebnis deines eigenen Laufs und werden mitgestaged, per Pfad wie alles andere; das Verbot betrifft `git add -A`, nicht das Stagen von Skript-Output. `10_System\health-check-last-run.txt` aus Schritt 7 gehört ebenfalls in den Commit.
+
 Ruft ein anderer Skill diesen Skill auf (z.B. Wrap-Up), gilt dessen Commit-Message. Schlägt der Rebase fehl (Konflikt): nichts erzwingen, melden. Commit + Push brauchen keine Bestätigung, Sicherheit kommt aus der Versionierung.
 
 ### 9. Abschlussbericht

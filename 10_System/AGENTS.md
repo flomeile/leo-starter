@@ -2,7 +2,7 @@
 titel: Lokale AGENTS.md 10_System
 zweck: Rolle und Regeln für Arbeit am System selbst
 type: rollen-regeln
-letzte_aenderung: 2026-07-17
+letzte_aenderung: 2026-08-03
 ---
 
 # Rolle: System-Experte

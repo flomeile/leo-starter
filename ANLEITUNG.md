@@ -1,19 +1,31 @@
+---
+titel: Anleitung zum eigenen Leo
+zweck: Erklärt, was Leo ist, wie er funktioniert und wie man ihn einsatzbereit macht, auf einem Windows-Rechner oder nur mit einem Tablet
+type: readme
+version: 1.1-starter
+letzte_aenderung: 2026-08-03
+---
+
 # Leo: Anleitung zum eigenen Second Brain
 
-Diese Anleitung erklärt, was Leo ist, wie er funktioniert und wie du ihn in etwa einer Stunde einsatzbereit machst. Sie ist für einen technisch versierten Menschen geschrieben, du brauchst kein Entwicklerwissen, aber Kommandozeile und GitHub sollten dich nicht schrecken.
+Das hier ist ein leeres Grundgerüst. Die komplette Mechanik ist drin, aber kein einziger Inhalt: keine Themen, keine persönlichen Daten, nichts vom Autor. Du baust deinen eigenen Leo darauf.
 
-Das hier ist ein leeres Grundgerüst. Die komplette Mechanik ist drin, aber kein einziger Inhalt: keine Themen, keine persönlichen Daten, nichts von Florian. Du baust deinen eigenen Leo darauf.
+**Zwei Lesegeschwindigkeiten.** Diese Anleitung soll für jemanden funktionieren, der noch nie mit einem KI-Agenten gearbeitet hat, ohne dass ein erfahrener Leser ständig Selbstverständliches liest. Deshalb gilt durchgehend:
+
+> **Grundlagen:** So markierte Kästen erklären einen Begriff oder einen Handgriff von Grund auf. Wenn dir Kommandozeile, Git und LLM-Werkzeuge vertraut sind, überspring sie einfach, im Fliesstext geht nichts verloren.
 
 ---
 
 ## Teil 1: Was Leo ist und wofür
 
-Leo ist ein persönliches, dauerhaftes Wissenssystem, ein "Second Brain". Der Kern ist eine einfache Idee: Alles Wissen liegt als Markdown-Dateien in einem lokalen Ordner, thematisch sortiert, und ein LLM greift darauf zu, wenn du eine passende Frage stellst. Das System ist Gedächtnis und Arbeitsplatz zugleich. Du legst ab, was du erarbeitest, und vertraust darauf, dass es zuverlässig wiedergefunden und aktiv genutzt wird.
+Leo ist ein persönliches, dauerhaftes Wissenssystem, ein "Second Brain". Der Kern ist eine einfache Idee: Alles Wissen liegt als Markdown-Dateien in einem Ordner, thematisch sortiert, und ein LLM greift darauf zu, wenn du eine passende Frage stellst. Das System ist Gedächtnis und Arbeitsplatz zugleich. Du legst ab, was du erarbeitest, und vertraust darauf, dass es zuverlässig wiedergefunden und aktiv genutzt wird.
+
+> **Grundlagen:** Ein LLM ist das Sprachmodell hinter Programmen wie Claude oder Gemini. Markdown ist reiner Text mit ein paar Zeichen für Struktur (`#` für eine Überschrift, `-` für einen Listenpunkt). Solche Dateien lassen sich mit jedem Programm öffnen und sind auch in zehn Jahren noch lesbar.
 
 Drei Dinge machen Leo aus:
 
-1. **Die Dateien sind die Wahrheit, nicht das Tool.** Kein Chatverlauf, kein tool-eigenes Gedächtnis, keine Vektor-Datenbank. Nur Markdown. Das heisst: Du kannst das LLM und das Programm jederzeit wechseln (Claude, Gemini, ein günstiges Modell über OpenRouter, was auch immer) ohne einen einzigen Gedanken zu verlieren. Kein Lock-in.
-2. **Das System hält sich selbst sauber und aktuell.** Ein Index (die Landkarte) und die Versionierung laufen im Hintergrund automatisch. Du pflegst fast nichts von Hand.
+1. **Die Dateien sind die Wahrheit, nicht das Tool.** Kein Chatverlauf, kein tool-eigenes Gedächtnis, keine Vektor-Datenbank. Nur Markdown. Das heisst: Du kannst das LLM und das Programm jederzeit wechseln, ohne einen einzigen Gedanken zu verlieren. Kein Lock-in.
+2. **Das System hält sich selbst sauber und aktuell.** Ein Index (die Landkarte) und die Versionierung laufen im Hintergrund. Du pflegst fast nichts von Hand.
 3. **Wahrheit vor Bequemlichkeit.** Die oberste Regel ist Anti-Halluzination: Es kommt nur ins Wissen, was belegbar ist. Ein LLM, das Quellen erfindet, vergiftet mit der Zeit die ganze Wissensbasis. Genau das verhindert Leo strukturell.
 
 Was du davon hast: Du fragst in normaler Sprache und bekommst Antworten, die auf deinem eigenen abgelegten Wissen aufbauen, im richtigen Ton, in deiner Rolle (mal Sparringpartner, mal Lektor, mal was immer du definierst). Und mit jeder Session, die du sauber abschliesst, wird das System klüger.
@@ -32,11 +44,13 @@ Sechs Bausteine, die ineinandergreifen:
 
 **Der Zugriff (Agentic Search).** Statt einer Vektor-Datenbank sucht das LLM selbst: Es liest zuerst den Index (die Landkarte), dann durchsucht es den Volltext mit selbst erzeugten Synonymen, dann liest es nur die Treffer ganz. Das ist günstig (eine normale Frage kostet Cents), verliert keinen Zusammenhang und funktioniert mit jedem Tool.
 
-**Der Index.** Eine zweistufige Landkarte. Die mechanischen Teile (Ordnerbaum, Dateilisten) pflegt ein PowerShell-Skript vollautomatisch und kann dabei nichts erfinden. Die beschreibenden Teile schreibt das LLM, aber immer nur zu je einer real existierenden Datei. So bleibt der Index vollständig und aktuell, ohne je zu halluzinieren.
+**Der Index.** Eine zweistufige Landkarte. Die mechanischen Teile (Ordnerbaum, Dateilisten) pflegt ein Skript vollautomatisch und kann dabei nichts erfinden. Die beschreibenden Teile schreibt das LLM, aber immer nur zu je einer real existierenden Datei. So bleibt der Index vollständig und aktuell, ohne je zu halluzinieren.
 
 **Die Skills.** Wiederkehrende Arbeitsabläufe stehen als Markdown-Dateien in `02_Skills`, auffindbar über das `Skill-Register.md`. Du nennst ein Triggerwort ("wrap up", "health check"), das LLM schlägt nach und führt den Ablauf aus. Vier Kern-Skills sind dabei (siehe Teil 3).
 
-Darunter liegt Git plus ein privates GitHub-Repo als Sicherheitsnetz: Jede Änderung ist rückrollbar, ein täglicher Automatik-Lauf sichert alles. Das ist wichtig, weil viele Tools ohne Rückfrage in Dateien schreiben. Die Sicherheit kommt nicht aus Bestätigungsklicks, sondern daraus, dass du jederzeit zurückspringen kannst.
+Darunter liegt Git plus ein privates GitHub-Repo als Sicherheitsnetz: Jede Änderung ist rückrollbar. Das ist wichtig, weil viele Tools ohne Rückfrage in Dateien schreiben. Die Sicherheit kommt nicht aus Bestätigungsklicks, sondern daraus, dass du jederzeit zurückspringen kannst.
+
+> **Grundlagen: Git und GitHub.** Git ist eine Art Zeitmaschine für einen Ordner. Es merkt sich jeden Zwischenstand, so dass du jederzeit sehen kannst, was sich wann geändert hat, und einen alten Stand zurückholen kannst. GitHub ist der Online-Dienst, auf dem diese Zeitmaschine zusätzlich gespeichert wird, also gleichzeitig dein Backup. Ein GitHub-Konto ist kostenlos, und dein Bereich ("Repository", kurz Repo) ist privat, wenn du ihn so anlegst. Niemand ausser dir sieht ihn. Du musst dafür nichts über Git lernen: Der Agent bedient es für dich, und im Notfall reicht die Weboberfläche von GitHub.
 
 ---
 
@@ -46,39 +60,54 @@ Darunter liegt Git plus ein privates GitHub-Repo als Sicherheitsnetz: Jede Ände
 
 - Die Master-`AGENTS.md` mit allen Arbeitsregeln, entpersonalisiert.
 - Die vollständige Ordnerstruktur mit READMEs.
-- Der Index (`00_INDEX`) mit den beiden PowerShell-Skripten: `build-index-geruest.ps1` (baut die Landkarte) und `health-check.ps1` (prüft das ganze System durch).
+- Der Index (`00_INDEX`) mit den beiden PowerShell-Skripten: `build-index-geruest.ps1` (baut die Landkarte) und `health-check.ps1` (prüft das ganze System durch, 14 Prüfungen von Git über Index-Abdeckung und tote Verweise bis zum Frontmatter-Standard).
 - Vier Kern-Skills: **Health-Check** (Wartung auf Knopfdruck), **Wrap-Up** (Session sichern und daraus lernen), **Themenordner anlegen** und **Skill-Ersteller** (damit baust du dir weitere Skills selbst).
 - Der Basiskontext (`01_Basiskontext`) als Vorlagen mit Leitfragen: Voice and Style, Identity, Persönlichkeit und Muster.
 - Die Systemdoku (`10_System`): Zielsetzung, Architektur, Technik, Manual, Modellwahl.
-- Die Portabilitätsdateien (`CLAUDE.md`, `GEMINI.md`, `.clinerules`), die jedes Harness auf die `AGENTS.md` zeigen lassen.
+- Die Portabilitätsdateien (`CLAUDE.md`, `GEMINI.md`, `.clinerules`), die jedes Harness auf die `AGENTS.md` zeigen lassen. `CLAUDE.md` und `GEMINI.md` importieren den Basiskontext zusätzlich per `@`-Zeile, damit er zwingend geladen wird und nicht nur empfohlen ist.
 
 **Bewusst nicht drin:**
 
-- **Keine Inhalte.** Kein Themenordner, keine persönlichen Daten, nichts von Florian. Der Basiskontext ist leer und wartet auf dich.
-- **Nur die vier Kern-Skills.** Florians Leo hat noch weitere (Voice-Check, Faktencheck, Inbox-Ingest, First-Principles). Die baust du dir bei Bedarf mit dem Skill-Ersteller selbst, so wie sie zu deiner Arbeit passen.
-- **Windows.** Die Automatik und beide Skripte sind auf Windows ausgelegt (Task Scheduler, PowerShell, Backslash-Pfade). Das passt zu deinem Rechner. Ein kurzer Hinweis für andere Systeme steht am Ende.
+- **Keine Inhalte.** Kein Themenordner, keine persönlichen Daten. Der Basiskontext ist leer und wartet auf dich.
+- **Nur die vier Kern-Skills.** Weitere nützliche Skills (Voice-Check, Faktencheck, Inbox-Ingest, First-Principles) baust du dir bei Bedarf selbst über den Skill-Ersteller ("skill erstellen"), so wie sie zu deiner Arbeit passen.
 
 ---
 
-## Teil 4: Einrichtung, Schritt für Schritt (Windows)
+## Teil 4: Welcher Weg passt zu dir
+
+Es gibt zwei Wege, und sie unterscheiden sich darin, wo der Ordner liegt und wo der Agent arbeitet.
+
+**Weg A: eigener Windows-Rechner.** Der Ordner liegt lokal auf deiner Festplatte, der Agent arbeitet direkt darauf. Alles funktioniert, inklusive der beiden Skripte, der täglichen Automatik und Obsidian zum Bearbeiten von Hand. Das ist der Weg ohne Reibung. Weiter mit Teil 5.
+
+**Weg B: kein eigener Rechner, nur Tablet.** Der Ordner liegt bei GitHub, und der Agent arbeitet in einer Sitzung auf den Servern von Anthropic. Du installierst nichts und brauchst keine Kommandozeile. Der Kern von Leo funktioniert damit, die Automatik-Schicht nicht. Weiter mit Teil 6.
+
+Wichtig für beide Wege: Leg den Ordner niemals in einen Cloud-Sync-Dienst wie OneDrive, Dropbox oder iCloud Drive. Solche Dienste kopieren Dateien laufend im Hintergrund hin und her und geraten sich dabei mit Git in die Quere. Die Cloud-Kopie ist GitHub, und die reicht.
+
+---
+
+## Teil 5: Weg A, Einrichtung Schritt für Schritt (Windows)
 
 Voraussetzungen: Git installiert, PowerShell vorhanden (ist es auf Windows immer; PowerShell 7 / `pwsh` ist ein Plus), ein GitHub-Konto.
 
+> **Grundlagen: Kommandozeile.** Die Blöcke mit grauem Hintergrund unten sind Befehle. Du öffnest dafür das Programm "PowerShell" (Startmenü, tippen: PowerShell), kopierst den Befehl hinein und drückst Enter. Mehr ist es nicht. Wenn ein Befehl eine Fehlermeldung ausgibt, lies sie nicht weg, sondern gib sie deinem Agenten, der ordnet sie dir ein.
+
 ### Schritt 1: Ordner an seinen Platz bringen
-Lege den Inhalt dieses Pakets nach `C:\Leo`. Der Pfad `C:\Leo` ist an vielen Stellen in den Skills als Beispiel eingetragen; wenn du ihn beibehältst, hast du am wenigsten Arbeit. Wichtig: nicht in einen Cloud-Sync-Ordner (OneDrive, Dropbox) legen, sonst streiten sich Sync und Git.
+Lege den Inhalt dieses Pakets nach `C:\Leo`. Der Pfad `C:\Leo` ist an vielen Stellen in den Skills als Beispiel eingetragen; wenn du ihn beibehältst, hast du am wenigsten Arbeit.
 
 ### Schritt 2: Personalisieren
 - Öffne `AGENTS.md` im Wurzelordner. Ersetze überall den Platzhalter `[NAME]` durch deinen Namen (Suchen und Ersetzen). Lösche die kursive Hinweiszeile ganz oben.
 - Fülle die drei Dateien in `01_Basiskontext`. Sie enthalten Leitfragen. Das ist der wertvollste Schritt: Je ehrlicher und konkreter, desto besser trifft das LLM später deinen Kern. `Voice and Style.md` bringt schon eine fertige Liste typischer KI-Sprachmuster mit, die du übernehmen oder löschen kannst.
-- Optional den Namen ändern: siehe Teil 5.
+- Optional den Namen ändern: siehe Teil 7.
+
+> **Grundlagen:** Du musst Schritt 2 nicht von Hand machen. Öffne stattdessen deinen Agenten auf dem Ordner und sag ihm: "Lies die ANLEITUNG.md und richte mich ein." Er ersetzt den Platzhalter und führt dich per Rückfragen durch den Basiskontext. Das ist ohnehin der bessere Weg, weil aus dem Gespräch mehr herauskommt als aus einem leeren Formular.
 
 ### Schritt 3: Git und privates GitHub-Repo
-Wenn du das Paket über die Template-Funktion von GitHub geholt hast (siehe Teil 6), existiert das Repo schon; dann nur lokal klonen und weiter mit Schritt 4. Sonst von Hand:
+Wenn du das Paket über die Template-Funktion von GitHub geholt hast (siehe Teil 8), existiert das Repo schon; dann nur lokal klonen und weiter mit Schritt 4. Sonst von Hand:
 
 ```powershell
 cd C:\Leo
 git init
-git add -A
+git add .
 git commit -m "Leo Starter"
 ```
 Dann auf GitHub ein **privates** Repo anlegen (Weboberfläche oder `gh repo create`), und lokal verbinden:
@@ -99,7 +128,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-ind
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\health-check.ps1"
 ```
-Der Check ist rein lesend. Erwartetes Ergebnis im frischen Starter: "einsatzbereit mit Hinweisen". Der einzige rote Punkt, den du sehen wirst, betrifft den noch fehlenden Scheduled Task (kommt in Schritt 6) und eventuell, dass noch kein Themenordner existiert. Beides ist normal.
+Der Check ist rein lesend. Erwartetes Ergebnis im frischen Starter: "einsatzbereit mit Hinweisen". Die Punkte, die du sehen wirst, betreffen den noch fehlenden Scheduled Task (kommt in Schritt 6) und den noch fehlenden Themenordner. Beides ist normal.
 
 ### Schritt 6: Täglichen Automatik-Lauf einrichten
 Der Windows Task Scheduler soll einmal täglich das Index-Skript laufen lassen und pushen. Am einfachsten in einer PowerShell-Sitzung:
@@ -122,7 +151,33 @@ Wenn du deine Notizen auch von Hand pflegen willst: Obsidian auf `C:\Leo` als Va
 
 ---
 
-## Teil 5: Der Name
+## Teil 6: Weg B, Einrichtung ohne eigenen Rechner (Tablet)
+
+Dieser Weg kommt ohne Installation und ohne Kommandozeile aus. Der Ordner liegt bei GitHub, und der Agent arbeitet in einer Sitzung auf den Servern von Anthropic, die auch dann weiterläuft, wenn du das Gerät weglegst.
+
+**Was du brauchst:**
+- Ein bezahltes Claude-Abo. Der nötige Bereich in der App ist nicht in jedem Plan enthalten.
+- Ein kostenloses GitHub-Konto (siehe den Grundlagen-Kasten in Teil 2).
+- Die Claude-App. Auf dem iPad installierst du dieselbe iOS-App wie auf dem iPhone; eine eigene App für die Agenten-Funktion gibt es nicht.
+
+**Die Schritte:**
+
+1. GitHub-Konto anlegen, im Browser auf dem Tablet.
+2. Auf der Seite dieses Starter Packs auf GitHub den Knopf **"Use this template"** drücken und dein eigenes, **privates** Repo erstellen. Damit hast du deine eigene Kopie, unabhängig vom Original.
+3. In der Claude-App unten auf **Code** tippen, dein Repo auswählen und eine Sitzung starten.
+4. Als erste Nachricht schreiben: "Lies die ANLEITUNG.md und richte mich ein." Der Agent ersetzt den Platzhalter `[NAME]` und führt dich per Rückfragen durch den Basiskontext. Teil 5 musst du dafür nicht verstehen, der ist für Leute mit einem Windows-Rechner geschrieben.
+
+**Was auf diesem Weg fehlt:**
+
+- **Die tägliche Automatik.** Der Zeitplan-Dienst von Windows existiert dort nicht. Ersatz: Sag am Ende einer Sitzung "health check", dann macht der Agent die Wartung und speichert alles.
+- **Obsidian.** Zum Bearbeiten von Hand bräuchtest du die Dateien lokal auf dem Gerät. Lesen und schreiben läuft auf diesem Weg über den Agenten, ansehen kannst du alles jederzeit im Browser auf github.com.
+- **Ungeprüft: die beiden PowerShell-Skripte.** Ob PowerShell in der Cloud-Sitzung verfügbar ist, wurde nicht getestet. Falls nicht, lässt es sich dort über ein Setup-Skript nachinstallieren (auch das ungeprüft). Bis das geklärt ist, gilt: Alles andere an Leo funktioniert, aber der mechanische Index-Lauf ist der Punkt, den du als Erstes ausprobieren solltest. Sag deinem Agenten in der ersten Sitzung: "Prüfe, ob pwsh hier verfügbar ist, und sag mir das Ergebnis."
+
+**Die dritte Möglichkeit**, falls du später doch einen Rechner hast, der laufen kann: Claude Code kennt eine Fernsteuerung. Der Agent läuft dann auf deinem eigenen Rechner mit allen lokalen Dateien und Werkzeugen, und du bedienst ihn vom Tablet aus. Voraussetzung ist, dass dieser Rechner eingeschaltet bleibt. Damit hättest du den vollen Funktionsumfang von Weg A bei der Bedienung von Weg B.
+
+---
+
+## Teil 7: Der Name
 
 Der Ordner, das Skill-Präfix (`leo-`) und die Doku heissen überall "Leo". Du darfst das System umbenennen, es ist deins. Dazu ersetzt du an vier Stellen: den Ordnernamen `C:\Leo`, das Skill-Präfix `leo-` in den Dateinamen unter `02_Skills`, das Wort `Leo` in den Doku-Texten und die Pfad-Beispiele in den Skills. Die beiden PowerShell-Skripte leiten ihren Pfad selbst ab und brauchen keine Anpassung.
 
@@ -130,23 +185,30 @@ Ehrlicherweise, und das ist die objektive, wissenschaftlich abgesicherte, von ei
 
 ---
 
-## Teil 6: Updates, wenn Florian Leo weiterentwickelt
+## Teil 8: Updates, wenn das Gerüst weiterentwickelt wird
 
-Florian pflegt den kanonischen Leo-Starter als GitHub-Template-Repo. Du holst dir deine eigene Kopie über den Knopf "Use this template" auf GitHub; damit bekommst du ein eigenes, unabhängiges Repo (kein Fork-Zwang, saubere Historie).
+Der kanonische Leo-Starter liegt als GitHub-Template-Repo. Du holst dir deine eigene Kopie über den Knopf "Use this template"; damit bekommst du ein eigenes, unabhängiges Repo (kein Fork-Zwang, saubere Historie).
 
-Wenn Florian das Gerüst später verbessert und du diese Verbesserungen übernehmen willst, ohne deine eigenen Inhalte anzufassen:
+Wenn das Gerüst später verbessert wird und du diese Verbesserungen übernehmen willst, ohne deine eigenen Inhalte anzufassen:
 
 ```powershell
 cd C:\Leo
-git remote add upstream https://github.com/<florians-konto>/leo-starter.git
+git remote add upstream https://github.com/flomeile/leo-starter.git
 git fetch upstream
 ```
-Dann gezielt nur die Systemdateien übernehmen, die sich geändert haben (die Skripte, die Skills, die Systemdoku, die Master-AGENTS.md), zum Beispiel per `git checkout upstream/main -- 00_INDEX/scripts 02_Skills 10_System AGENTS.md`. Deine Themenordner und dein `01_Basiskontext` bleiben dabei unberührt, weil das Template die gar nicht enthält. Danach kurz prüfen, ob du in der `AGENTS.md` deinen Namen erneut einsetzen musst, und einmal den Health-Check laufen lassen.
+Dann gezielt nur die Systemdateien übernehmen, die sich geändert haben, zum Beispiel per `git checkout upstream/main -- 00_INDEX/scripts 02_Skills 10_System AGENTS.md`. Deine Themenordner und dein `01_Basiskontext` bleiben dabei unberührt, weil das Template die gar nicht enthält. Danach prüfen, ob du in der `AGENTS.md` deinen Namen erneut einsetzen musst, und einmal den Health-Check laufen lassen.
+
+Auf Weg B ohne eigenen Rechner sagst du das deinem Agenten in der Sitzung, statt die Befehle selbst zu tippen.
 
 Kurz: Dein Wissen gehört dir und liegt in deinem privaten Repo. Das Gerüst kannst du aktualisieren, wann immer du willst, ganz ohne deine Inhalte zu berühren.
+
+### Versionen dieses Pakets
+
+- **1.1 (2026-08-03):** Health-Check auf 14 Prüfungen erweitert (tote Verweise, Frontmatter-Standard) und ein Fehler darin behoben, der eine fehlende Import-Zeile fälschlich als in Ordnung meldete. Neue Regeln in der `AGENTS.md`: Verweis-Konvention mit Begründung, Frontmatter-Standard, gezieltes Stagen statt `git add -A`, keine Warnung ohne geprüften Zustand. `CLAUDE.md` und `GEMINI.md` erzwingen den Basiskontext jetzt per Import statt per Textverweis. Anleitung um den Tablet-Weg und die Grundlagen-Kästen ergänzt.
+- **1.0 (2026-07-17):** Erste Fassung.
 
 ---
 
 ## Für Nicht-Windows-Systeme (nur zur Info)
 
-Die Logik ist plattformunabhängig, die Automatik nicht. Auf macOS oder Linux braucht `pwsh` (PowerShell 7 gibt es dort), die Pfade werden mit Schrägstrich geschrieben, und statt des Windows Task Scheduler nimmst du `cron` oder einen `launchd`-Job für den täglichen Lauf. Der Health-Check prüft Windows-spezifische Dinge (Scheduled Task) und meldet die dann als nicht gefunden; das ist auf anderen Systemen kein Fehler, sondern erwartbar. Für den Anfang ist Windows der Weg ohne Reibung.
+Die Logik ist plattformunabhängig, die Automatik nicht. Auf macOS oder Linux braucht es `pwsh` (PowerShell 7 gibt es dort), die Pfade werden mit Schrägstrich geschrieben, und statt des Windows Task Scheduler nimmst du `cron` oder einen `launchd`-Job für den täglichen Lauf. Der Health-Check prüft Windows-spezifische Dinge (Scheduled Task) und meldet die dann als nicht gefunden; das ist auf anderen Systemen kein Fehler, sondern erwartbar. Für den Anfang ist Windows der Weg ohne Reibung.
