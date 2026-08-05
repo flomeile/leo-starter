@@ -61,6 +61,7 @@ Darunter liegt Git plus ein privates GitHub-Repo als Sicherheitsnetz: Jede Ände
 - Die Master-`AGENTS.md` mit allen Arbeitsregeln, entpersonalisiert.
 - Die vollständige Ordnerstruktur mit READMEs.
 - Der Index (`00_INDEX`) mit den beiden PowerShell-Skripten: `build-index-geruest.ps1` (baut die Landkarte) und `health-check.ps1` (prüft das ganze System durch, 14 Prüfungen von Git über Index-Abdeckung und tote Verweise bis zum Frontmatter-Standard).
+- Ein Pre-Commit-Hook (`00_INDEX\githooks`), der Commits mit beschädigtem Inhalt stoppt: Merge-Konflikt-Marker oder ein zerrissener Auto-Block in einer Indexdatei. Alles andere zeigt er nur an, damit ein automatisches Backup nie still scheitert. Einmalig zu aktivieren, siehe Teil 5, Schritt 3.
 - Vier Kern-Skills: **Health-Check** (Wartung auf Knopfdruck), **Wrap-Up** (Session sichern und daraus lernen), **Themenordner anlegen** und **Skill-Ersteller** (damit baust du dir weitere Skills selbst).
 - Der Basiskontext (`01_Basiskontext`) als Vorlagen mit Leitfragen: Voice and Style, Identity, Persönlichkeit und Muster.
 - Die Systemdoku (`10_System`): Zielsetzung, Architektur, Technik, Manual, Modellwahl.
@@ -118,6 +119,12 @@ git push -u origin main
 ```
 Privat ist wichtig: Hier landet dein persönliches Wissen.
 
+Danach den mitgelieferten Pre-Commit-Hook aktivieren:
+```powershell
+git config core.hooksPath 00_INDEX/githooks
+```
+Der Hook liegt versioniert im Paket, diese Einstellung nicht: Sie gilt pro Rechner und muss nach jedem frischen Clone einmal gesetzt werden (der Health-Check erinnert dich daran). Er blockiert einen Commit nur, wenn der gestagete Inhalt beschädigt ist: Merge-Konflikt-Marker in einer Markdown-Datei oder ein zerrissener Auto-Block in einer Indexdatei. Alles andere zeigt er nur an. Willst du einen blockierten Commit bewusst trotzdem durchdrücken: `git commit --no-verify`.
+
 ### Schritt 4: Index zum ersten Mal bauen
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-index-geruest.ps1"
@@ -128,7 +135,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-ind
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\health-check.ps1"
 ```
-Der Check ist rein lesend. Erwartetes Ergebnis im frischen Starter: "einsatzbereit mit Hinweisen". Die Punkte, die du sehen wirst, betreffen den noch fehlenden Scheduled Task (kommt in Schritt 6) und den noch fehlenden Themenordner. Beides ist normal.
+Der Check ist rein lesend. Erwartetes Ergebnis im frischen Starter: "einsatzbereit mit Hinweisen". Die Punkte, die du sehen wirst, betreffen den noch fehlenden Scheduled Task (kommt in Schritt 6) und den noch fehlenden Themenordner. Beides ist normal. Meldet der Check dagegen `[FAIL] core.hooksPath ist NICHT gesetzt`, hast du den Hook-Befehl aus Schritt 3 übersprungen; hol ihn nach.
 
 ### Schritt 6: Täglichen Automatik-Lauf einrichten
 Der Windows Task Scheduler soll einmal täglich das Index-Skript laufen lassen und pushen. Am einfachsten in einer PowerShell-Sitzung:
@@ -196,7 +203,7 @@ cd C:\Leo
 git remote add upstream https://github.com/flomeile/leo-starter.git
 git fetch upstream
 ```
-Dann gezielt nur die Systemdateien übernehmen, die sich geändert haben, zum Beispiel per `git checkout upstream/main -- 00_INDEX/scripts 02_Skills 10_System AGENTS.md`. Deine Themenordner und dein `01_Basiskontext` bleiben dabei unberührt, weil das Template die gar nicht enthält. Danach prüfen, ob du in der `AGENTS.md` deinen Namen erneut einsetzen musst, und einmal den Health-Check laufen lassen.
+Dann gezielt nur die Systemdateien übernehmen, die sich geändert haben, zum Beispiel per `git checkout upstream/main -- 00_INDEX/scripts 00_INDEX/githooks .gitattributes 02_Skills 10_System AGENTS.md`. Deine Themenordner und dein `01_Basiskontext` bleiben dabei unberührt, weil das Template die gar nicht enthält. Danach prüfen, ob du in der `AGENTS.md` deinen Namen erneut einsetzen musst, und einmal den Health-Check laufen lassen.
 
 Auf Weg B ohne eigenen Rechner sagst du das deinem Agenten in der Sitzung, statt die Befehle selbst zu tippen.
 
@@ -204,6 +211,7 @@ Kurz: Dein Wissen gehört dir und liegt in deinem privaten Repo. Das Gerüst kan
 
 ### Versionen dieses Pakets
 
+- **1.2 (2026-08-05):** Pre-Commit-Hook ergänzt (`00_INDEX\githooks`), der Commits mit beschädigtem Inhalt stoppt und alles Übrige nur anzeigt, dazu die passende `.gitattributes` und eine Health-Check-Prüfung, ob er auf diesem Rechner überhaupt aktiv ist. Neue Regeln in der `AGENTS.md`: offene Punkte werden entscheidungsreif vorgelegt statt als blosse Frage; `gueltig_bis` als Ablaufdatum neben `stand:`; Statustoken mit Belegpflicht für "erledigt"; eigene Schlussfolgerungen im Satz markieren und `geprueft:` an der Datei; Frischecheck gegen parallele Schreiber; keine Unsicherheitsmarkierung, wo eine Prüfung möglich ist. Health-Check und Wrap-Up ziehen nach.
 - **1.1 (2026-08-03):** Health-Check auf 14 Prüfungen erweitert (tote Verweise, Frontmatter-Standard) und ein Fehler darin behoben, der eine fehlende Import-Zeile fälschlich als in Ordnung meldete. Neue Regeln in der `AGENTS.md`: Verweis-Konvention mit Begründung, Frontmatter-Standard, gezieltes Stagen statt `git add -A`, keine Warnung ohne geprüften Zustand. `CLAUDE.md` und `GEMINI.md` erzwingen den Basiskontext jetzt per Import statt per Textverweis. Anleitung um den Tablet-Weg und die Grundlagen-Kästen ergänzt.
 - **1.0 (2026-07-17):** Erste Fassung.
 

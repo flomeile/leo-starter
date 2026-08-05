@@ -1,0 +1,185 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# Leo pre-commit hook
+#
+# Zweck: harness-unabhaengige Durchsetzung. Eine Deny-Regel in der
+# Konfiguration eines Coding-Agents wirkt nur in dessen eigenem Werkzeug; ein
+# Git-Hook wirkt bei JEDEM Commit, also auch beim Task Scheduler und bei
+# Obsidian-Git.
+#
+# ZUSCHNITT, BEWUSST ENG:
+#   BLOCKIERT wird nur bei BESCHAEDIGUNG:
+#     (1) Merge-Konflikt-Marker in einer gestageten .md
+#     (2) zerstoerte AUTO:...:BEGIN/END-Paare in den mechanischen Indexdateien
+#   ALLES ANDERE wird nur AUSGEGEBEN und bleibt Sache des Health-Checks:
+#     fehlendes/unvollstaendiges Frontmatter, unbekannter type, abgelaufenes
+#     gueltig_bis.
+# Grund: Ein Hook, der zuschlaegt, laesst auch das Obsidian-Backup scheitern,
+# und zwar in einer Plugin-Oberflaeche, in der die Meldung womoeglich niemand
+# liest. Ein Backup, das still nichts mehr sichert, ist schlimmer als eines,
+# das zu viel einsammelt.
+#
+# NOTAUSGANG: git commit --no-verify   (umgeht diesen Hook vollstaendig)
+#
+# AKTIVIERUNG (einmalig je Rechner, der Hook ist versioniert, die Einstellung
+# nicht):  git config core.hooksPath 00_INDEX/githooks
+# Ob das gesetzt ist, prueft health-check.ps1 (Kategorie Git) mechanisch, sonst
+# waere die Durchsetzung still abwesend.
+#
+# ASCII-only mit Absicht: Die Ausgabe landet in Konsolen und in der
+# Obsidian-Git-Oberflaeche mit teils unbekannter Codepage. Gleiche technische
+# Ausnahme wie bei den beiden PowerShell-Skripten.
+# ---------------------------------------------------------------------------
+
+# Fehlt ein Werkzeug, wird NICHT blockiert (fail open). Ein Hook, der auf einem
+# anderen Rechner jeden Commit unmoeglich macht, waere schlimmer als keiner.
+for tool in git awk sed grep date; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        echo "[Leo pre-commit] HINWEIS: '$tool' nicht gefunden, Pruefungen uebersprungen."
+        exit 0
+    fi
+done
+
+staged=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=ACM -- '*.md' 2>/dev/null)
+[ -z "$staged" ] && exit 0
+added=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=A -- '*.md' 2>/dev/null)
+today=$(date +%Y-%m-%d)
+
+errors=""
+notes=""
+
+# Dateiklassen mit eigenem, in sich einheitlichem Schema (Skills, Sessionlogs,
+# generierte Indexdateien) sind vom Frontmatter-Standard ausgenommen. Identisch
+# zu health-check.ps1 Abschnitt 14 gehalten: Die beiden duerfen nicht
+# auseinanderdriften. Aenderst du eine der beiden Listen, zieh die andere nach.
+is_fm_exempt() {
+    case "$1" in
+        02_Skills/*|03_Sessionlogs/*|00_INDEX/*|04_Changelog/*) return 0 ;;
+    esac
+    case "${1##*/}" in
+        AGENTS.md|CLAUDE.md|GEMINI.md|_INDEX.md|README.md) return 0 ;;
+    esac
+    return 1
+}
+
+is_new_file() {
+    [ -n "$added" ] || return 1
+    printf '%s\n' "$added" | grep -qxF -- "$1"
+}
+
+# Nur die mechanisch gepflegten Indexdateien tragen echte AUTO-Bloecke. Andere
+# Dateien nennen die Marker in Prosa (AGENTS.md Abschnitt 7, README, Skills);
+# die duerfen nie blockieren.
+has_auto_blocks() {
+    case "$1" in
+        AGENTS.md|00_INDEX/INDEX.md|_INDEX.md|*/_INDEX.md) return 0 ;;
+    esac
+    return 1
+}
+
+# Die Schleife laeuft bewusst ueber eine Here-Doc-Umleitung statt ueber eine
+# Pipe: In einer Pipe liefe sie in einer Subshell, und die gesammelten Befunde
+# in $errors/$notes waeren nach dem Schleifenende wieder leer.
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+
+    # Geprueft wird der GESTAGETE Inhalt, nicht die Datei auf der Platte: Nur
+    # der landet im Commit. tr -d entfernt CR, falls eine Datei mit CRLF im
+    # Index liegt (core.autocrlf ist auf diesem Rechner true).
+    content=$(git show ":$f" 2>/dev/null | tr -d '\r')
+    [ -n "$content" ] || continue
+
+    # --- BLOCKIEREND 1: Merge-Konflikt-Marker ------------------------------
+    # Nur die Marker mit Inhalt danach ('<<<<<<< ' / '>>>>>>> '), NICHT die
+    # nackte Trennlinie '=======': die ist in Markdown eine legitime
+    # Ueberschriften-Unterstreichung. Gleiche Wahl wie in health-check.ps1.
+    if printf '%s\n' "$content" | grep -q -e '^<<<<<<< ' -e '^>>>>>>> '; then
+        lines=$(printf '%s\n' "$content" | grep -n -e '^<<<<<<< ' -e '^>>>>>>> ' | cut -d: -f1 | tr '\n' ' ')
+        errors="$errors
+  - $f: Merge-Konflikt-Marker im gestageten Inhalt (Zeile(n): $lines)"
+    fi
+
+    # --- BLOCKIEREND 2: AUTO-Bloecke in den Indexdateien -------------------
+    if has_auto_blocks "$f"; then
+        autoerr=$(printf '%s\n' "$content" | awk '
+            /^<!-- AUTO:[A-Za-z0-9_]+:BEGIN -->$/ {
+                name = $0; sub(/^<!-- AUTO:/, "", name); sub(/:BEGIN -->$/, "", name);
+                if (open != "") {
+                    printf "Zeile %d: BEGIN von AUTO:%s, obwohl AUTO:%s ab Zeile %d noch offen ist\n", NR, name, open, openline;
+                }
+                open = name; openline = NR; next;
+            }
+            /^<!-- AUTO:[A-Za-z0-9_]+:END -->$/ {
+                name = $0; sub(/^<!-- AUTO:/, "", name); sub(/:END -->$/, "", name);
+                if (open == "") {
+                    printf "Zeile %d: END von AUTO:%s ohne passendes BEGIN\n", NR, name;
+                } else if (open != name) {
+                    printf "Zeile %d: END von AUTO:%s schliesst das offene AUTO:%s (Zeile %d) nicht\n", NR, name, open, openline;
+                }
+                open = ""; next;
+            }
+            END { if (open != "") printf "AUTO:%s ab Zeile %d hat kein END\n", open, openline; }
+        ')
+        if [ -n "$autoerr" ]; then
+            errors="$errors
+  - $f: AUTO-Block beschaedigt. $(printf '%s' "$autoerr" | tr '\n' ';')"
+        fi
+    fi
+
+    # --- NUR HINWEIS 1: Frontmatter neuer Dateien --------------------------
+    if is_new_file "$f" && ! is_fm_exempt "$f"; then
+        if [ "$(printf '%s\n' "$content" | sed -n '1p')" != "---" ]; then
+            notes="$notes
+  - $f (neu): kein Frontmatter. Vorschlag: Kopf mit titel, zweck, type ergaenzen (AGENTS.md Abschnitt 5)."
+        else
+            fm=$(printf '%s\n' "$content" | awk 'NR==1 {next} /^---[[:space:]]*$/ {exit} {print}')
+            missing=""
+            for key in titel zweck type; do
+                printf '%s\n' "$fm" | grep -q "^$key:" || missing="$missing $key"
+            done
+            if [ -n "$missing" ]; then
+                notes="$notes
+  - $f (neu): Frontmatter unvollstaendig, fehlt:$missing. Vorschlag: ergaenzen (AGENTS.md Abschnitt 5)."
+            else
+                tv=$(printf '%s\n' "$fm" | sed -n 's/^type:[[:space:]]*//p' | head -1 | sed 's/[[:space:]]*$//')
+                case "$tv" in
+                    wissensnotiz|rohquelle|synthese|arbeitsdokument|rollen-regeln|themen-index|readme|basiskontext|systemdoku) ;;
+                    *)
+                        notes="$notes
+  - $f (neu): type '$tv' steht nicht in der Liste aus AGENTS.md Abschnitt 5. Vorschlag: auf einen zulaessigen Wert aendern, oder die Liste dort bewusst erweitern."
+                    ;;
+                esac
+            fi
+        fi
+    fi
+
+    # --- NUR HINWEIS 2: abgelaufenes gueltig_bis ---------------------------
+    gb=$(printf '%s\n' "$content" | sed -n 's/^gueltig_bis:[[:space:]]*\([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\).*/\1/p' | head -1)
+    if [ -n "$gb" ]; then
+        gbn=$(printf '%s' "$gb" | tr -d '-')
+        tdn=$(printf '%s' "$today" | tr -d '-')
+        if [ "$gbn" -lt "$tdn" ] 2>/dev/null; then
+            notes="$notes
+  - $f: gueltig_bis $gb ist abgelaufen (heute $today). Vorschlag: erledigt (Inhalt in die zustaendige Wissensdatei uebernehmen, Datei loeschen), verlaengern (neues Datum) oder als Historie behalten (gueltig_bis entfernen)."
+        fi
+    fi
+done <<EOF
+$staged
+EOF
+
+# Die Schleife lief in DIESER Shell (Here-Doc statt Pipe), $errors und $notes
+# sind hier also gefuellt.
+if [ -n "$notes" ]; then
+    echo "[Leo pre-commit] Hinweise (blockieren NICHT, Commit laeuft durch):$notes"
+fi
+
+if [ -n "$errors" ]; then
+    echo ""
+    echo "[Leo pre-commit] COMMIT ABGEBROCHEN, Beschaedigung im gestageten Inhalt:$errors"
+    echo ""
+    echo "  Beheben, neu stagen, erneut committen."
+    echo "  Bewusst trotzdem committen: git commit --no-verify"
+    exit 1
+fi
+
+exit 0

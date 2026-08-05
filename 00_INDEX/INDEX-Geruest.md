@@ -2,22 +2,23 @@
 titel: Index-Geruest (mechanisch erzeugt)
 zweck: Vollstaendige, deterministische Baumliste aller Markdown-Dateien im Repo
 type: index-geruest
-erzeugt: 2026-08-03 09:31
+erzeugt: 2026-08-05 12:19
 hinweis: Automatisch erzeugt. Nicht von Hand bearbeiten. Sicherheitsnetz und Delta-Quelle fuer die kuratierten Indizes.
 ---
 
 # Index-Geruest
 
-Mechanisch aus dem Dateisystem erzeugt am 2026-08-03 09:31. Volle Hierarchie, jede real existierende .md-Datei.
+Mechanisch aus dem Dateisystem erzeugt am 2026-08-05 12:19. Volle Hierarchie, jede real existierende .md-Datei.
 Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geaendert.
 
-- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 26.3 KB | 2026-08-03
-- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 18.3 KB | 2026-08-03
+- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 33.7 KB | 2026-08-05
+- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 20 KB | 2026-08-05
 - CLAUDE.md | CLAUDE.md | 1.1 KB | 2026-08-03
 - GEMINI.md | GEMINI.md | 1.5 KB | 2026-08-03
-- README.md | Leo: Dein Second Brain | 1.5 KB | 2026-08-03
+- README.md | Leo: Dein Second Brain | 1.5 KB | 2026-08-05
 - 00_INDEX\
   - README.md | 00_INDEX | 1.1 KB | 2026-07-17
+  - githooks\
   - scripts\
 - 01_Basiskontext\
   - Identity.md | Identity | 1.4 KB | 2026-07-17
@@ -26,9 +27,9 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - Voice and Style.md | Voice and Style | 3.9 KB | 2026-07-17
 - 02_Skills\
   - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 5.6 KB | 2026-07-17
-  - leo-system-health-check.md | Skill: System Health Check | 10 KB | 2026-08-03
+  - leo-system-health-check.md | Skill: System Health Check | 11.2 KB | 2026-08-05
   - leo-themenordner-anlegen.md | Skill: Themenordner anlegen | 4 KB | 2026-07-17
-  - leo-wrap-up.md | Skill: Leo Wrap-Up | 10.6 KB | 2026-08-03
+  - leo-wrap-up.md | Skill: Leo Wrap-Up | 11.6 KB | 2026-08-05
   - README.md | 02_Skills | 1.3 KB | 2026-07-17
   - Skill-Register.md | Skill-Register | 2.6 KB | 2026-08-03
 - 03_Sessionlogs\
@@ -42,7 +43,7 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - Manual.md | Manual: So nutzt du dein KI-System | 4.8 KB | 2026-08-03
   - Modellwahl.md | Modellwahl (Stand: siehe `stand:` im Frontmatter) | 3.7 KB | 2026-08-03
   - README.md | 10_System | 0.7 KB | 2026-08-03
-  - Technik.md | Technik: Probleme, Lösungen, Begründungen | 7.2 KB | 2026-08-03
+  - Technik.md | Technik: Probleme, Lösungen, Begründungen | 9.6 KB | 2026-08-05
   - Zielsetzung.md | Zielsetzung: Warum dieses System existiert | 3.6 KB | 2026-08-03
 - 90_Inbox\
   - README.md | 90_Inbox | 0.6 KB | 2026-07-17

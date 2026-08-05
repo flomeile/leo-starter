@@ -3,7 +3,7 @@ name: leo-system-health-check
 trigger: '"system health check", "health check", "system prüfen", "systemcheck", "ist alles gesund", "gesundheitscheck system", "alles aktuell", "system aktualisieren", "auf vordermann bringen", "index aktualisieren", "index neu bauen", "inbox aufraeumen", "ablage aufraeumen", "hygiene"'
 zweck: One-Button-Wartung des Gesamtsystems - prüft alles, behebt sicher Behebbares selbst (Index-Beschreibungen, stand-Daten, Register), behandelt die Inbox, schreibt den Health-Check-Zeitstempel und schliesst mit Commit + Push ab
 type: skill
-version: 1.1-starter
+version: 1.2-starter
 ---
 
 # Skill: System Health Check
@@ -27,7 +27,7 @@ Damit die Diagnose den aktuellen Stand prüft. Falls das Skript einen Datei-Sper
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\health-check.ps1"
 ```
-Das Skript ist rein lesend und prüft deterministisch: Git/Versionierung, Scheduled Task, Auto-Block-Integrität, Themenordner-Registrierung, Index-Abdeckung (kuratierte Beschreibungen), Skill-Registry, Encoding, Inbox, Basiskontext, Portabilitätsdateien, Harness-Memory-Füllstand (meldet jeden Fund als Handlungsbedarf, weil ein harness-eigener Memory-Speicher für Leo nicht zugelassen ist: Root-`AGENTS.md` Abschnitt 1), tote Verweise (Wikilinks und Markdown-Links auf `.md`-Dateien), den Frontmatter-Standard für neu angelegte Dateien sowie den kompletten `stand:`-Workflow für dynamische Dokumente: (a) veraltete Stände (> 60 Tage), (b) nicht nachgeführte Stände, (c) fehlende Kennzeichnung. Jede Zeile trägt `[OK]`, `[INFO]`, `[WARN]` oder `[FAIL]`; am Ende steht ein VERDIKT (Exit Code 0/1/2).
+Das Skript ist rein lesend und prüft deterministisch: Git/Versionierung (inkl. gesetztem `core.hooksPath` für den Pre-Commit-Hook), Scheduled Task, Auto-Block-Integrität, Themenordner-Registrierung, Index-Abdeckung (kuratierte Beschreibungen), Skill-Registry, Encoding, Inbox, Basiskontext, Portabilitätsdateien, Harness-Memory-Füllstand (meldet jeden Fund als Handlungsbedarf, weil ein harness-eigener Memory-Speicher für Leo nicht zugelassen ist: Root-`AGENTS.md` Abschnitt 1), tote Verweise (Wikilinks und Markdown-Links auf `.md`-Dateien), den Frontmatter-Standard für neu angelegte Dateien sowie den kompletten `stand:`-Workflow für dynamische Dokumente: (a) veraltete Stände (> 60 Tage, ausgenommen Dateien mit eigenem `gueltig_bis`), (b) nicht nachgeführte Stände, (c) fehlende Kennzeichnung, (d) abgelaufenes `gueltig_bis`. Jede Zeile trägt `[OK]`, `[INFO]`, `[WARN]` oder `[FAIL]`; am Ende steht ein VERDIKT (Exit Code 0/1/2).
 
 ### 3. Sicher Behebbares direkt beheben (nicht fragen, machen)
 Für jeden Befund zuerst einordnen: bekannte, abgestimmte Ausnahme (im Bericht kennzeichnen, keine Aktion) oder echter Handlungsbedarf. Dann direkt beheben, was mechanisch sicher ist:
@@ -51,7 +51,12 @@ Move-Item -Path "C:\Leo\90_Inbox\<datei>" -Destination "C:\Leo\<zielordner>\<neu
 ```
 
 ### 5. Entscheidungsbedarf sammeln (nicht eigenmächtig handeln)
-Befunde, die eine Entscheidung brauchen, klar benennen und je einen konkreten Vorschlag machen, aber nicht selbst entscheiden: `stand:`-Daten älter als 60 Tage, git behind/Konflikte, deaktivierter Scheduled Task, Portabilitäts-Drift, grosse Aufräumaktionen, alles rund um `01_Basiskontext`. Meldet der Check, dass sich das Harness-Memory gefüllt hat (WARN Harness-Memory): **kein Repo-Mirror** (das ist bewusst ausgeschlossen, Root-`AGENTS.md` Abschnitt 1) - stattdessen jede Datei kurz lesen, Inhalt mit Dauerwert in die passende Repo-Datei migrieren (Basiskontext-Ziele mit Bestätigung, alles andere direkt), danach die Harness-Memory-Datei löschen. Im Bericht kurz auflisten, was migriert und gelöscht wurde.
+
+**Jeder offene Befund wird so vorgelegt, dass ein "ja" genügt.** Nicht "die Datei X ist abgelaufen, was möchtest du tun?", sondern der fertig ausformulierte Zug: welche Datei, welche Aktion, welcher konkrete Wert oder Wortlaut, und was danach anders ist. Der Repo-Besitzer soll bestätigen, nicht die Lösung selbst ausarbeiten. Gibt es mehr als einen sinnvollen Weg, kommen maximal drei Varianten, davon eine begründet empfohlen und zuerst genannt. Formulierungsmuster: "Vorschlag: `gueltig_bis` in `<Datei>` auf 2026-09-30 verlängern, weil der Termin verschoben wurde. Ja?"
+
+Befunde, die eine Entscheidung brauchen, klar benennen und je einen konkreten Vorschlag machen, aber nicht selbst entscheiden:
+- **Abgelaufenes `gueltig_bis`** (Root-`AGENTS.md`, Abschnitt 7): Datei kurz anlesen und einen der drei Wege vorschlagen: erledigt (verbliebenes Dauerwissen in die zuständige Wissensdatei übernehmen, Datei löschen), verlängern (konkretes neues Datum nennen) oder als Historie behalten (`gueltig_bis` entfernen, damit die Datei aus der Prüfung fällt). Löschen und Übernehmen passieren erst nach einem Ja, das Feld selbst darf der Skill nicht eigenmächtig entfernen.
+- Dazu: `stand:`-Daten älter als 60 Tage, git behind/Konflikte, deaktivierter Scheduled Task, Portabilitäts-Drift, grosse Aufräumaktionen, alles rund um `01_Basiskontext`. Meldet der Check, dass sich das Harness-Memory gefüllt hat (WARN Harness-Memory): **kein Repo-Mirror** (das ist bewusst ausgeschlossen, Root-`AGENTS.md` Abschnitt 1) - stattdessen jede Datei kurz lesen, Inhalt mit Dauerwert in die passende Repo-Datei migrieren (Basiskontext-Ziele mit Bestätigung, alles andere direkt), danach die Harness-Memory-Datei löschen. Im Bericht kurz auflisten, was migriert und gelöscht wurde.
 
 ### 6. Erneut prüfen
 Nach Korrekturen Schritt 1 und 2 wiederholen, bis der Bericht stabil ist. Kritische FAILs (Merge-Konflikt-Marker, kaputte Auto-Blöcke, doppelte Ordnernummern, unregistrierte Themenordner) IMMER beheben oder explizit als offen benennen.
@@ -79,7 +84,7 @@ Ruft ein anderer Skill diesen Skill auf (z.B. Wrap-Up), gilt dessen Commit-Messa
 Drei Teile plus Verdikt:
 - **Automatisch behoben:** <Liste>.
 - **Bekannte Ausnahmen (keine Aktion nötig):** <Liste>.
-- **Offen, braucht eine Entscheidung:** <Liste mit je einer konkreten Empfehlung>.
+- **Offen, braucht eine Entscheidung:** <Liste mit je einem umsetzungsfertigen Vorschlag, den ein "ja" auslöst (siehe Schritt 5)>.
 - Verdikt in einem Satz: "System aktuell und gepusht" / "System aktuell mit offenen Hinweisen" / "System NICHT einsatzbereit, folgendes zuerst klären: ...".
 
 ## Regeln

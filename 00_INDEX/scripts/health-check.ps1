@@ -90,6 +90,24 @@ if (-not (Test-Path (Join-Path $repo ".git"))) {
     } else {
         Add-Check "OK" $cat "Keine Merge-Konflikt-Marker in .md-Dateien."
     }
+
+    # 1b) Pre-Commit-Hook: IST core.hooksPath gesetzt, und liegt der Hook dort?
+    # Der Hook ist versioniert, die EINSTELLUNG nicht: Auf einem neuen Rechner
+    # (oder nach einem frischen Clone) existiert die Datei, greift aber nicht.
+    # Ohne diese Pruefung waere die Durchsetzung still abwesend - ein Check, der
+    # nichts prueft und trotzdem gruen meldet, ist gefaehrlicher als keiner.
+    $expectedHooks = "00_INDEX/githooks"
+    $hooksPath = (& git -C $repo config core.hooksPath 2>$null | Select-Object -First 1)
+    $hookFile = Join-Path $repo "00_INDEX\githooks\pre-commit"
+    if (-not (Test-Path $hookFile)) {
+        Add-Check "FAIL" $cat "Die Hook-Datei 00_INDEX\githooks\pre-commit fehlt im Repo - der Schutz gegen Konflikt-Marker und zerstoerte AUTO-Bloecke ist weg."
+    } elseif ([string]::IsNullOrWhiteSpace($hooksPath)) {
+        Add-Check "FAIL" $cat "core.hooksPath ist NICHT gesetzt: der Pre-Commit-Hook liegt zwar im Repo, wird aber von Git ignoriert. Einmalig setzen mit: git config core.hooksPath $expectedHooks"
+    } elseif (($hooksPath -replace '\\', '/').TrimEnd('/') -ne $expectedHooks) {
+        Add-Check "WARN" $cat "core.hooksPath zeigt auf '$hooksPath' statt auf '$expectedHooks' - der Hook laeuft so nicht. Pruefen und ggf. korrigieren: git config core.hooksPath $expectedHooks"
+    } else {
+        Add-Check "OK" $cat "Pre-Commit-Hook aktiv (core.hooksPath = $expectedHooks, Hook-Datei vorhanden)."
+    }
 }
 Write-Output "Git-Checks erledigt."
 
@@ -283,11 +301,19 @@ if ($orphanedRoot.Count -gt 0) {
 Write-Output "Index-Abdeckungs-Checks erledigt."
 
 # ---------------------------------------------------------------------------
-# 6) VERALTETE "stand:"-DATEN (> 60 Tage)
+# 6) VERALTETE "stand:"-DATEN (> 60 Tage) UND ABGELAUFENE "gueltig_bis:"-DATEN
 # ---------------------------------------------------------------------------
 $cat = "Aktualitaet"
 $staleFiles = @()
 $driftFiles = @()
+# 'gueltig_bis:' (optional, AGENTS.md Abschnitt 7) ist die Gegenrichtung zu 'stand:':
+# nicht "wann zuletzt geprueft", sondern "ab wann wertlos". Gelesen wird "gueltig bis
+# einschliesslich", abgelaufen ist eine Datei also erst am Tag NACH dem eingetragenen
+# Datum. Zwei Wirkungen: abgelaufene Dateien werden gemeldet, und Dateien mit eigenem
+# Ablaufdatum sind von der pauschalen 60-Tage-Warnung ausgenommen. Letzteres ist
+# Absicht: Eine Meeting-Vorbereitung ist nach 60 Tagen tot, ein Strategiepapier nicht,
+# und eine Datei, die ihre Frist selbst mitbringt, braucht die grobe Heuristik nicht.
+$expiredFiles = @()
 # Drift-Ausnahmen: Rohquellen, deren 'stand:' bewusst das Datum des Ursprungsdokuments
 # traegt (z.B. Datum einer eingelesenen PDF), nicht das Datum der letzten Git-Aenderung
 # (die oft nur die Uebernahme ins Repo ist). Hier bewusst leer; bei Bedarf selbst
@@ -306,12 +332,23 @@ $knownDriftExceptions = @(
 $mechanicalCommits = @(
 )
 Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name -ne "_INDEX.md" -and $_.FullName -notmatch $excludedDirPattern } | ForEach-Object {
+    $hasExpiry = $false
+    $gb = Select-String -Path $_.FullName -Pattern '^gueltig_bis:\s*(\d{4}-\d{2}-\d{2})' -List -ErrorAction SilentlyContinue
+    if ($gb) {
+        $hasExpiry = $true
+        $gbStr = $gb.Matches[0].Groups[1].Value
+        $gbDate = [datetime]::ParseExact($gbStr, "yyyy-MM-dd", $null)
+        if ((Get-Date).Date -gt $gbDate.Date) {
+            $expiredDays = (New-TimeSpan -Start $gbDate.Date -End (Get-Date).Date).Days
+            $expiredFiles += "$($_.FullName.Substring($repo.Length + 1)) (gueltig_bis $gbStr, seit $expiredDays Tag(en) abgelaufen)"
+        }
+    }
     $m = Select-String -Path $_.FullName -Pattern '^stand:\s*(\d{4}-\d{2}-\d{2})' -List -ErrorAction SilentlyContinue
     if ($m) {
         $standStr = $m.Matches[0].Groups[1].Value
         $d = [datetime]::ParseExact($standStr, "yyyy-MM-dd", $null)
         $age = (New-TimeSpan -Start $d -End (Get-Date)).Days
-        if ($age -gt 60) {
+        if ($age -gt 60 -and -not $hasExpiry) {
             $staleFiles += "$($_.FullName.Substring($repo.Length + 1)) (Stand $standStr, $age Tage alt)"
         }
         # 6b) Drift: Datei wurde laut Git DEUTLICH nach dem eingetragenen stand:
@@ -344,7 +381,12 @@ Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name
 if ($staleFiles.Count -gt 0) {
     Add-Check "WARN" $cat "$($staleFiles.Count) Datei(en) mit 'stand:' aelter als 60 Tage: $($staleFiles -join ' | ')"
 } else {
-    Add-Check "OK" $cat "Keine 'stand:'-Datumsangabe aelter als 60 Tage."
+    Add-Check "OK" $cat "Keine 'stand:'-Datumsangabe aelter als 60 Tage (Dateien mit eigenem 'gueltig_bis' sind hier ausgenommen)."
+}
+if ($expiredFiles.Count -gt 0) {
+    Add-Check "WARN" $cat "$($expiredFiles.Count) Datei(en) mit abgelaufenem 'gueltig_bis': $($expiredFiles -join ' | ') - je Datei entscheiden: erledigt (Inhalt in die zustaendige Wissensdatei uebernehmen und Datei loeschen), verlaengern (neues Datum) oder als Historie behalten ('gueltig_bis' entfernen)."
+} else {
+    Add-Check "OK" $cat "Keine Datei mit abgelaufenem 'gueltig_bis'."
 }
 if ($driftFiles.Count -gt 0) {
     Add-Check "WARN" $cat "$($driftFiles.Count) Datei(en) wurden nach ihrem 'stand:'-Datum weiter geaendert, ohne dass stand: nachgefuehrt wurde: $($driftFiles -join ' | ')"
