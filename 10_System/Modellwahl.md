@@ -2,7 +2,7 @@
 titel: Modellwahl
 zweck: Aktuelle Modellempfehlungen für den Betrieb des Systems
 type: systemdoku
-stand: 2026-07-17
+stand: 2026-08-03
 ---
 
 # Modellwahl (Stand: siehe `stand:` im Frontmatter)
