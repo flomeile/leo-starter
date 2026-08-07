@@ -2,8 +2,8 @@
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
-version: 1.1-starter
-letzte_aenderung: 2026-08-03
+version: 1.3-starter
+letzte_aenderung: 2026-08-07
 ---
 
 # Skill-Register
@@ -20,6 +20,7 @@ Namenskonvention: Alle Skill-Dateien tragen das Präfix `leo-`. Das macht sichtb
 | Leo Wrap-Up | "wrap up", "session speichern", "zusammenfassen und ablegen", "session beenden" | 02_Skills/leo-wrap-up.md | Session zusammenfassen, in 03_Sessionlogs ablegen; Lernschleife: Dauerwissen in die steuernden Dateien zurückschreiben, fehlende Wissensdateien anlegen, Überholtes ersetzen, sofort indexieren; vollen Health Check nur bei Bedarf |
 | Leo Themenordner anlegen | "neuer themenordner", "themenordner anlegen", "neues thema anlegen" | 02_Skills/leo-themenordner-anlegen.md | Neuen Themenordner vollständig anlegen (README, AGENTS.md, Routing, Index) |
 | Leo Skill erstellen | "neuen skill", "skill erstellen", "skill bauen" | 02_Skills/leo-skill-ersteller.md | Baut einen neuen Skill normgerecht (inkl. Präfix) und trägt ihn ins Register ein |
+| Leo Mechanik-Update | "mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen" | 02_Skills/leo-mechanik-update.md | Holt Verbesserungen am Grundgerüst von GitHub und arbeitet sie ein, ohne eigene Anpassungen und eigene Skills zu beschädigen |
 
 ## Regel
 Wenn ein neuer Skill gebaut wird (via Skill-Ersteller), wird diese Tabelle ergänzt. Trigger-Worte müssen eindeutig bleiben. Neue Skill-Dateien tragen immer das Präfix `leo-`.

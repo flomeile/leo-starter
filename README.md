@@ -8,7 +8,9 @@ type: readme
 
 Harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematischen Ordnern; jedes LLM mit Datei- und Werkzeug-Zugriff kann darauf arbeiten.
 
-Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.2). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
+Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.3). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
+
+Das Gerüst wird weiterentwickelt. Verbesserungen holst du dir später mit einem Satz an deinen Agenten ("mechanik update"), ohne dass deine Inhalte, deine Personalisierung oder deine selbstgebauten Skills angetastet werden. Wie das abgesichert ist, steht in `ANLEITUNG.md`, Teil 8 und in `10_System\Kern-Dateien.md`.
 
 ## Zuerst lesen
 
@@ -16,7 +18,7 @@ Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.2). Es enthält die ko
 
 ## Einstieg (nach der Einrichtung)
 
-- **Für LLMs und Agents:** `AGENTS.md` im Root (Master-Anweisung). Themenordner haben eigene lokale `AGENTS.md` (Rollen).
+- **Für LLMs und Agents:** `AGENTS.md` im Root (Master-Anweisung, Mechanik) plus `MEIN-SYSTEM.md` (deine persönliche Ebene darüber, hat bei Widerspruch Vorrang). Themenordner haben eigene lokale `AGENTS.md` (Rollen).
 - **Für dich:** `10_System\Manual.md` (Bedienung: welches Werkzeug wofür, wie prompten, Wartung).
 - **Landkarte:** `00_INDEX\INDEX.md` (Baum + Bereiche), lokale `_INDEX.md` je Themenordner.
 

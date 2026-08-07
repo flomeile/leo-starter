@@ -1,4 +1,4 @@
----
+﻿---
 titel: INDEX (Landkarte des Leo)
 zweck: Einstiegspunkt der Agentic Search; Hierarchie, Bereiche, Systemdateien
 type: index
@@ -14,16 +14,16 @@ Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themeno
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-08-05 12:19 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-08-07 10:02 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)
   - scripts\  (0 Dateien)
 - 01_Basiskontext\  (4 Dateien)
-- 02_Skills\  (6 Dateien)
+- 02_Skills\  (7 Dateien)
 - 03_Sessionlogs\  (1 Dateien)
 - 04_Changelog\  (2 Dateien)
-- 10_System\  (7 Dateien)
+- 10_System\  (8 Dateien)
 - 90_Inbox\  (1 Dateien)
 <!-- AUTO:BAUM:END -->
 
@@ -40,8 +40,9 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 ### Root
 
 - **AGENTS.md** — Master-Anweisung für jedes LLM: Grundprinzip inkl. YAGNI-Prüfung, Rollen-Routing, Werkzeuge, Suchstrategie, Ablage, Anti-Halluzination, Aktualität, Session-Wissen und Lernschleife, Index-Regeln, Skills, Versionierung, Kosten, Datenschutz, Live-Daten, externe Tools. Zu Sessionbeginn lesen.
-- **CLAUDE.md** — Minimaler Verweis auf AGENTS.md (für Harnesses, die CLAUDE.md automatisch laden).
-- **GEMINI.md** — Minimaler Verweis auf AGENTS.md (für Gemini CLI, das standardmässig GEMINI.md lädt).
+- **MEIN-SYSTEM.md** — Die persönliche Ebene über der AGENTS.md: wer `[NAME]` ist, wie das System hier heisst und wo es liegt, eigene Regeln (haben Vorrang vor der AGENTS.md), eigene Skills und Ordner, eingespielte Version des Grundgerüsts, Setup-Notizen. Wird von Updates nie angefasst. In jeder Session zusammen mit der AGENTS.md lesen.
+- **CLAUDE.md** — Minimaler Verweis auf AGENTS.md und MEIN-SYSTEM.md (für Harnesses, die CLAUDE.md automatisch laden).
+- **GEMINI.md** — Minimaler Verweis auf AGENTS.md und MEIN-SYSTEM.md (für Gemini CLI, das standardmässig GEMINI.md lädt).
 - **README.md** — Einstieg für Menschen: was das Repo ist, Struktur-Kurzfassung, Verweis auf ANLEITUNG.md.
 - **ANLEITUNG.md** — Sinn und Funktionsweise von Leo plus die Schritt-für-Schritt-Ersteinrichtung (Repo, Git, Scheduler, Harness, Personalisierung).
 
@@ -58,6 +59,7 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 - **02_Skills\leo-wrap-up.md** — Session zusammenfassen, in 03_Sessionlogs ablegen, Lernschleife (Dauerwissen in die steuernden Dateien zurückschreiben, fehlende Wissensdateien anlegen, Überholtes ersetzen, sofort indexieren); vollen Health-Check nur bei Bedarf.
 - **02_Skills\leo-themenordner-anlegen.md** — Neuen Themenordner vollständig anlegen (Ordner, README, lokale AGENTS.md, Index; Routing zieht das Skript nach).
 - **02_Skills\leo-skill-ersteller.md** — Norm und Anleitung, um neue Skills zu bauen (inkl. leo-Präfix und Definition of Done) und ins Register einzutragen.
+- **02_Skills\leo-mechanik-update.md** — Holt Verbesserungen am Grundgerüst von GitHub (`upstream`-Remote, Versions-Tags) und arbeitet sie ein, ohne eigene Anpassungen zu beschädigen: erst committen als Rückweg, Kern-Dateien nur dort ersetzen, wo lokal nichts geändert wurde, sonst einarbeiten, eigene Skills gegen die neuen Konventionen prüfen, Stand in MEIN-SYSTEM.md fortschreiben.
 
 ### 03_Sessionlogs / 04_Changelog
 
@@ -71,4 +73,5 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 - **10_System\Technik.md** — Technische Lösungen und Umgebung mit Problem/Lösung/Begründung: Agentic Search, PowerShell-Volltextsuche, Index-Hybrid, Encoding/BOM, Scan-Ausschlüsse, kein Harness-Memory.
 - **10_System\Manual.md** — Bedienungsanleitung: welches Werkzeug wofür, Projekt-Setup, Prompting-Muster, Skills, Wrap-Up, Rollback, Wartung.
 - **10_System\Modellwahl.md** — Modellempfehlungen für den Betrieb, mit Stand-Datum und Aktualisierungs-Anleitung.
+- **10_System\Kern-Dateien.md** — Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen (Kategorie A), welche nur eingearbeitet werden (B) und welche dir gehören und nie angefasst werden (C). Grundlage für den Skill `leo-mechanik-update`.
 - **10_System\AGENTS.md** — Lokale Rollen-Datei: System-Experte.

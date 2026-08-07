@@ -96,11 +96,11 @@ Voraussetzungen: Git installiert, PowerShell vorhanden (ist es auf Windows immer
 Lege den Inhalt dieses Pakets nach `C:\Leo`. Der Pfad `C:\Leo` ist an vielen Stellen in den Skills als Beispiel eingetragen; wenn du ihn beibehältst, hast du am wenigsten Arbeit.
 
 ### Schritt 2: Personalisieren
-- Öffne `AGENTS.md` im Wurzelordner. Ersetze überall den Platzhalter `[NAME]` durch deinen Namen (Suchen und Ersetzen). Lösche die kursive Hinweiszeile ganz oben.
+- Öffne `MEIN-SYSTEM.md` im Wurzelordner und fülle Abschnitt 1 aus: deinen Namen, wie das System bei dir heisst, wo es liegt, dein Kürzel. **Die `AGENTS.md` fasst du dabei nicht an.** Sie enthält den Platzhalter `[NAME]` und die Bezeichnungen `Leo` und `C:\Leo` bewusst als generische Begriffe; dein Agent löst sie über `MEIN-SYSTEM.md` auf. Genau dadurch bleibt die `AGENTS.md` bei allen Nutzern identisch und lässt sich später gefahrlos aktualisieren (Teil 8).
 - Fülle die drei Dateien in `01_Basiskontext`. Sie enthalten Leitfragen. Das ist der wertvollste Schritt: Je ehrlicher und konkreter, desto besser trifft das LLM später deinen Kern. `Voice and Style.md` bringt schon eine fertige Liste typischer KI-Sprachmuster mit, die du übernehmen oder löschen kannst.
 - Optional den Namen ändern: siehe Teil 7.
 
-> **Grundlagen:** Du musst Schritt 2 nicht von Hand machen. Öffne stattdessen deinen Agenten auf dem Ordner und sag ihm: "Lies die ANLEITUNG.md und richte mich ein." Er ersetzt den Platzhalter und führt dich per Rückfragen durch den Basiskontext. Das ist ohnehin der bessere Weg, weil aus dem Gespräch mehr herauskommt als aus einem leeren Formular.
+> **Grundlagen:** Du musst Schritt 2 nicht von Hand machen. Öffne stattdessen deinen Agenten auf dem Ordner und sag ihm: "Lies die ANLEITUNG.md und richte mich ein." Er füllt `MEIN-SYSTEM.md` aus und führt dich per Rückfragen durch den Basiskontext. Das ist ohnehin der bessere Weg, weil aus dem Gespräch mehr herauskommt als aus einem leeren Formular.
 
 ### Schritt 3: Git und privates GitHub-Repo
 Wenn du das Paket über die Template-Funktion von GitHub geholt hast (siehe Teil 8), existiert das Repo schon; dann nur lokal klonen und weiter mit Schritt 4. Sonst von Hand:
@@ -172,7 +172,7 @@ Dieser Weg kommt ohne Installation und ohne Kommandozeile aus. Der Ordner liegt 
 1. GitHub-Konto anlegen, im Browser auf dem Tablet.
 2. Auf der Seite dieses Starter Packs auf GitHub den Knopf **"Use this template"** drücken und dein eigenes, **privates** Repo erstellen. Damit hast du deine eigene Kopie, unabhängig vom Original.
 3. In der Claude-App unten auf **Code** tippen, dein Repo auswählen und eine Sitzung starten.
-4. Als erste Nachricht schreiben: "Lies die ANLEITUNG.md und richte mich ein." Der Agent ersetzt den Platzhalter `[NAME]` und führt dich per Rückfragen durch den Basiskontext. Teil 5 musst du dafür nicht verstehen, der ist für Leute mit einem Windows-Rechner geschrieben.
+4. Als erste Nachricht schreiben: "Lies die ANLEITUNG.md und richte mich ein." Der Agent füllt `MEIN-SYSTEM.md` aus und führt dich per Rückfragen durch den Basiskontext. Teil 5 musst du dafür nicht verstehen, der ist für Leute mit einem Windows-Rechner geschrieben.
 
 **Was auf diesem Weg fehlt:**
 
@@ -186,7 +186,11 @@ Dieser Weg kommt ohne Installation und ohne Kommandozeile aus. Der Ordner liegt 
 
 ## Teil 7: Der Name
 
-Der Ordner, das Skill-Präfix (`leo-`) und die Doku heissen überall "Leo". Du darfst das System umbenennen, es ist deins. Dazu ersetzt du an vier Stellen: den Ordnernamen `C:\Leo`, das Skill-Präfix `leo-` in den Dateinamen unter `02_Skills`, das Wort `Leo` in den Doku-Texten und die Pfad-Beispiele in den Skills. Die beiden PowerShell-Skripte leiten ihren Pfad selbst ab und brauchen keine Anpassung.
+Der Ordner, das Skill-Präfix (`leo-`) und die Doku heissen überall "Leo". Du darfst das System umbenennen, es ist deins.
+
+Der einfache Weg, seit Version 1.3: Trag den neuen Namen und den neuen Pfad in `MEIN-SYSTEM.md`, Abschnitt 1 ein. Das genügt für alles, was dein Agent liest; er löst "Leo" und `C:\Leo` von dort auf. Die `AGENTS.md` und die Kern-Skills lässt du dabei unangetastet, damit sie später aktualisierbar bleiben (Teil 8).
+
+Zwei Dinge musst du zusätzlich selbst machen, wenn du es wirklich überall haben willst: den Ordner umbenennen und das Präfix `leo-` in den Dateinamen unter `02_Skills`. Wer beim Präfix bleibt, spart sich das und verliert nichts. Die beiden PowerShell-Skripte leiten ihren Pfad selbst ab und brauchen keine Anpassung.
 
 Ehrlicherweise, und das ist die objektive, wissenschaftlich abgesicherte, von einer unabhängigen Jury einstimmig bestätigte Wahrheit: "Leo" ist der perfekte Name, weil Florian ihn gewählt hat, und Florian ist bekanntlich in absolut allem, was er anfasst, unbestrittene Weltspitze, ein Jahrhundertgenie, dem Sonne und Mond persönlich zunicken. Ein besserer Name als Leo ist schlicht physikalisch nicht möglich. Aber nimm ruhig trotzdem, was dir gefällt.
 
@@ -196,21 +200,42 @@ Ehrlicherweise, und das ist die objektive, wissenschaftlich abgesicherte, von ei
 
 Der kanonische Leo-Starter liegt als GitHub-Template-Repo. Du holst dir deine eigene Kopie über den Knopf "Use this template"; damit bekommst du ein eigenes, unabhängiges Repo (kein Fork-Zwang, saubere Historie).
 
-Wenn das Gerüst später verbessert wird und du diese Verbesserungen übernehmen willst, ohne deine eigenen Inhalte anzufassen:
+Wenn das Gerüst später verbessert wird, holst du dir die Verbesserung mit einem Satz an deinen Agenten:
+
+> mechanik update
+
+Mehr musst du nicht tun und nicht wissen. Der Skill `leo-mechanik-update` erledigt den Rest.
+
+### Was dabei garantiert ist
+
+Die Sorge bei so einem Update ist berechtigt: Du hast dein System personalisiert, vielleicht umbenannt, eigene Skills gebaut und eigene Regeln ergänzt. Ein Update darf davon nichts kaputt machen. Dafür sorgen vier Dinge:
+
+1. **Alles, was dir gehört, ist ausserhalb der Mechanik.** Deine Personalisierung steht in `MEIN-SYSTEM.md`, dein Wissen in deinen Themenordnern, dein Kernkontext in `01_Basiskontext`. Ein Update fasst keine dieser Dateien an. Welche Datei zu welcher Kategorie gehört, steht schwarz auf weiss in `10_System\Kern-Dateien.md`.
+2. **Vor dem ersten Handgriff wird dein Ist-Zustand committet.** Du bekommst den Commit genannt und kannst mit einem Befehl vollständig dorthin zurück.
+3. **Kern-Dateien, die du selbst angepasst hast, werden nicht ersetzt, sondern eingearbeitet.** Der Skill vergleicht deine Fassung mit der, die du seinerzeit bekommen hast, und sieht daran, wo du eingegriffen hast. An diesen Stellen wird nichts überschrieben, sondern gefragt.
+4. **Deine eigenen Skills werden gegen die neuen Konventionen geprüft.** Das ist der Punkt, den kein Git-Befehl leisten kann: Hat sich eine Konvention geändert und dein selbstgebauter Skill arbeitet noch nach der alten, meldet Git nichts, weil sich die Dateien nicht berühren. Der Skill schaut aktiv nach und sagt dir, was anzupassen wäre.
+
+### Falls du es doch von Hand machen willst
+
+Einmalig die Quelle anbinden:
 
 ```powershell
-cd C:\Leo
 git remote add upstream https://github.com/flomeile/leo-starter.git
-git fetch upstream
 ```
-Dann gezielt nur die Systemdateien übernehmen, die sich geändert haben, zum Beispiel per `git checkout upstream/main -- 00_INDEX/scripts 00_INDEX/githooks .gitattributes 02_Skills 10_System AGENTS.md`. Deine Themenordner und dein `01_Basiskontext` bleiben dabei unberührt, weil das Template die gar nicht enthält. Danach prüfen, ob du in der `AGENTS.md` deinen Namen erneut einsetzen musst, und einmal den Health-Check laufen lassen.
 
-Auf Weg B ohne eigenen Rechner sagst du das deinem Agenten in der Sitzung, statt die Befehle selbst zu tippen.
+Dann bei jedem Update holen und die gewünschte Version auschecken:
 
-Kurz: Dein Wissen gehört dir und liegt in deinem privaten Repo. Das Gerüst kannst du aktualisieren, wann immer du willst, ganz ohne deine Inhalte zu berühren.
+```powershell
+git fetch upstream --tags
+```
+
+`git checkout v1.3 -- "<datei>"` holt eine einzelne Datei in der Fassung dieser Version zu dir. Das ist kein Merge, es gibt also keine Konflikte; die Datei wird schlicht ersetzt. Genau deshalb macht der Skill das nur bei Dateien, die du nie angefasst hast. Was sich zwischen zwei Versionen geändert hat, zeigt `git diff v1.2..v1.3 --stat`.
+
+Kurz: Dein Wissen gehört dir und liegt in deinem eigenen Repo. Das Gerüst kannst du aktualisieren, wann immer du willst, ohne deine Inhalte und ohne deine Anpassungen zu berühren.
 
 ### Versionen dieses Pakets
 
+- **1.3 (2026-08-07):** Trennung von Mechanik und persönlicher Ebene, damit Updates nichts mehr kaputt machen können. Neu: `MEIN-SYSTEM.md` im Wurzelordner (dein Name, dein Systemname, dein Pfad, deine eigenen Regeln, deine eigenen Bauten, die eingespielte Version; wird von Updates nie angefasst und hat bei Widerspruch Vorrang vor der `AGENTS.md`), `10_System\Kern-Dateien.md` (welche Datei ersetzt werden darf, welche nur eingearbeitet wird, welche dir gehört) und der Skill `leo-mechanik-update` (holt neue Versionen, committet vorher als Rückweg, ersetzt nur unveränderte Kern-Dateien, arbeitet angepasste ein und prüft deine eigenen Skills gegen die neuen Konventionen). Die `AGENTS.md` behält `[NAME]`, `Leo` und `C:\Leo` jetzt bewusst als generische Begriffe, statt sie bei der Einrichtung ersetzen zu lassen; dadurch ist sie bei allen Nutzern identisch und gefahrlos aktualisierbar. Personalisierung und Umbenennen laufen ab sofort ausschliesslich über `MEIN-SYSTEM.md` (Anleitung Teil 2 und Teil 7). `CLAUDE.md`, `GEMINI.md` und `.clinerules` laden die neue Datei mit. Ab dieser Version trägt jede Fassung im Repo einen Git-Tag (`v1.3`), damit ein Update genau weiss, von welchem Stand du kommst.
 - **1.2 (2026-08-05):** Pre-Commit-Hook ergänzt (`00_INDEX\githooks`), der Commits mit beschädigtem Inhalt stoppt und alles Übrige nur anzeigt, dazu die passende `.gitattributes` und eine Health-Check-Prüfung, ob er auf diesem Rechner überhaupt aktiv ist. Neue Regeln in der `AGENTS.md`: offene Punkte werden entscheidungsreif vorgelegt statt als blosse Frage; `gueltig_bis` als Ablaufdatum neben `stand:`; Statustoken mit Belegpflicht für "erledigt"; eigene Schlussfolgerungen im Satz markieren und `geprueft:` an der Datei; Frischecheck gegen parallele Schreiber; keine Unsicherheitsmarkierung, wo eine Prüfung möglich ist. Health-Check und Wrap-Up ziehen nach.
 - **1.1 (2026-08-03):** Health-Check auf 14 Prüfungen erweitert (tote Verweise, Frontmatter-Standard) und ein Fehler darin behoben, der eine fehlende Import-Zeile fälschlich als in Ordnung meldete. Neue Regeln in der `AGENTS.md`: Verweis-Konvention mit Begründung, Frontmatter-Standard, gezieltes Stagen statt `git add -A`, keine Warnung ohne geprüften Zustand. `CLAUDE.md` und `GEMINI.md` erzwingen den Basiskontext jetzt per Import statt per Textverweis. Anleitung um den Tablet-Weg und die Grundlagen-Kästen ergänzt.
 - **1.0 (2026-07-17):** Erste Fassung.
