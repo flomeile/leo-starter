@@ -10,7 +10,12 @@ Harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematis
 
 Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.3). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
 
-Das Gerüst wird weiterentwickelt. Verbesserungen holst du dir später mit einem Satz an deinen Agenten ("mechanik update"), ohne dass deine Inhalte, deine Personalisierung oder deine selbstgebauten Skills angetastet werden. Wie das abgesichert ist, steht in `ANLEITUNG.md`, Teil 8 und in `10_System\Kern-Dateien.md`.
+
+## Zwei Regeln für den Betrieb
+
+**1. Lass den Agenten am System arbeiten, nicht dich selbst.** Wenn etwas angelegt, umgebaut, aufgeräumt oder aktualisiert werden soll, sag es deinem Agenten, statt die Dateien von Hand zu bearbeiten. Der Grund steht in diesem Repo: Die `AGENTS.md` und die Skills enthalten die genauen Anweisungen, wie das jeweils zu geschehen hat, damit Index, Verweise, Frontmatter und Versionierung konsistent bleiben. Der Agent liest sie und hält sich daran, du müsstest sie erst nachlesen. Inhalte selbst schreiben ist etwas anderes und jederzeit in Ordnung, dafür ist es dein Repo.
+
+**2. Hol dir hin und wieder die Updates.** Das Gerüst wird weiterentwickelt. Sag dazu einfach "mechanik update" zu deinem Agenten. Er holt die neue Fassung von GitHub und arbeitet sie ein, ohne deine Inhalte, deine Personalisierung oder deine selbstgebauten Skills anzutasten. Wie das abgesichert ist, steht in `ANLEITUNG.md`, Teil 8 und in `10_System\Kern-Dateien.md`.
 
 ## Zuerst lesen
 
