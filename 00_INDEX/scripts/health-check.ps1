@@ -25,7 +25,11 @@ $results = New-Object System.Collections.Generic.List[PSCustomObject]
 # Ausnahmelisten unten auf Relativpfaden ab Repo-Root basieren und der Worktree-Praefix
 # sie nicht mehr treffen laesst (Befund 2026-07-17: zwei bereits abgestimmte
 # stand:-Ausnahmen wurden aus dem Worktree heraus erneut als WARN gemeldet).
-$excludedDirPattern = '\\\.(git|obsidian|claude)\\'
+# Die uebrigen Werkzeug-Verzeichnisse tragen die generierten Skill-Zeiger (Abschnitt 11a).
+# Sie sind Konfiguration, kein Wissen, und werden weder indexiert noch auf Frontmatter,
+# stand: oder tote Links geprueft. Identisch zu $excludeDirs in build-index-geruest.ps1
+# und zu is_fm_exempt() im pre-commit-Hook zu halten.
+$excludedDirPattern = '\\\.(git|obsidian|claude|agents|gemini|cursor|cline|opencode|github)\\'
 
 function Add-Check([string]$Level, [string]$Category, [string]$Message) {
     $results.Add([PSCustomObject]@{ Level = $Level; Category = $Category; Message = $Message })
@@ -555,7 +559,7 @@ Write-Output "Basiskontext-Checks erledigt."
 # 11) HARNESS-PORTABILITAETSDATEIEN
 # ---------------------------------------------------------------------------
 $cat = "Portabilitaet"
-foreach ($f in @("CLAUDE.md", "GEMINI.md", ".clinerules")) {
+foreach ($f in @("CLAUDE.md", "GEMINI.md", ".clinerules", ".github/copilot-instructions.md")) {
     $full = Join-Path $repo $f
     if (-not (Test-Path $full)) {
         Add-Check "FAIL" $cat "$f fehlt im Root."
@@ -607,6 +611,53 @@ foreach ($pair in @(@{ n = "CLAUDE.md"; s = $claudeImports }, @{ n = "GEMINI.md"
         Add-Check "WARN" $cat "$($pair.n) importiert $($missing.Count) Pflichtdatei(en) nicht: $($missing -join ', '). Ohne Import ist der Basiskontext-Zwang aus E21 in diesem Harness wirkungslos."
     } else {
         Add-Check "OK" $cat "$($pair.n) importiert AGENTS.md und alle $($expected.Count - 1) Basiskontext-Dateien (E21)."
+    }
+}
+
+# Die Werkzeuge ohne Import-Mechanik (.clinerules, copilot-instructions.md) koennen den
+# Basiskontext nicht laden, sie muessen ihn textlich anweisen. Ohne diesen Satz startet
+# ein Wechsel dorthin ohne Stilregeln, und genau das soll der Basiskontext-Zwang verhindern.
+foreach ($f in @(".clinerules", ".github/copilot-instructions.md")) {
+    $full = Join-Path $repo $f
+    if (-not (Test-Path $full)) { continue }
+    $content = Get-Content -Path $full -Raw -Encoding UTF8
+    if ($content -notmatch "01_Basiskontext") {
+        Add-Check "WARN" $cat "$f weist nicht auf 01_Basiskontext hin. Dieses Werkzeug kennt keinen Import; ohne die textliche Anweisung greift der Basiskontext-Zwang dort nicht (AGENTS.md Abschnitt 11a)."
+    } else {
+        Add-Check "OK" $cat "$f weist textlich auf 01_Basiskontext hin (Ersatz fuer den fehlenden Import)."
+    }
+}
+
+# Skill-Zeiger in allen Werkzeug-Pfaden (AGENTS.md Abschnitt 11a). Geprueft wird, ob jedes
+# Zielverzeichnis genau die Skills aus dem Register traegt. Faellt eines zurueck, fehlen
+# beim Wechsel in dieses Werkzeug still ein paar Skills - der Fehler, den man erst merkt,
+# wenn man ihn schon gemacht hat. Die Liste ist identisch zu $targets in
+# build-skill-wrapper.ps1 zu halten; wer eine aendert, zieht die andere nach.
+$skillTargets = @(".claude/skills", ".agents/skills", ".gemini/skills", ".cursor/skills", ".cline/skills", ".opencode/skills")
+$registerSlugs = @()
+$regFile = Join-Path $repo "02_Skills\Skill-Register.md"
+if (Test-Path $regFile) {
+    foreach ($line in (Get-Content -Path $regFile -Encoding UTF8)) {
+        $t = $line.Trim()
+        if (-not $t.StartsWith("|")) { continue }
+        $cols = ($t.Trim("|") -split "\|") | ForEach-Object { $_.Trim() }
+        if ($cols.Count -lt 4) { continue }
+        if ($cols[2] -match "([^/\\]+)\.md\s*$") { $registerSlugs += $matches[1] }
+    }
+}
+if ($registerSlugs.Count -eq 0) {
+    Add-Check "WARN" $cat "Keine Skills aus dem Register gelesen - Zeiger-Pruefung uebersprungen."
+} else {
+    $behind = @()
+    foreach ($rel in $skillTargets) {
+        $dir = Join-Path $repo ($rel -replace '/', '\')
+        $missing = @($registerSlugs | Where-Object { -not (Test-Path (Join-Path $dir "$_\SKILL.md")) })
+        if ($missing.Count -gt 0) { $behind += "$rel (fehlen: $($missing.Count))" }
+    }
+    if ($behind.Count -gt 0) {
+        Add-Check "WARN" $cat "Skill-Zeiger unvollstaendig in: $($behind -join ', '). Behebung: pwsh -NoProfile -ExecutionPolicy Bypass -File `"$repo\00_INDEX\scripts\build-skill-wrapper.ps1`""
+    } else {
+        Add-Check "OK" $cat "Skill-Zeiger vollstaendig: $($registerSlugs.Count) Skills in allen $($skillTargets.Count) Werkzeug-Pfaden (Abschnitt 11a)."
     }
 }
 Write-Output "Portabilitaets-Checks erledigt."

@@ -1,18 +1,18 @@
-﻿---
+---
 titel: Index-Geruest (mechanisch erzeugt)
 zweck: Vollstaendige, deterministische Baumliste aller Markdown-Dateien im Repo
 type: index-geruest
-erzeugt: 2026-08-07 10:54
+erzeugt: 2026-08-07 15:12
 hinweis: Automatisch erzeugt. Nicht von Hand bearbeiten. Sicherheitsnetz und Delta-Quelle fuer die kuratierten Indizes.
 ---
 
 # Index-Geruest
 
-Mechanisch aus dem Dateisystem erzeugt am 2026-08-07 10:54. Volle Hierarchie, jede real existierende .md-Datei.
+Mechanisch aus dem Dateisystem erzeugt am 2026-08-07 15:12. Volle Hierarchie, jede real existierende .md-Datei.
 Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geaendert.
 
-- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 35 KB | 2026-08-07
-- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 27.6 KB | 2026-08-07
+- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 38.2 KB | 2026-08-07
+- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 29 KB | 2026-08-07
 - CLAUDE.md | CLAUDE.md | 1.2 KB | 2026-08-07
 - GEMINI.md | GEMINI.md | 1.7 KB | 2026-08-07
 - MEIN-SYSTEM.md | Mein System | 4.3 KB | 2026-08-07
@@ -28,8 +28,8 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - Voice and Style.md | Voice and Style | 3.9 KB | 2026-07-17
 - 02_Skills\
   - leo-mechanik-update.md | Skill: Mechanik aktualisieren | 10.7 KB | 2026-08-07
-  - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 5.6 KB | 2026-07-17
-  - leo-system-health-check.md | Skill: System Health Check | 11.2 KB | 2026-08-05
+  - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 6.4 KB | 2026-08-07
+  - leo-system-health-check.md | Skill: System Health Check | 11.7 KB | 2026-08-07
   - leo-themenordner-anlegen.md | Skill: Themenordner anlegen | 4 KB | 2026-07-17
   - leo-wrap-up.md | Skill: Leo Wrap-Up | 11.6 KB | 2026-08-05
   - README.md | 02_Skills | 1.3 KB | 2026-07-17
@@ -42,7 +42,7 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
 - 10_System\
   - AGENTS.md | Rolle: System-Experte | 1.4 KB | 2026-08-03
   - Architektur.md | Architektur des KI-Systems | 4.5 KB | 2026-08-03
-  - Kern-Dateien.md | Kern-Dateien: was ein Update anfassen darf | 3.8 KB | 2026-08-07
+  - Kern-Dateien.md | Kern-Dateien: was ein Update anfassen darf | 4.5 KB | 2026-08-07
   - Manual.md | Manual: So nutzt du dein KI-System | 4.8 KB | 2026-08-03
   - Modellwahl.md | Modellwahl (Stand: siehe `stand:` im Frontmatter) | 3.7 KB | 2026-08-05
   - README.md | 10_System | 0.7 KB | 2026-08-03
@@ -52,4 +52,4 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - README.md | 90_Inbox | 0.6 KB | 2026-07-17
 
 ---
-Ende des Geruests. Anzahl Dateien: 30
+Ende des Geruests. Anzahl Dateien: 56

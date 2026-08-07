@@ -1,8 +1,8 @@
-﻿---
+---
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 1.3-starter
+version: 1.6-starter
 letzte_aenderung: 2026-08-07
 ---
 
@@ -152,6 +152,21 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 - Jede Skill-Datei trägt das Präfix `leo-` (z.B. `leo-wrap-up.md`), Trigger-Worte selbst nicht.
 - Nennt `[NAME]` ein Trigger-Wort (z.B. "wrap up"), schlag im Register nach, öffne die Skill-Datei und führe sie aus.
 - Skills bleiben die einzige Wahrheit; erzeuge keine harness-spezifischen Command-Dateien oder App-Skills als Ersatz. Findest du solche, die denselben Trigger wie ein Repo-Skill beanspruchen: `[NAME]` aktiv informieren, das ist eine Kollisionsgefahr.
+- **Kein Bestandteil des Systems lebt ausserhalb des Repos.** Ein Skill, eine Regel oder ein Stück Wissen, das nur im Werkzeug existiert, steht in jedem anderen Werkzeug nicht zur Verfügung; die Unabhängigkeit vom Anbieter wäre dann nur behauptet. Bewusste, begründete Zugeständnisse sind in Ordnung, eine echte Bindung nicht. Übernimmst du einen fremden Skill aus einem Marketplace oder einer geteilten Sammlung, gehört sein Inhalt als `leo-*.md` ins Repo und ins Register, statt installiert und dort belassen zu werden.
+
+## 11a. Sofortiger Werkzeugwechsel
+
+**Ein Wechsel des Werkzeugs darf keine Vorbereitung kosten.** `[NAME]` muss dieses Repo in einem beliebigen anderen Agenten öffnen können und dort sofort dasselbe System vorfinden: dieselben Regeln, denselben Basiskontext, dieselben Skills, ohne dass vorher jemand etwas baut oder umstellt. Wer erst umbauen muss, bevor er wechseln kann, ist gebunden, egal wie sauber die Inhalte abgelegt sind.
+
+Daraus folgen drei Pflichten für jedes LLM, das hier arbeitet:
+
+1. **Der Einstieg existiert für jedes Werkzeug.** `AGENTS.md` ist die Wahrheit; daneben stehen `CLAUDE.md` und `GEMINI.md` (die den Pflichtkontext per `@`-Syntax importieren) sowie `.clinerules` und `.github\copilot-instructions.md` (die ihn textlich anweisen, weil diese Werkzeuge keinen Import kennen). Ändert sich der Pflichtkontext, werden ALLE diese Dateien nachgezogen, nicht nur die des gerade benutzten Werkzeugs.
+2. **Die Skill-Zeiger liegen auf Vorrat in allen bekannten Pfaden.** `00_INDEX\scripts\build-skill-wrapper.ps1` erzeugt aus dem Skill-Register kleine `SKILL.md`-Dateien nach der offenen Agent-Skills-Spezifikation (`agentskills.io`, von über 30 Werkzeugen übernommen) und legt sie in `.claude\skills\`, `.agents\skills\`, `.gemini\skills\`, `.cursor\skills\`, `.cline\skills\` und `.opencode\skills\` ab. Dadurch springt ein Skill überall per `/name` an und wird vom Modell selbstständig geladen, wenn er zur Situation passt. Die Zeiger enthalten keine Substanz, nur Name, Trigger, Zweck und den Verweis auf die echte Datei in `02_Skills`. Das ist die eine Stelle, an der die YAGNI-Regel aus Abschnitt 1 bewusst NICHT gilt: Der Vorrat ist hier der Zweck, weil ein Zeiger, der erst beim Wechsel gebaut wird, die Anforderung genau verfehlt.
+3. **Was neu entsteht, bleibt portabel.** Skill-Frontmatter beschränkt sich auf die Felder der Spezifikation (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`); ein werkzeugeigenes Zusatzfeld löst anderswo einen harten Fehler aus. Werkzeugspezifische Mechanik darf existieren, aber nie so, dass ohne sie etwas fehlt.
+
+**Vorsicht bei Skills mit Seiteneffekten.** Weil die Beschreibungen im Kontext stehen, kann das Modell einen Skill ohne Trigger-Wort starten. Bei einem Skill, der löscht, pusht oder nach aussen sendet, ist das gefährlich. Solche Skills bekommen im Zeiger einen Warnsatz vorangestellt ("NUR auf ausdrueckliche Anweisung ausfuehren"); die Liste dafür steht als `$noAutoInvoke` im Skript.
+
+**Prüfmassstab:** Alle Zeiger-Verzeichnisse löschen, und das System funktioniert unverändert weiter, weil das Skill-Register den Weg beschreibt. Verloren geht nur die Bequemlichkeit. Mechanisch geprüft wird das im System-Health-Check, Kategorie `Portabilitaet`.
 
 ## 12. Versionierung
 

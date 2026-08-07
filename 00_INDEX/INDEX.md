@@ -1,4 +1,4 @@
-﻿---
+---
 titel: INDEX (Landkarte des Leo)
 zweck: Einstiegspunkt der Agentic Search; Hierarchie, Bereiche, Systemdateien
 type: index
@@ -14,7 +14,7 @@ Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themeno
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-08-07 10:54 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-08-07 15:12 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)

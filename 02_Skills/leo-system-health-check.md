@@ -3,7 +3,7 @@ name: leo-system-health-check
 trigger: '"system health check", "health check", "system prüfen", "systemcheck", "ist alles gesund", "gesundheitscheck system", "alles aktuell", "system aktualisieren", "auf vordermann bringen", "index aktualisieren", "index neu bauen", "inbox aufraeumen", "ablage aufraeumen", "hygiene"'
 zweck: One-Button-Wartung des Gesamtsystems - prüft alles, behebt sicher Behebbares selbst (Index-Beschreibungen, stand-Daten, Register), behandelt die Inbox, schreibt den Health-Check-Zeitstempel und schliesst mit Commit + Push ab
 type: skill
-version: 1.2-starter
+version: 1.6-starter
 ---
 
 # Skill: System Health Check
@@ -20,8 +20,11 @@ Der EINE Wartungs-Skill des Systems. Prüft das gesamte Repo (Index-Mechanik, Be
 ### 1. Mechanik frisch machen
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-index-geruest.ps1"
+pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-skill-wrapper.ps1"
 ```
-Damit die Diagnose den aktuellen Stand prüft. Falls das Skript einen Datei-Sperr-Fehler auf `INDEX.md` oder `AGENTS.md` meldet (z.B. weil der Scheduler-Task parallel läuft): kurz warten und nochmal ausführen. Nie den betroffenen Auto-Block von Hand nachtragen.
+Das zweite Skript zieht die Skill-Zeiger in allen sechs Werkzeug-Pfaden gegen das Register nach (neue Skills bekommen einen, gelöschte verlieren ihn). Es ist rein mechanisch und schreibt nur in die Punkt-Verzeichnisse; Substanz liegt dort keine (`AGENTS.md`, Abschnitt 11a). Die Kategorie `Portabilitaet` der Diagnose prüft danach, ob alle Zeiger und alle Einstiegsdateien vollständig sind.
+
+Beide Skripte laufen zuerst, damit die Diagnose den aktuellen Stand prüft. Falls eines einen Datei-Sperr-Fehler auf `INDEX.md` oder `AGENTS.md` meldet (z.B. weil der Scheduler-Task parallel läuft): kurz warten und nochmal ausführen. Nie den betroffenen Auto-Block von Hand nachtragen.
 
 ### 2. Diagnose
 ```powershell

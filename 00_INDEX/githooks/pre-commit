@@ -55,6 +55,7 @@ notes=""
 is_fm_exempt() {
     case "$1" in
         02_Skills/*|03_Sessionlogs/*|00_INDEX/*|04_Changelog/*) return 0 ;;
+        .claude/*|.agents/*|.gemini/*|.cursor/*|.cline/*|.opencode/*|.github/*) return 0 ;;
     esac
     case "${1##*/}" in
         AGENTS.md|CLAUDE.md|GEMINI.md|_INDEX.md|README.md) return 0 ;;

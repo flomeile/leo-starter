@@ -2,7 +2,7 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 1.3-starter
+version: 1.6-starter
 stand: 2026-08-07
 ---
 
@@ -28,8 +28,11 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `02_Skills\README.md` | Erklärt, was ein Skill ist |
 | `00_INDEX\scripts\build-index-geruest.ps1` | Index-Automatik |
 | `00_INDEX\scripts\health-check.ps1` | Prüfskript |
+| `00_INDEX\scripts\build-skill-wrapper.ps1` | Erzeugt die Skill-Zeiger für alle Werkzeuge (Abschnitt 11a) |
 | `00_INDEX\githooks\pre-commit` | Schutz vor beschädigten Commits |
 | `.gitattributes` | Zeilenenden-Behandlung |
+
+Die generierten Skill-Zeiger in `.claude\skills\`, `.agents\skills\`, `.gemini\skills\`, `.cursor\skills\`, `.cline\skills\` und `.opencode\skills\` stehen bewusst in keiner der drei Kategorien: Sie werden bei jedem Health-Check neu aus deinem Register erzeugt und sind jederzeit wegwerfbar. Ein Update muss sie weder ersetzen noch schützen. Eigene Skills, die du dort liegen siehst, sind kein Verlust, wenn sie verschwinden: Die Wahrheit steht in `02_Skills`.
 
 Ausnahme innerhalb dieser Dateien: **Inhalte von `AUTO:...:BEGIN/END`-Blöcken gehören nie zum Kern.** Sie werden maschinell erzeugt (z.B. die Rollen-Tabelle in der `AGENTS.md`) und nach einem Update ohnehin neu geschrieben, sobald das Index-Skript läuft.
 
@@ -41,7 +44,8 @@ Diese Dateien sind Mechanik, tragen aber zwingend etwas von dir. Ein Update darf
 |---|---|
 | `CLAUDE.md` | Die `@`-Importzeilen, die auf deine Basiskontext-Dateien zeigen |
 | `GEMINI.md` | dasselbe |
-| `.clinerules` | dasselbe |
+| `.clinerules` | dasselbe, hier als textliche Leseanweisung statt als Import |
+| `.github\copilot-instructions.md` | dasselbe |
 | `ANLEITUNG.md` | Nichts, solange du sie nicht ergänzt hast. Wenn doch, gilt sie als deine Datei |
 
 ## C. Deins: wird nie angefasst

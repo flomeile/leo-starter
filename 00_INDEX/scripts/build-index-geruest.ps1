@@ -23,7 +23,9 @@ $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # .claude\worktrees\ (vollstaendige Zweitkopien des Repos aus Parallel-Sessions).
 # Git ignoriert diese Kopien via .git\info\exclude, das Skript laeuft aber ueber
 # das Dateisystem und wuerde sie sonst mitindexieren (jede Datei doppelt).
-$excludeDirs = @(".git", ".obsidian", ".claude")
+# Dieselbe Logik gilt fuer die uebrigen Werkzeug-Verzeichnisse und die generierten
+# Skill-Zeiger darin (AGENTS.md Abschnitt 11a): Konfiguration, kein Wissen.
+$excludeDirs = @(".git", ".obsidian", ".claude", ".agents", ".gemini", ".cursor", ".cline", ".opencode", ".github")
 $metaNames = @("INDEX.md", "INDEX-Geruest.md", "_INDEX.md")
 $now = Get-Date -Format "yyyy-MM-dd HH:mm"
 

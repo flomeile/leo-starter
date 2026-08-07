@@ -3,7 +3,7 @@ name: leo-skill-ersteller
 trigger: '"neuen skill", "skill erstellen", "skill bauen"'
 zweck: Baut einen neuen Skill normgerecht und trägt ihn ins Register ein
 type: skill
-version: 1.0-starter
+version: 1.6-starter
 ---
 
 # Skill: Leo Skill-Ersteller
@@ -45,6 +45,12 @@ Erstelle `02_Skills\leo-<name>.md` nach der Norm oben. Schlank und eindeutig; ei
 
 ### 3. Ins Register eintragen
 Ergänze die Tabelle in `02_Skills\Skill-Register.md`: Name, Trigger-Worte, Datei, Zweck.
+
+Danach den Skill-Zeiger nachziehen, damit der neue Skill per `/name` anspringt:
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-skill-wrapper.ps1"
+```
+Das Skript schreibt den Zeiger in alle sechs Werkzeug-Pfade, damit der neue Skill auch nach einem Werkzeugwechsel sofort da ist (Pflicht aus `AGENTS.md` Abschnitt 11a). Der Zeiger enthält keine Substanz, er verweist nur auf die Skill-Datei. Zwei Punkte dabei: Das Frontmatter des Skills bleibt bei den Feldern der Agent-Skills-Spezifikation (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`) oder bei der Norm oben, keine werkzeugeigenen Felder. Und hat der neue Skill Seiteneffekte (löscht, pusht, sendet nach aussen), trägst du seinen Namen in die Liste `$noAutoInvoke` im Skript ein, sonst kann das Modell ihn ungefragt starten.
 
 ### 4. Index aktualisieren
 Führe den Skill `02_Skills\leo-system-health-check.md` aus (aktualisiert Index-Mechanik und Beschreibungen und committet).
