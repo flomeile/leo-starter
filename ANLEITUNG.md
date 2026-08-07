@@ -108,7 +108,7 @@ Du hast damit dein eigenes, unabhängiges Repo mit dem kompletten Gerüst darin.
 
 **0.4 Git installieren.** Herunterladen von https://git-scm.com/downloads/win und installieren. Bei allen Fragen im Installationsprogramm die Voreinstellung übernehmen. Claude Code braucht Git auf Windows zwingend, sonst startet keine lokale Sitzung. (Auf einem Mac ist Git meistens schon vorhanden.)
 
-**0.5 Claude Desktop installieren.** Herunterladen von https://claude.ai/download, installieren, starten und mit deinem Konto aus 0.1 anmelden. Falls du Git erst danach installiert hast: Claude einmal beenden und neu starten.
+**0.5 Claude Desktop installieren.** Die Download-Knöpfe für Windows und macOS stehen auf https://code.claude.com/docs/en/desktop-quickstart. Installieren, starten und mit deinem Konto aus 0.1 anmelden. Falls du Git erst danach installiert hast: Claude einmal beenden und neu starten.
 
 ### Schritt 1: Das Repo auf deinen Rechner holen
 
