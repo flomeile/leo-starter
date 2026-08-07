@@ -14,7 +14,7 @@ Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themeno
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-08-07 10:02 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-08-07 10:27 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)

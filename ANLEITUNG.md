@@ -2,8 +2,8 @@
 titel: Anleitung zum eigenen Leo
 zweck: Erklärt, was Leo ist, wie er funktioniert und wie man ihn einsatzbereit macht, auf einem Windows-Rechner oder nur mit einem Tablet
 type: readme
-version: 1.1-starter
-letzte_aenderung: 2026-08-03
+version: 1.4-starter
+letzte_aenderung: 2026-08-07
 ---
 
 # Leo: Anleitung zum eigenen Second Brain
@@ -88,12 +88,50 @@ Wichtig für beide Wege: Leg den Ordner niemals in einen Cloud-Sync-Dienst wie O
 
 ## Teil 5: Weg A, Einrichtung Schritt für Schritt (Windows)
 
-Voraussetzungen: Git installiert, PowerShell vorhanden (ist es auf Windows immer; PowerShell 7 / `pwsh` ist ein Plus), ein GitHub-Konto.
-
 > **Grundlagen: Kommandozeile.** Die Blöcke mit grauem Hintergrund unten sind Befehle. Du öffnest dafür das Programm "PowerShell" (Startmenü, tippen: PowerShell), kopierst den Befehl hinein und drückst Enter. Mehr ist es nicht. Wenn ein Befehl eine Fehlermeldung ausgibt, lies sie nicht weg, sondern gib sie deinem Agenten, der ordnet sie dir ein.
 
-### Schritt 1: Ordner an seinen Platz bringen
-Lege den Inhalt dieses Pakets nach `C:\Leo`. Der Pfad `C:\Leo` ist an vielen Stellen in den Skills als Beispiel eingetragen; wenn du ihn beibehältst, hast du am wenigsten Arbeit.
+### Schritt 0: Von Null zum laufenden Agenten
+
+Wenn du noch nie mit einem Agenten gearbeitet hast, fängst du hier an. Fünf Schritte, zusammen etwa eine halbe Stunde, davon das meiste Warten auf Downloads.
+
+**0.1 Claude-Abo.** Claude Code braucht ein bezahltes Abo (Pro, Max, Team oder Enterprise). Anlegen auf https://claude.ai. Ohne Abo öffnet sich der Code-Bereich später nicht.
+
+**0.2 GitHub-Konto.** Kostenlos auf https://github.com. GitHub ist der Ort, an dem dein Wissen zusätzlich gesichert liegt, und der Ort, von dem du das Grundgerüst holst. Merk dir deinen Benutzernamen, du brauchst ihn gleich.
+
+**0.3 Deine eigene Kopie des Grundgerüsts erzeugen.** Öffne https://github.com/flomeile/leo-starter. Oben rechts ist ein grüner Knopf **"Use this template"**, darunter wählst du **"Create a new repository"**. Auf der folgenden Seite:
+
+- **Repository name:** `leo` (oder wie du dein System nennen willst)
+- **Private** auswählen, nicht Public. Hier landet dein persönliches Wissen.
+- Knopf **"Create repository"**
+
+Du hast damit dein eigenes, unabhängiges Repo mit dem kompletten Gerüst darin. Die Adresse lautet `https://github.com/<deinbenutzername>/leo`.
+
+**0.4 Git installieren.** Herunterladen von https://git-scm.com/downloads/win und installieren. Bei allen Fragen im Installationsprogramm die Voreinstellung übernehmen. Claude Code braucht Git auf Windows zwingend, sonst startet keine lokale Sitzung. (Auf einem Mac ist Git meistens schon vorhanden.)
+
+**0.5 Claude Desktop installieren.** Herunterladen von https://claude.ai/download, installieren, starten und mit deinem Konto aus 0.1 anmelden. Falls du Git erst danach installiert hast: Claude einmal beenden und neu starten.
+
+### Schritt 1: Das Repo auf deinen Rechner holen
+
+Öffne PowerShell und führe diesen Befehl aus, mit deinem GitHub-Benutzernamen anstelle von `<deinbenutzername>`:
+
+```powershell
+git clone https://github.com/<deinbenutzername>/leo.git C:\Leo
+```
+
+Beim ersten Mal öffnet sich ein Fenster, in dem du dich bei GitHub anmeldest. Das passiert genau einmal, danach merkt sich Git die Anmeldung.
+
+Der Pfad `C:\Leo` ist an vielen Stellen in den Skills als Beispiel eingetragen; wenn du ihn beibehältst, hast du am wenigsten Arbeit.
+
+### Schritt 1b: Den Agenten auf den Ordner zeigen
+
+In Claude Desktop oben auf den Reiter **Code**. Dann:
+
+1. Als Umgebung **Local** wählen (nicht Cloud), damit der Agent direkt auf deinen Dateien arbeitet.
+2. Auf **Select folder** klicken und `C:\Leo` auswählen.
+3. Ein Modell wählen, für den Anfang das leistungsfähigste in der Liste.
+4. Als erste Nachricht schreiben: **"Lies die ANLEITUNG.md und richte mich ein."**
+
+Ab hier führt dich der Agent durch den Rest. Er schlägt jede Änderung vor und wartet auf dein Ja, bis du ihm mehr Freiheit gibst. Die Schritte 2 bis 5 unten macht er für dich; lies sie trotzdem einmal quer, damit du weisst, was in deinem System passiert.
 
 ### Schritt 2: Personalisieren
 - Öffne `MEIN-SYSTEM.md` im Wurzelordner und fülle Abschnitt 1 aus: deinen Namen, wie das System bei dir heisst, wo es liegt, dein Kürzel. **Die `AGENTS.md` fasst du dabei nicht an.** Sie enthält den Platzhalter `[NAME]` und die Bezeichnungen `Leo` und `C:\Leo` bewusst als generische Begriffe; dein Agent löst sie über `MEIN-SYSTEM.md` auf. Genau dadurch bleibt die `AGENTS.md` bei allen Nutzern identisch und lässt sich später gefahrlos aktualisieren (Teil 8).
@@ -103,7 +141,7 @@ Lege den Inhalt dieses Pakets nach `C:\Leo`. Der Pfad `C:\Leo` ist an vielen Ste
 > **Grundlagen:** Du musst Schritt 2 nicht von Hand machen. Öffne stattdessen deinen Agenten auf dem Ordner und sag ihm: "Lies die ANLEITUNG.md und richte mich ein." Er füllt `MEIN-SYSTEM.md` aus und führt dich per Rückfragen durch den Basiskontext. Das ist ohnehin der bessere Weg, weil aus dem Gespräch mehr herauskommt als aus einem leeren Formular.
 
 ### Schritt 3: Git und privates GitHub-Repo
-Wenn du das Paket über die Template-Funktion von GitHub geholt hast (siehe Teil 8), existiert das Repo schon; dann nur lokal klonen und weiter mit Schritt 4. Sonst von Hand:
+Bist du über Schritt 0 gekommen, ist das alles schon erledigt: Das Repo existiert, ist privat und mit deinem lokalen Ordner verbunden. Weiter mit dem Hook am Ende dieses Schritts. Hast du das Paket anders geholt (ZIP-Download, Kopie von jemandem), richtest du Git von Hand ein:
 
 ```powershell
 cd C:\Leo
@@ -235,6 +273,7 @@ Kurz: Dein Wissen gehört dir und liegt in deinem eigenen Repo. Das Gerüst kann
 
 ### Versionen dieses Pakets
 
+- **1.4 (2026-08-07):** Einstieg für Leute ohne Vorkenntnisse geschlossen. Teil 5 beginnt jetzt mit einem Schritt 0, der von Null durchführt: Claude-Abo, GitHub-Konto, eigene Kopie über "Use this template", Git für Windows, Claude Desktop, dann das Klonen des Repos und das Auswählen des Ordners im Code-Reiter. Bisher setzte die Anleitung Git, ein GitHub-Konto und einen laufenden Agenten stillschweigend voraus und begann erst danach.
 - **1.3 (2026-08-07):** Trennung von Mechanik und persönlicher Ebene, damit Updates nichts mehr kaputt machen können. Neu: `MEIN-SYSTEM.md` im Wurzelordner (dein Name, dein Systemname, dein Pfad, deine eigenen Regeln, deine eigenen Bauten, die eingespielte Version; wird von Updates nie angefasst und hat bei Widerspruch Vorrang vor der `AGENTS.md`), `10_System\Kern-Dateien.md` (welche Datei ersetzt werden darf, welche nur eingearbeitet wird, welche dir gehört) und der Skill `leo-mechanik-update` (holt neue Versionen, committet vorher als Rückweg, ersetzt nur unveränderte Kern-Dateien, arbeitet angepasste ein und prüft deine eigenen Skills gegen die neuen Konventionen). Die `AGENTS.md` behält `[NAME]`, `Leo` und `C:\Leo` jetzt bewusst als generische Begriffe, statt sie bei der Einrichtung ersetzen zu lassen; dadurch ist sie bei allen Nutzern identisch und gefahrlos aktualisierbar. Personalisierung und Umbenennen laufen ab sofort ausschliesslich über `MEIN-SYSTEM.md` (Anleitung Teil 2 und Teil 7). `CLAUDE.md`, `GEMINI.md` und `.clinerules` laden die neue Datei mit. Ab dieser Version trägt jede Fassung im Repo einen Git-Tag (`v1.3`), damit ein Update genau weiss, von welchem Stand du kommst.
 - **1.2 (2026-08-05):** Pre-Commit-Hook ergänzt (`00_INDEX\githooks`), der Commits mit beschädigtem Inhalt stoppt und alles Übrige nur anzeigt, dazu die passende `.gitattributes` und eine Health-Check-Prüfung, ob er auf diesem Rechner überhaupt aktiv ist. Neue Regeln in der `AGENTS.md`: offene Punkte werden entscheidungsreif vorgelegt statt als blosse Frage; `gueltig_bis` als Ablaufdatum neben `stand:`; Statustoken mit Belegpflicht für "erledigt"; eigene Schlussfolgerungen im Satz markieren und `geprueft:` an der Datei; Frischecheck gegen parallele Schreiber; keine Unsicherheitsmarkierung, wo eine Prüfung möglich ist. Health-Check und Wrap-Up ziehen nach.
 - **1.1 (2026-08-03):** Health-Check auf 14 Prüfungen erweitert (tote Verweise, Frontmatter-Standard) und ein Fehler darin behoben, der eine fehlende Import-Zeile fälschlich als in Ordnung meldete. Neue Regeln in der `AGENTS.md`: Verweis-Konvention mit Begründung, Frontmatter-Standard, gezieltes Stagen statt `git add -A`, keine Warnung ohne geprüften Zustand. `CLAUDE.md` und `GEMINI.md` erzwingen den Basiskontext jetzt per Import statt per Textverweis. Anleitung um den Tablet-Weg und die Grundlagen-Kästen ergänzt.

@@ -732,7 +732,8 @@ $cat = "Frontmatter"
 $fmCutoff = [datetime]::ParseExact("1970-01-01", "yyyy-MM-dd", $null)
 $fmRequired = @("titel", "zweck", "type")
 $fmAllowedTypes = @("wissensnotiz", "rohquelle", "synthese", "arbeitsdokument",
-                    "rollen-regeln", "themen-index", "readme", "basiskontext", "systemdoku")
+                    "rollen-regeln", "themen-index", "readme", "basiskontext", "systemdoku",
+                    "master-regeln")
 # Ausgenommen: Dateiklassen mit eigenem, in sich einheitlichem Schema, das ein Skill
 # fest vorgibt (Skills: name/trigger/zweck/type; Sessionlogs: date/time/topic/context/
 # tags/type; Indexdateien: vom Generator erzeugt). Diese Regel hier gilt fuer
