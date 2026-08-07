@@ -2,7 +2,7 @@
 titel: Anleitung zum eigenen Leo
 zweck: Erklärt, was Leo ist, wie er funktioniert und wie man ihn einsatzbereit macht, auf einem Windows-Rechner oder nur mit einem Tablet
 type: readme
-version: 1.4-starter
+version: 1.5-starter
 letzte_aenderung: 2026-08-07
 ---
 
@@ -244,6 +244,14 @@ Wenn das Gerüst später verbessert wird, holst du dir die Verbesserung mit eine
 
 Mehr musst du nicht tun und nicht wissen. Der Skill `leo-mechanik-update` erledigt den Rest.
 
+### Wenn dein System von einer Version vor 1.3 stammt
+
+Dann kennt es den Skill noch nicht, es gab ihn damals nicht. Das Trigger-Wort läuft ins Leere. Für dieses eine Mal gibst du deinem Agenten stattdessen diesen Satz:
+
+> Mein System stammt aus dem Grundgerüst https://github.com/flomeile/leo-starter, davon gibt es jetzt eine neue Version. Hol dir https://raw.githubusercontent.com/flomeile/leo-starter/main/02_Skills/leo-mechanik-update.md, lies die Datei und führe sie aus.
+
+Der Skill bringt sich damit selbst mit und macht danach alles Weitere, inklusive der Migration deiner Personalisierung in die neue `MEIN-SYSTEM.md`. Ab dem nächsten Mal genügt "mechanik update".
+
 ### Was dabei garantiert ist
 
 Die Sorge bei so einem Update ist berechtigt: Du hast dein System personalisiert, vielleicht umbenannt, eigene Skills gebaut und eigene Regeln ergänzt. Ein Update darf davon nichts kaputt machen. Dafür sorgen vier Dinge:
@@ -273,6 +281,7 @@ Kurz: Dein Wissen gehört dir und liegt in deinem eigenen Repo. Das Gerüst kann
 
 ### Versionen dieses Pakets
 
+- **1.5 (2026-08-07):** Der Weg für alle, die schon mit einer Version vor 1.3 gebaut haben. Bis 1.2 gab es den Update-Skill nicht, das Trigger-Wort "mechanik update" läuft dort also ins Leere; Teil 8 enthält jetzt den einmaligen Satz, mit dem der Agent sich den Skill selbst holt. Der Skill selbst hat einen Abschnitt für diesen Sonderfall bekommen: Er liest Name, Systemname und eigene Regeln aus der alten, personalisierten `AGENTS.md` aus, überträgt sie nach `MEIN-SYSTEM.md` und lässt sich das bestätigen, bevor er die generische `AGENTS.md` einspielt. Ohne diesen Schritt hätte ein Update die gesamte Personalisierung eines Bestandsnutzers gelöscht.
 - **1.4 (2026-08-07):** Einstieg für Leute ohne Vorkenntnisse geschlossen. Teil 5 beginnt jetzt mit einem Schritt 0, der von Null durchführt: Claude-Abo, GitHub-Konto, eigene Kopie über "Use this template", Git für Windows, Claude Desktop, dann das Klonen des Repos und das Auswählen des Ordners im Code-Reiter. Bisher setzte die Anleitung Git, ein GitHub-Konto und einen laufenden Agenten stillschweigend voraus und begann erst danach.
 - **1.3 (2026-08-07):** Trennung von Mechanik und persönlicher Ebene, damit Updates nichts mehr kaputt machen können. Neu: `MEIN-SYSTEM.md` im Wurzelordner (dein Name, dein Systemname, dein Pfad, deine eigenen Regeln, deine eigenen Bauten, die eingespielte Version; wird von Updates nie angefasst und hat bei Widerspruch Vorrang vor der `AGENTS.md`), `10_System\Kern-Dateien.md` (welche Datei ersetzt werden darf, welche nur eingearbeitet wird, welche dir gehört) und der Skill `leo-mechanik-update` (holt neue Versionen, committet vorher als Rückweg, ersetzt nur unveränderte Kern-Dateien, arbeitet angepasste ein und prüft deine eigenen Skills gegen die neuen Konventionen). Die `AGENTS.md` behält `[NAME]`, `Leo` und `C:\Leo` jetzt bewusst als generische Begriffe, statt sie bei der Einrichtung ersetzen zu lassen; dadurch ist sie bei allen Nutzern identisch und gefahrlos aktualisierbar. Personalisierung und Umbenennen laufen ab sofort ausschliesslich über `MEIN-SYSTEM.md` (Anleitung Teil 2 und Teil 7). `CLAUDE.md`, `GEMINI.md` und `.clinerules` laden die neue Datei mit. Ab dieser Version trägt jede Fassung im Repo einen Git-Tag (`v1.3`), damit ein Update genau weiss, von welchem Stand du kommst.
 - **1.2 (2026-08-05):** Pre-Commit-Hook ergänzt (`00_INDEX\githooks`), der Commits mit beschädigtem Inhalt stoppt und alles Übrige nur anzeigt, dazu die passende `.gitattributes` und eine Health-Check-Prüfung, ob er auf diesem Rechner überhaupt aktiv ist. Neue Regeln in der `AGENTS.md`: offene Punkte werden entscheidungsreif vorgelegt statt als blosse Frage; `gueltig_bis` als Ablaufdatum neben `stand:`; Statustoken mit Belegpflicht für "erledigt"; eigene Schlussfolgerungen im Satz markieren und `geprueft:` an der Datei; Frischecheck gegen parallele Schreiber; keine Unsicherheitsmarkierung, wo eine Prüfung möglich ist. Health-Check und Wrap-Up ziehen nach.

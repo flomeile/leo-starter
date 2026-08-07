@@ -3,7 +3,7 @@ name: leo-mechanik-update
 trigger: '"mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen"'
 zweck: Verbesserungen am Grundgerüst übernehmen, ohne eigene Anpassungen und eigene Bauten zu beschädigen
 type: skill
-version: 1.3-starter
+version: 1.5-starter
 ---
 
 # Skill: Mechanik aktualisieren
@@ -20,6 +20,8 @@ Wenn `[NAME]` sagt, dass eine neue Version des Grundgerüsts verfügbar ist, ode
 
 1. `10_System\Kern-Dateien.md` (welche Datei zu welcher Kategorie gehört)
 2. `MEIN-SYSTEM.md` (eingespielte Version, eigene Regeln, eigene Bauten, eigene Änderungen an Kern-Dateien)
+
+**Fehlt eine der beiden Dateien lokal, kommt dieses System von einer Version vor 1.3.** Dann gilt zuerst der Sonderfall ganz unten in diesem Skill, und die beiden Dateien liest du so lange aus der Zielversion (`git show <Zielversion>:10_System/Kern-Dateien.md`) statt lokal.
 
 ## Schritte
 
@@ -162,6 +164,20 @@ Kurz und in dieser Reihenfolge:
 - `MEIN-SYSTEM.md`, Abschnitt 4 trägt die neue Version.
 - Index-Skript und Health-Check sind gelaufen.
 - `[NAME]` kennt den Commit, auf den er zurücksetzen kann.
+
+## Sonderfall: erstes Update von einer Version vor 1.3
+
+Erkennbar daran, dass `MEIN-SYSTEM.md` und `10_System\Kern-Dateien.md` lokal fehlen. Bis Version 1.2 gab es die Trennung von Mechanik und persönlicher Ebene nicht: Der Nutzer hat damals bei der Einrichtung den Platzhalter `[NAME]` überall in der `AGENTS.md` durch seinen Namen ersetzt, vielleicht auch das System umbenannt. Die neue `AGENTS.md` bringt `[NAME]` bewusst zurück. Ein blosses Ersetzen würde die Personalisierung also löschen.
+
+Deshalb kommt vor Schritt 5 eine Migration. Reihenfolge:
+
+1. **Werte aus der alten `AGENTS.md` auslesen**, bevor du sie anfasst: Wie heisst die Person (steht überall dort, wo im Original `[NAME]` stand)? Wie heisst das System (steht "Leo" oder etwas anderes)? Wo liegt das Repo? Welches Skill-Präfix tragen die Dateien in `02_Skills`?
+2. **Eigene Regeln finden.** Vergleiche die lokale `AGENTS.md` mit `git show <Ausgangsversion>:AGENTS.md`. Alles, was über die Namensersetzung hinausgeht, hat der Nutzer selbst ergänzt. Das ist der wertvollste Teil und darf auf keinen Fall verloren gehen.
+3. **`MEIN-SYSTEM.md` aus der Zielversion holen** (`git checkout <Zielversion> -- MEIN-SYSTEM.md`) und sofort füllen: Abschnitt 1 mit den Werten aus Punkt 1, Abschnitt 2 mit den eigenen Regeln aus Punkt 2, Abschnitt 3 mit allem, was der Nutzer sonst an Kern-Dateien geändert hat, Abschnitt 4 mit der Zielversion.
+4. **Dem Nutzer zeigen, was du nach `MEIN-SYSTEM.md` übertragen hast, und bestätigen lassen.** Erst danach die neue `AGENTS.md` einspielen. Das ist die einzige Stelle in diesem Skill, an der eine Bestätigung zwingend ist, weil hier eine gewachsene Datei durch eine generische ersetzt wird.
+5. Danach weiter mit Schritt 5 des normalen Ablaufs für alle übrigen Dateien.
+
+Zwei Dinge, die dabei oft übersehen werden: Der Nutzer hat vielleicht die kursive Hinweiszeile am Anfang der alten `AGENTS.md` gelöscht, wie es die damalige Anleitung verlangte; das ist keine eigene Regel, sondern erwartetes Verhalten und braucht keine Rückfrage. Und heisst das System nicht "Leo", tragen die Skill-Dateien womöglich ein anderes Präfix; dann bleibt dieses Präfix, und nur der Inhalt der Kern-Skills wird aktualisiert, nicht ihr Dateiname.
 
 ## Wenn etwas schiefgeht
 
