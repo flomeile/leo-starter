@@ -144,8 +144,12 @@ if ($tool -in @("Bash", "PowerShell")) {
     }
 
     # Absolute Pfade im Kommandotext einsammeln: Laufwerk, UNC, Git-Bash-Stil.
+    # Das UNC-Muster verlangt bewusst einen Hostnamen und danach einen EINFACHEN
+    # Trenner ("\\host\share"). Ohne diese Verschaerfung trifft es auch JSON mit
+    # escapten Backslashes ("\\00_INDEX\\scripts"), und damit jeden Versuch, eine
+    # Hook-Konfiguration zu schreiben.
     $found = @()
-    foreach ($rx in @('[a-zA-Z]:[\\/][^"''`;,|)\s]*', '\\\\[^"''`;,|)\s]+', '(?<![\w.])/[a-zA-Z]/[^"''`;,|)\s]*')) {
+    foreach ($rx in @('[a-zA-Z]:[\\/][^"''`;,|)\s]*', '(?<!\\)\\\\[a-zA-Z0-9._-]+\\(?!\\)[^"''`;,|)\s]+', '(?<![\w.])/[a-zA-Z]/[^"''`;,|)\s]*')) {
         foreach ($m in [regex]::Matches($cmd, $rx)) { $found += $m.Value }
     }
     foreach ($f in ($found | Select-Object -Unique)) {

@@ -3,7 +3,7 @@ name: leo-mechanik-update
 trigger: '"mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen"'
 zweck: Verbesserungen am Grundgerüst übernehmen, ohne eigene Anpassungen und eigene Bauten zu beschädigen
 type: skill
-version: 1.5-starter
+version: 1.8-starter
 ---
 
 # Skill: Mechanik aktualisieren
@@ -100,7 +100,12 @@ git checkout <Zielversion> -- "<datei>"
 
 Melde am Ende jede Datei dieser Gruppe, auch die, die glattgegangen ist. `[NAME]` muss wissen, wo sein System vom Grundgerüst abweicht.
 
-**Kategorie B (`CLAUDE.md`, `GEMINI.md`, `.clinerules`).** Immer einarbeiten, nie ersetzen. Der lokale Anteil sind die `@`-Importzeilen, die auf die tatsächlich vorhandenen Basiskontext-Dateien zeigen. Übernimm alles Neue aus der Zielversion, lass die Importzeilen des Nutzers unverändert stehen, auch wenn sie andere Dateinamen tragen als das Grundgerüst.
+**Kategorie B.** Immer einarbeiten, nie ersetzen. Welche Dateien dazugehören, steht in `10_System\Kern-Dateien.md` und nicht in dieser Aufzählung; die Liste dort wächst, diese hier ist nur die Erklärung, was "einarbeiten" jeweils heisst. Ein Vergleich gegen die Liste ist Pflicht, bevor du eine Datei anfasst.
+
+- **`CLAUDE.md`, `GEMINI.md`, `.clinerules`, `.github\copilot-instructions.md`:** Der lokale Anteil sind die `@`-Importzeilen bzw. die textliche Leseanweisung, die auf die tatsächlich vorhandenen Basiskontext-Dateien zeigen. Übernimm alles Neue aus der Zielversion, lass die Zeilen des Nutzers unverändert stehen, auch wenn sie andere Dateinamen tragen als das Grundgerüst.
+- **`.claude\settings.json`:** Das ist eine JSON-Datei, kein Fliesstext, und sie wird zusammengeführt statt überschrieben. Vorgehen: Lies die lokale Datei vollständig, nimm aus der Zielversion NUR die Schlüssel dazu, die lokal fehlen, und lass alles Bestehende unangetastet, insbesondere `permissions.allow` und `permissions.deny`. In der Regel ist der einzige neue Schlüssel `hooks.PreToolUse` mit der Arbeitsbereich-Sperre. Hat der Nutzer dort bereits eigene Hooks, wird der neue Eintrag ergänzt und kein bestehender ersetzt. Existiert die Datei lokal gar nicht, leg sie aus der Zielversion an. **Diese Datei nie blind mit `git checkout <Zielversion> -- .claude/settings.json` überschreiben:** Der Nutzer verliert damit stillschweigend alle Berechtigungen, die er sich eingerichtet hat, und merkt es erst, wenn ihn das Werkzeug bei jedem zweiten Befehl wieder fragt.
+
+Ein Hinweis zur Arbeitsbereich-Sperre, damit du sie richtig einordnest: Sie ruft `powershell` auf und wirkt deshalb nur unter Windows. Läuft dieses System auf macOS, Linux oder in einer Cloud-Sitzung, schlägt der Hook-Aufruf fehl, ohne etwas zu blockieren; die Regel in `AGENTS.md` Abschnitt 18 gilt dann als reine Textregel weiter. Melde das dem Nutzer, statt den Hook-Eintrag stillschweigend wegzulassen.
 
 **Kategorie C.** Nicht anfassen. Kein Ausnahmefall, keine Ausrede, auch nicht "das wäre aber besser so".
 
