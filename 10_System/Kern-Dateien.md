@@ -2,7 +2,7 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 1.6-starter
+version: 1.7-starter
 stand: 2026-08-07
 ---
 
@@ -29,6 +29,7 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `00_INDEX\scripts\build-index-geruest.ps1` | Index-Automatik |
 | `00_INDEX\scripts\health-check.ps1` | Prüfskript |
 | `00_INDEX\scripts\build-skill-wrapper.ps1` | Erzeugt die Skill-Zeiger für alle Werkzeuge (Abschnitt 11a) |
+| `00_INDEX\scripts\guard-workspace.ps1` | Arbeitsbereich-Sperre, blockiert Schreibzugriffe ausserhalb des Repos (Abschnitt 18) |
 | `00_INDEX\githooks\pre-commit` | Schutz vor beschädigten Commits |
 | `.gitattributes` | Zeilenenden-Behandlung |
 
@@ -45,6 +46,7 @@ Diese Dateien sind Mechanik, tragen aber zwingend etwas von dir. Ein Update darf
 | `CLAUDE.md` | Die `@`-Importzeilen, die auf deine Basiskontext-Dateien zeigen |
 | `GEMINI.md` | dasselbe |
 | `.clinerules` | dasselbe, hier als textliche Leseanweisung statt als Import |
+| `.claude\settings.json` | Hängt die Arbeitsbereich-Sperre ein. Dein Anteil sind eigene Berechtigungen und weitere Hooks, die ein Update nicht anfassen darf |
 | `.github\copilot-instructions.md` | dasselbe |
 | `ANLEITUNG.md` | Nichts, solange du sie nicht ergänzt hast. Wenn doch, gilt sie als deine Datei |
 

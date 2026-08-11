@@ -1,4 +1,4 @@
-# build-skill-wrapper.ps1 (Version 2)
+﻿# build-skill-wrapper.ps1 (Version 2)
 # Zweck: Erzeugt aus 02_Skills\Skill-Register.md duenne Zeiger in den Skill-Verzeichnissen
 # ALLER gaengigen Harnesses, damit die Repo-Skills ueberall nativ anspringen
 # (Autovervollstaendigung mit /name, automatisches Laden anhand der Beschreibung).
@@ -10,11 +10,11 @@
 # Bequemlichkeit: Leo funktioniert unveraendert weiter, weil das Skill-Register in jedem
 # Harness den Weg zur Datei beschreibt (Root-AGENTS.md, Abschnitt 11).
 #
-# WARUM MEHRERE VERZEICHNISSE (Florians Vorgabe vom 07.08.2026):
-# Ein Harness-Wechsel darf keine Vorbereitung kosten. Wer Leo in einem anderen Werkzeug
+# WARUM MEHRERE VERZEICHNISSE:
+# Ein Werkzeugwechsel darf keine Vorbereitung kosten. Wer Leo in einem anderen Werkzeug
 # oeffnet, soll dort sofort dieselben Skills haben, ohne dass vorher jemand etwas baut.
 # Deshalb werden die Zeiger auf Vorrat in alle bekannten Pfade geschrieben, auch in die
-# von Harnesses, die Florian heute nicht benutzt. Das ist die eine Stelle, an der die
+# von Werkzeugen, die heute niemand benutzt. Das ist die eine Stelle, an der die
 # YAGNI-Regel bewusst nicht gilt: Der Vorrat IST hier der Zweck.
 #
 # Format der erzeugten Dateien folgt der Agent-Skills-Spezifikation (agentskills.io,
@@ -28,6 +28,10 @@
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $registerFile = Join-Path $repo "02_Skills\Skill-Register.md"
+
+# UTF-8 ohne BOM, identisch unter Windows PowerShell 5.1 und PowerShell 7.
+# Begruendung an der Schreibstelle weiter unten.
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 # Zielverzeichnisse je Harness (Stand 07.08.2026, Quelle: agentskills.io-Oekosystem).
 # Neues Harness? Hier EINE Zeile ergaenzen, Skript laufen lassen, fertig.
@@ -174,13 +178,20 @@ foreach ($t in $targets) {
 
         if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
 
+        # Geschrieben wird ueber .NET statt ueber Set-Content -Encoding UTF8, weil
+        # dieser Parameter in beiden PowerShell-Generationen etwas ANDERES bedeutet:
+        # unter Windows PowerShell 5.1 UTF-8 MIT BOM, unter PowerShell 7 ohne. Eine
+        # BOM vor dem "---" macht das Frontmatter fuer den Skill-Loader unlesbar,
+        # der Skill zeigt dann als Beschreibung nur noch "---" an. Die Ausgabe muss
+        # unabhaengig davon sein, welcher Interpreter das Skript startet, sonst
+        # haengt die Funktionsfaehigkeit der Zeiger am Zufall.
         if (Test-Path $file) {
             $old = Get-Content -Path $file -Raw -Encoding UTF8
             if ($old -eq $body) { $unchanged++; continue }
-            Set-Content -Path $file -Value $body -Encoding UTF8 -NoNewline
+            [System.IO.File]::WriteAllText($file, $body, $utf8NoBom)
             $updated++
         } else {
-            Set-Content -Path $file -Value $body -Encoding UTF8 -NoNewline
+            [System.IO.File]::WriteAllText($file, $body, $utf8NoBom)
             $created++
         }
     }

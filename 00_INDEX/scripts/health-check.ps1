@@ -660,6 +660,64 @@ if ($registerSlugs.Count -eq 0) {
         Add-Check "OK" $cat "Skill-Zeiger vollstaendig: $($registerSlugs.Count) Skills in allen $($skillTargets.Count) Werkzeug-Pfaden (Abschnitt 11a)."
     }
 }
+# Kodierung der PowerShell-Skripte.
+# Windows PowerShell 5.1 liest eine .ps1 ohne BOM als ANSI. Enthaelt die Datei Umlaute,
+# zerfallen sie beim Parsen (aus einem Umlaut werden zwei Zeichen, deren zweites der
+# 5.1er Tokenizer als Anfuehrungszeichen liest), und das Skript bricht ab, bevor eine
+# Zeile laeuft. Auf einem Rechner ohne PowerShell 7 ist es damit unbenutzbar, und der
+# Schaden ist still: Es erscheint keine Fehlermeldung, die betroffene Automatik hoert
+# einfach auf zu wirken. Zulaessig ist deshalb beides: BOM oder durchgehend ASCII.
+$psBad = @()
+foreach ($ps in (Get-ChildItem -Path $repo -Recurse -Filter "*.ps1" -File -ErrorAction SilentlyContinue |
+                 Where-Object { $_.FullName -notmatch '\\\.git\\' })) {
+    $bytes = [System.IO.File]::ReadAllBytes($ps.FullName)
+    $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+    if ($hasBom) { continue }
+    if (@($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+        $psBad += $ps.FullName.Replace("$repo\", "")
+    }
+}
+if ($psBad.Count -gt 0) {
+    Add-Check "FAIL" $cat "PowerShell-Skript ohne BOM, aber mit Nicht-ASCII-Zeichen: $($psBad -join ', '). Unter Windows PowerShell 5.1 (ohne installiertes pwsh) bricht der Parser ab, ohne dass im Alltag eine Meldung erscheint. Behebung: Datei als UTF-8 MIT BOM speichern oder die Umlaute entfernen."
+} else {
+    Add-Check "OK" $cat "Alle .ps1 sind unter Windows PowerShell 5.1 lesbar (BOM vorhanden oder ASCII-only)."
+}
+
+# Gegenrichtung: Die erzeugten Skill-Zeiger duerfen KEINE BOM tragen. Eine BOM vor dem
+# "---" macht das Frontmatter fuer den Skill-Loader unlesbar, der Skill zeigt dann als
+# Beschreibung nur noch "---". Entstehen kann das, wenn build-skill-wrapper.ps1 mit
+# "Set-Content -Encoding UTF8" unter 5.1 laeuft, wo dieser Parameter BOM bedeutet.
+# Das Skript schreibt deshalb inzwischen ueber .NET.
+$bomZeiger = @()
+foreach ($rel in $skillTargets) {
+    $dir = Join-Path $repo ($rel -replace '/', '\')
+    foreach ($sk in (Get-ChildItem -Path $dir -Recurse -Filter "SKILL.md" -File -ErrorAction SilentlyContinue)) {
+        $b = [System.IO.File]::ReadAllBytes($sk.FullName)
+        if ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF) {
+            $bomZeiger += $sk.FullName.Replace("$repo\", "")
+        }
+    }
+}
+if ($bomZeiger.Count -gt 0) {
+    Add-Check "FAIL" $cat "Skill-Zeiger mit BOM vor dem Frontmatter: $($bomZeiger.Count) Datei(en), z.B. $($bomZeiger[0]). Der Skill-Loader liest die Beschreibung dann nicht. Behebung: die betroffenen Dateien loeschen und build-skill-wrapper.ps1 erneut laufen lassen."
+} else {
+    Add-Check "OK" $cat "Kein Skill-Zeiger traegt eine BOM vor dem Frontmatter."
+}
+
+# Arbeitsbereich-Sperre (AGENTS.md Abschnitt 18). Ohne den Hook-Eintrag ist die Regel
+# nur Text, und genau das ist der Zustand, den sie ersetzen soll.
+$guardSkript = Join-Path $repo "00_INDEX\scripts\guard-workspace.ps1"
+$guardSettings = Join-Path $repo ".claude\settings.json"
+if (-not (Test-Path $guardSkript)) {
+    Add-Check "FAIL" $cat "guard-workspace.ps1 fehlt. Die Arbeitsbereich-Sperre aus AGENTS.md Abschnitt 18 ist damit nicht durchgesetzt."
+} elseif (-not (Test-Path $guardSettings)) {
+    Add-Check "WARN" $cat "guard-workspace.ps1 vorhanden, aber .claude\settings.json fehlt. In Claude Code ist die Arbeitsbereich-Sperre damit nur eine Textregel."
+} elseif ((Get-Content -Path $guardSettings -Raw -Encoding UTF8) -notmatch "guard-workspace") {
+    Add-Check "WARN" $cat ".claude\settings.json haengt guard-workspace.ps1 nicht als PreToolUse-Hook ein. Die Sperre wirkt dann nicht."
+} else {
+    Add-Check "OK" $cat "Arbeitsbereich-Sperre aktiv (guard-workspace.ps1 als PreToolUse-Hook eingehaengt)."
+}
+
 Write-Output "Portabilitaets-Checks erledigt."
 
 # ---------------------------------------------------------------------------

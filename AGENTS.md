@@ -1,9 +1,9 @@
----
+﻿---
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 1.6-starter
-letzte_aenderung: 2026-08-07
+version: 1.7-starter
+letzte_aenderung: 2026-08-11
 ---
 
 # AGENTS.md: Master-Anweisung für Leo
@@ -101,7 +101,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 - Dateinamen: sprechend, ohne Sonderzeichen wie `& ! ?`. Zeitgebundene Dokumente mit Prefix `YYYY-MM-DD_`.
 - **Jede NEU angelegte Datei bekommt Frontmatter, und zwar einheitlich.** Pflichtfelder: `titel` (sprechender Name), `zweck` (ein Satz: was beantwortet diese Datei), `type` (aus der Liste unten), dazu `stand: YYYY-MM-DD`, sobald die Datei veränderlichen Zustand trägt (Abschnitt 7). Erlaubte `type`-Werte: `wissensnotiz` (kuratiertes Themenwissen), `rohquelle` (unverändert übernommene Quelle), `synthese` (verdichtendes, lebendes Dokument über mehrere Quellen), `arbeitsdokument` (lebendes Arbeitspapier), `rollen-regeln` (lokale AGENTS.md), `themen-index`, `readme`, `basiskontext`, `systemdoku` (`10_System`, Changelog), `master-regeln` (diese Datei und `MEIN-SYSTEM.md`). Ausgenommen sind Dateiklassen mit eigenem, in sich einheitlichem Schema, das ein Skill fest vorgibt: Skills (`name`, `trigger`, `zweck`, `type: skill`), Sessionlogs (`date`, `time`, `topic`, `context`, `tags`, `type: session-summary`) und die generierten Indexdateien. Die folgen bereits ihrem eigenen Standard, eine zweite Vorgabe darüber würde nur kollidieren. Braucht ein Fall wirklich einen neuen Wert, wird er hier ergänzt, nicht spontan erfunden: Ein frei wachsendes Vokabular macht `type` als Filter wertlos. Der System-Health-Check prüft das mechanisch (Kategorie `Frontmatter`); den Stichtag, ab dem die Pflicht greift, stellst du dort ein. **Zwei optionale Zusatzfelder** ergänzen das bei Bedarf: `gueltig_bis` (Ablaufdatum, Abschnitt 7) und `geprueft` (Bestätigung durch `[NAME]`, Abschnitt 6). Beide werden wie `letzte_aenderung` in ASCII geschrieben, ohne Umlaut: Die mechanische Prüfung liest Frontmatter-Schlüssel nur als `[a-zA-Z_]+`, ein `gültig_bis` wäre für sie unsichtbar. Das ist eine technische Ausnahme von der Umlaut-Regel und gilt ausschliesslich für Frontmatter-Schlüssel, nie für Fliesstext.
 - **Rohquellen aus der Inbox nach Verarbeitung löschen, nicht in den Themenordner verschieben.** Werden Dateien aus `90_Inbox` (Mails, PDFs, Scans, Exportformate) zu einer konsolidierten Wissensdatei verarbeitet, gilt: Die Information wird vollständig und präzise in die konsolidierte Datei übernommen, danach wird die Rohquelle gelöscht. Themenordner enthalten kuratiertes Wissen, keine Rohdateisammlung. In der Zieldatei wird die Quelle weiterhin nachvollziehbar zitiert (Absender, Datum, Betreff). Ausnahme: Hat eine Rohquelle eigenständigen Wert über die Konsolidierung hinaus, wird sie als sauberer Text (`.md`), nie als PDF, Scan oder Bilddatei, im Themenordner abgelegt. Im Zweifel nachfragen.
-- **Die Formatregel gilt auch für selbst erzeugte Dateien.** Erzeugst du auf Wunsch ein Ausgabeformat (PDF, DOCX, PPTX, Bild), etwa ein druckfertiges Handout, ist das ein Wegwerf-Artefakt für einen konkreten Anlass, kein Wissen: Es gehört in den Scratchpad oder an einen Ort ausserhalb des Repos, nicht in den Themenordner. Der Themenordner trägt Markdown, und die Datei dupliziert die Information, die im `.md` schon steht.
+- **Die Formatregel gilt auch für selbst erzeugte Dateien.** Erzeugst du auf Wunsch ein Ausgabeformat (PDF, DOCX, PPTX, Bild), etwa ein druckfertiges Handout, ist das ein Artefakt für einen konkreten Anlass, kein Wissen: Es gehört nicht in den Themenordner. Der Themenordner trägt Markdown, und die Datei dupliziert die Information, die im `.md` schon steht. Der Ablageort dafür ist der Geschwisterordner `<Repo> Artifacts` neben diesem Repo, für rein Wegwerfbares der Scratchpad. Beides sind ausdrückliche Ausnahmen von der Arbeitsbereich-Sperre in Abschnitt 18; einen dritten Ort ausserhalb des Repos wählst du nicht selbst. Der Ordner liegt ausserhalb von Git, ist also weder versioniert noch rückrollbar: Dort darf nie der einzige Träger einer Information liegen.
 - Neue Themenordner NUR über den Skill `leo-themenordner-anlegen` (denkt an README, AGENTS.md, Index; die Rollen-Tabelle oben zieht das Index-Skript mechanisch nach).
 - Nach jeder Ablage: Der mechanische Index-Teil aktualisiert sich automatisch (Task Scheduler, täglich). Beschreibungen ergänzt der Skill `leo-system-health-check`.
 
@@ -213,3 +213,23 @@ Coding-Agents haben Nutzungslimiten. Eine Session kann jederzeit mitten in einer
 - Zwischenstand laufend in Dateien sichern, nicht erst am Ende. Nach jedem inhaltlich abgeschlossenen Teilschritt das Ergebnis in die zuständige Wissensdatei oder ins Sessionlog schreiben.
 - Nie stillschweigend davon ausgehen, dass die aktuelle Session bis zum Schluss durchläuft. Grosse Aufgaben so strukturieren, dass nach jedem Schritt ein sauberer Wiedereinstiegspunkt in den Dateien existiert, nicht nur im Gesprächsverlauf.
 - Bei Session-Neustart nach einer Unterbrechung: zuerst den echten Dateizustand prüfen, dann exakt dort weiterarbeiten, wo die Dateien tatsächlich stehen.
+
+## 18. Arbeitsbereich (harte Grenze, nicht verhandelbar)
+
+**Du arbeitest ausschliesslich in diesem Repo.** Jede Veränderung ausserhalb, egal ob über ein Dateiwerkzeug oder über einen Shell- oder CLI-Befehl, braucht `[NAME]`s ausdrückliche Erlaubnis im Einzelfall. Das gilt unabhängig vom Berechtigungsmodus, in dem er dich betreibt: Ein weit gestellter Modus ist eine Bequemlichkeit für die Arbeit im Repo und keine Freigabe für den Rest des Dateisystems.
+
+**Begründung:** Im Repo macht Git jede Änderung rückrollbar, das ist überhaupt die Grundlage dafür, dass Skills ohne Rückfrage committen dürfen (Abschnitt 12). Ausserhalb fehlt dieses Netz vollständig. Ein falsch geratener Pfad, ein zu weit gefasstes Lösch-Kommando oder ein ungefragtes Aufräumen trifft dort Dateien, die niemand versioniert hat, und es fällt erst auf, wenn sie gebraucht werden.
+
+**Lesen ist davon nicht betroffen.** Eine fremde Datei öffnen, ein anderes Repo prüfen, einen ausserhalb gemeldeten Fehler diagnostizieren: alles weiterhin erlaubt und ohne Rückfrage möglich. Die Grenze verläuft beim Verändern, nicht beim Blick.
+
+**Drei Ausnahmen, und keine weiteren:**
+
+1. Der Artefakte-Ordner, also der Geschwisterordner `<Repo> Artifacts` neben diesem Repo, für erzeugte Ausgabeformate und ihre Build-Quellen (Abschnitt 5).
+2. Das Scratchpad des jeweiligen Werkzeugs, für rein temporäre Dateien, die nach der Session niemand mehr braucht.
+3. Der Memory-Pfad des Werkzeugs, und dort nur, um Einträge nach der Migration ins Repo zu löschen (Abschnitt 1).
+
+**Technisch durchgesetzt** wird das in Claude Code durch den PreToolUse-Hook `00_INDEX\scripts\guard-workspace.ps1`, eingehängt in `.claude\settings.json`. Er läuft vor jedem Schreibwerkzeug und vor jedem Shell-Aufruf und entscheidet ohne das Modell. In Werkzeugen ohne Hook-Mechanik gilt diese Regel unverändert als Textregel; sie ist der portable Kern, der Hook nur die Durchsetzung. Brauchst du dauerhaft einen weiteren Ort ausserhalb des Repos, trägst du ihn selbst in die Liste `$allowPatterns` im Skript ein.
+
+**Die Sperre wird nie umgangen, auch nicht mit guter Absicht.** Die Ausnahmeliste im Hook erweitern, den Hook abschalten oder eine Blockade über einen anderen Weg umgehen, um an ein blockiertes Ziel zu kommen: das ist die Umgehung der Regel und nicht ihre Anwendung. Wird ein Schreibzugriff blockiert, ist die richtige Reaktion, `[NAME]` zu fragen, mit Pfad und Grund. Bekannte Grenze, die er kennen sollte: Der Hook liegt im Repo, weil dort das ganze System liegt (Abschnitt 11), und ist damit für ein Werkzeug mit Repo-Schreibrecht theoretisch erreichbar. Genau deshalb steht dieser Absatz hier.
+
+**Und die Regel für den Umgang mit dem Hook selbst:** Wer ihn ändert oder aktiviert, sichert vorher den Rückweg und aktiviert ihn als letzten Schritt einer Session, nie mittendrin. Ein fehlerhafter PreToolUse-Hook macht die Sitzung arbeitsunfähig, und zwar auch für den Aufruf, der ihn wieder entfernen würde. Der Rückweg ist dann `git checkout -- .claude/settings.json` von Hand in einem Terminal, danach läuft es sofort weiter, ein Neustart ist nicht nötig.
