@@ -23,7 +23,9 @@
 #
 # EINRICHTUNG: Der Hook wirkt nur, wenn er in .claude\settings.json unter
 # hooks.PreToolUse eingehaengt ist. Die Datei liegt im Paket bei. Ohne sie ist
-# Abschnitt 18 eine reine Textregel.
+# Abschnitt 18 eine reine Textregel. Er ruft "powershell" auf und wirkt damit
+# nur unter Windows; auf macOS, Linux oder in einer Cloud-Sitzung schlaegt der
+# Aufruf fehl, ohne etwas zu blockieren.
 #
 # ANPASSEN: Brauchst du dauerhaft einen weiteren Ort ausserhalb des Repos, traegst
 # DU ihn unten in $allowPatterns ein, nicht der Agent nebenbei.
@@ -62,19 +64,19 @@ function Write-Decision([string]$decision, [string]$reason) {
 try {
 
 $raw = [Console]::In.ReadToEnd()
-if ([string]::IsNullOrWhiteSpace($raw)) { Write-Decision "durch" "Keine Eingabe erhalten." }
+if ([string]::IsNullOrWhiteSpace($raw)) { Write-Decision "durch" "" }
 $in = $raw | ConvertFrom-Json
 
 $repo = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)).TrimEnd('\')
 # Der Artefakte-Ordner ist der Geschwisterordner "<Repo> Artifacts". Join-Path statt
 # Zeichenkette, weil ein Repo direkt auf einem Laufwerk sonst einen doppelten
-# Trenner ergibt: Split-Path liefert dort "C:\" samt Trennzeichen.
+# Trenner ergibt: Split-Path liefert dort den Laufwerksnamen samt Trennzeichen.
 $artifacts = (Join-Path (Split-Path -Parent $repo) ((Split-Path -Leaf $repo) + " Artifacts")).TrimEnd('\')
 
 # --- Erlaubte Bereiche ------------------------------------------------------
 # Das Repo selbst, dazu drei Ausnahmen, die je einen Ablauf betreffen, der ohne
 # sie bricht. Die Muster enden bewusst auf "\*" statt auf "*": sonst wuerde ein
-# Muster wie "C:\Leo*" auch "C:\Leonardo" mit erlauben.
+# Muster fuer "C:\Leo" auch "C:\Leonardo" mit erlauben.
 $allowPatterns = @(
     $repo                                          # das Repo selbst
     "$repo\*"                                      # alles darin
@@ -89,7 +91,7 @@ $allowPatterns = @(
 function Test-Allowed([string]$path) {
     if ([string]::IsNullOrWhiteSpace($path)) { return $true }
     $p = $path.Trim().Trim('"').Trim("'")
-    # Git-Bash-Schreibweise /c/Repo/... auf C:\Repo\... normalisieren
+    # Git-Bash-Schreibweise /c/Repo/... auf Laufwerk-Schreibweise normalisieren
     if ($p -match '^/([a-zA-Z])/(.*)$') { $p = $matches[1].ToUpper() + ":\" + ($matches[2] -replace '/', '\') }
     $p = $p -replace '/', '\'
     # Relative Pfade werden hier nicht bewertet, dafuer zaehlt das Arbeitsverzeichnis.
@@ -98,6 +100,20 @@ function Test-Allowed([string]$path) {
     $p = $p.TrimEnd('\')
     foreach ($pat in $allowPatterns) {
         if ($p -like $pat) { return $true }
+    }
+    # Abgeschnittener Pfad aus einem Kommandotext. Die Pfad-Regex weiter unten
+    # endet am Leerzeichen, weil ein Leerzeichen in einem unquotierten Kommando
+    # das naechste Argument einleitet. Liegt das Repo selbst in einem Pfad MIT
+    # Leerzeichen (etwa unter "C:\Users\Anna Muster\Mein Leo" oder in einem
+    # OneDrive-Ordner), findet sie deshalb nur den Anfang, und ohne diese Regel
+    # waere jeder Schreibbefehl mit absolutem Pfad im EIGENEN Repo blockiert.
+    # Erlaubt wird nur der echte Abschneidefall: Der Fund muss Anfang eines
+    # erlaubten Pfades sein UND dort muss genau ein Leerzeichen folgen.
+    foreach ($pat in $allowPatterns) {
+        $klar = $pat.TrimEnd('*').TrimEnd('\')
+        if ($klar.Length -gt $p.Length -and
+            $klar.StartsWith($p, [System.StringComparison]::OrdinalIgnoreCase) -and
+            $klar[$p.Length] -eq ' ') { return $true }
     }
     return $false
 }
@@ -109,7 +125,7 @@ $ti   = $in.tool_input
 if ($tool -in @("Write", "Edit", "NotebookEdit", "MultiEdit")) {
     $target = [string]$ti.file_path
     if (-not (Test-Allowed $target)) {
-        Write-Decision "deny" "Ausserhalb des Repos ($repo) wird nichts geschrieben. Blockierter Pfad: $target. Das ist eine harte Regel, siehe AGENTS.md Abschnitt 18. Frag [NAME] um Erlaubnis, statt den Weg zu umgehen."
+        Write-Decision "deny" "Ausserhalb des Repos ($repo) wird nichts geschrieben. Blockierter Pfad: $target. Harte Regel, siehe AGENTS.md Abschnitt 18. Wenn das wirklich gewollt ist, gibt es zwei saubere Wege, und beide entscheidet [NAME]: die Datei von Hand an den Zielort legen, oder den Pfad dauerhaft in die Liste `$allowPatterns in 00_INDEX\scripts\guard-workspace.ps1 eintragen. Diese Liste erweiterst du nicht selbst, um an ein blockiertes Ziel zu kommen."
     }
     Write-Decision "durch" ""
 }
@@ -145,16 +161,27 @@ if ($tool -in @("Bash", "PowerShell")) {
 
     # Absolute Pfade im Kommandotext einsammeln: Laufwerk, UNC, Git-Bash-Stil.
     # Das UNC-Muster verlangt bewusst einen Hostnamen und danach einen EINFACHEN
-    # Trenner ("\\host\share"). Ohne diese Verschaerfung trifft es auch JSON mit
-    # escapten Backslashes ("\\00_INDEX\\scripts"), und damit jeden Versuch, eine
-    # Hook-Konfiguration zu schreiben.
+    # Trenner. Ohne diese Verschaerfung trifft es auch JSON mit escapten
+    # Backslashes und blockiert damit jeden Versuch, eine Hook-Konfiguration
+    # zu schreiben.
     $found = @()
+    # Erster Durchgang: Pfade in Anfuehrungszeichen. Die muessen als GANZES
+    # geprueft werden, sonst zerfaellt ein Pfad mit Leerzeichen am ersten
+    # Leerzeichen, und die Pruefung urteilt ueber etwas, das so nie gemeint war.
+    foreach ($m in [regex]::Matches($cmd, '"([^"\r\n]+)"|''([^''\r\n]+)''')) {
+        $inhalt = if ($m.Groups[1].Success) { $m.Groups[1].Value } else { $m.Groups[2].Value }
+        if ($inhalt -match '^[a-zA-Z]:[\\/]' -or $inhalt -match '^\\\\[a-zA-Z0-9._-]+\\(?!\\)' -or $inhalt -match '^/[a-zA-Z]/') {
+            $found += $inhalt
+        }
+    }
+    # Zweiter Durchgang: unquotierte Pfade. Endet zwangslaeufig am Leerzeichen,
+    # den Abschneidefall faengt Test-Allowed ab.
     foreach ($rx in @('[a-zA-Z]:[\\/][^"''`;,|)\s]*', '(?<!\\)\\\\[a-zA-Z0-9._-]+\\(?!\\)[^"''`;,|)\s]+', '(?<![\w.])/[a-zA-Z]/[^"''`;,|)\s]*')) {
         foreach ($m in [regex]::Matches($cmd, $rx)) { $found += $m.Value }
     }
     foreach ($f in ($found | Select-Object -Unique)) {
         if (-not (Test-Allowed $f)) {
-            Write-Decision "deny" "Schreibendes Kommando mit Ziel ausserhalb des Repos ($repo). Blockierter Pfad: $f. Harte Regel, siehe AGENTS.md Abschnitt 18. Frag [NAME] um Erlaubnis, statt den Weg zu umgehen."
+            Write-Decision "deny" "Schreibendes Kommando mit Ziel ausserhalb des Repos ($repo). Blockierter Pfad: $f. Harte Regel, siehe AGENTS.md Abschnitt 18. Wenn das wirklich gewollt ist, entscheidet [NAME]: die Datei von Hand an den Zielort legen, oder den Pfad dauerhaft in die Liste `$allowPatterns eintragen. Diese Liste erweiterst du nicht selbst."
         }
     }
     Write-Decision "durch" ""

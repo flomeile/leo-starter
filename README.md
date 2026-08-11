@@ -8,7 +8,7 @@ type: readme
 
 Harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematischen Ordnern; jedes LLM mit Datei- und Werkzeug-Zugriff kann darauf arbeiten.
 
-Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.8). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
+Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.9). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
 
 
 ## Zwei Regeln für den Betrieb
