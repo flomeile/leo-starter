@@ -3,7 +3,7 @@ name: leo-mechanik-update
 trigger: '"mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen"'
 zweck: Verbesserungen am Grundgerüst übernehmen, ohne eigene Anpassungen und eigene Bauten zu beschädigen
 type: skill
-version: 1.9-starter
+version: 1.10-starter
 ---
 
 # Skill: Mechanik aktualisieren
@@ -51,6 +51,7 @@ Einmalig, falls noch nicht vorhanden:
 
 ```powershell
 git remote add upstream https://github.com/flomeile/leo-starter.git
+git remote set-url --push upstream DISABLED
 ```
 
 Dann immer:
@@ -61,9 +62,11 @@ git fetch upstream --tags
 
 Prüfe mit `git remote -v`, ob `upstream` schon existiert, bevor du ihn hinzufügst. Ein zweiter Versuch schlägt sonst fehl, was kein Problem ist, aber unnötig verwirrt.
 
+**Die zweite Zeile ist neu und wird auch dann ausgeführt, wenn `upstream` schon existiert.** Sie schaltet die Push-Adresse dieses Remotes ab. `upstream` zeigt auf ein öffentliches Repository und wird nur zum Holen gebraucht; ein versehentliches `git push upstream main` hätte dagegen den kompletten Inhalt dieses privaten Systems dorthin geschrieben. In den meisten Fällen fängt GitHub das ohnehin ab, weil niemand ausser dem Herausgeber dort schreiben darf, aber das ist eine fremde Einstellung und keine eigene Absicherung. Nach `git remote -v` muss bei `(push)` `DISABLED` stehen; `git fetch upstream` funktioniert unverändert weiter, ein Push scheitert hörbar. Sag `[NAME]` in einem Satz, dass du das gemacht hast und warum.
+
 ### 3. Ausgangs- und Zielversion bestimmen
 
-- **Zielversion:** der höchste Tag `vX.Y` aus `git tag -l "v*"` nach dem Fetch.
+- **Zielversion:** der höchste Tag `vX.Y` nach dem Fetch, ermittelt mit `git tag -l "v*" --sort=v:refname`; der letzte Eintrag der Liste ist die Zielversion. Der Zusatz `--sort=v:refname` ist nicht optional: Ohne ihn sortiert Git die Tags als Text, und dabei steht `v1.10` vor `v1.9`, was die ältere Fassung zur Zielversion machen würde.
 - **Ausgangsversion:** der Wert aus `MEIN-SYSTEM.md`, Abschnitt 4.
 
 Sind beide gleich, ist nichts zu tun. Sag das und höre auf.
