@@ -3,7 +3,7 @@ name: leo-wrap-up
 trigger: '"wrap up", "session speichern", "zusammenfassen und ablegen", "session beenden", "log this"'
 zweck: Session zusammenfassen, ablegen, Lernschleife (Dauerwissen ins Repo zurückschreiben, notfalls neue Wissensdateien anlegen, sofort indexieren), Index leichtgewichtig aktuell halten, vollen System-Health-Check nur bei Bedarf anstossen
 type: skill
-version: 1.2-starter
+version: 1.3-starter
 ---
 
 # Skill: Leo Wrap-Up
@@ -61,6 +61,7 @@ type: session-summary
 1. **Dauerhaftes Verhalten** (Ton, Regel, Arbeitsweise, wiederkehrender Fehler): betroffenen Skill oder die zuständige AGENTS.md direkt nachziehen (Skill-Version hochzählen). Änderungen an `01_Basiskontext` nur mit expliziter Bestätigung plus Changelog.
 2. **Wissen mit Dauerwert** (Entscheidung, Fakt, Status): zuständige Wissensdatei im Themenordner fortschreiben (`stand:` aktualisieren), nicht nur ins Log. Dabei gilt:
    - **`geprueft: <Kürzel> <heute>` setzen, wo der Repo-Besitzer den Inhalt in dieser Session bestätigt hat** (Root-`AGENTS.md`, Abschnitt 6). Das ist der eine Ort im System, an dem das Feld regulär entsteht: Der Wrap-Up ist die einzige Stelle, die weiss, was in der Session wirklich gesagt und bestätigt wurde. Bestätigt heisst: Der Inhalt wurde gesehen und ihm wurde zugestimmt, nicht nur der Auftrag gegeben, ihn zu schreiben. Im Zweifel nicht setzen; ein fehlendes Feld ist harmlos, ein falsches behauptet eine Prüfung, die nie stattgefunden hat.
+   - **Eigene Schlüsse im Satz markieren, bevor sie in eine Wissensdatei gelangen** (Root-`AGENTS.md`, Abschnitt 6). Der Wrap-Up ist der Übergang, an dem aus einer Überlegung des Modells eine Zeile im Gedächtnis wird, und danach ist die Grenze nicht mehr sichtbar. Für jede Aussage, die zurückgeschrieben wird, deshalb zuerst die Herkunftsfrage beantworten: Stammt sie vom Repo-Besitzer, aus einer benannten Quelle, oder ist sie die eigene Ableitung des Modells? Nur die ersten beiden werden als Aussage geschrieben. Die dritte bekommt die Markierung im Satz selbst ("Einordnung (nicht aus der Quelle): ...", "Ableitung: ...", "Vermutung, unbestätigt: ..."), nie ein eigenes Frontmatter-Feld und nie eine Fussnote am Dateiende. Im Zweifel markieren: Eine überflüssige Markierung kostet vier Wörter, eine fehlende macht eine Vermutung drei Sessions später zur zitierten Beschlusslage.
    - **Statustoken beim Anfassen von Agenda-Dokumenten nachziehen** (`offen`, `laufend`, `blockiert`, `erledigt`, `verworfen`, `historisch`; Root-`AGENTS.md` Abschnitt 7). `erledigt` nur mit Beleg im selben Satz. Nicht auf Vorrat umstellen, nur die Dokumente, die in dieser Session ohnehin bearbeitet werden.
    - **Fehlt eine passende Wissensdatei, wird sie ANGELEGT** (thematisch richtiger Ordner, sprechender Name nach Ablageregeln). Dauerwissen bleibt nie nur im Log. Nur wenn die thematische Zuordnung wirklich unklar ist, kurz nachfragen. Für jede so angelegte Datei gilt der volle Standard aus Root-`AGENTS.md` Abschnitt 5: Frontmatter mit `titel`, `zweck`, `type` aus der geschlossenen Liste, dazu `stand:` bei veränderlichem Inhalt, und Querverweise mit Begründung in beide Richtungen, wo eine belegbare Beziehung besteht. Eine neu angelegte Wissensdatei ohne Anknüpfung wird von der nächsten Session nur per Zufallstreffer gefunden.
    - **Fortschreiben heisst ersetzen, nicht anhängen:** Revidierte Entscheidungen und überholte Aussagen werden in der Wissensdatei überschrieben bzw. entfernt, so dass die Datei widerspruchsfrei nur den letzten Stand trägt. Die Freigabe dafür ist die Session selbst: Stammt die neue Information in dieser Session vom Repo-Besitzer, braucht das Überschreiben der überholten Passage keine separate Rückfrage (Root-AGENTS.md Abschnitt 12); die alte Fassung bleibt über Git und Log erhalten. Ganze Dateien löschen sowie alles in `01_Basiskontext` brauchen weiterhin die explizite Bestätigung.
@@ -123,6 +124,7 @@ Bei 6b: "Abgelegt in 03_Sessionlogs\<Unterordner>\<Dateiname>. Leichtes Update (
 ## Definition of Done
 - [ ] Zeitstempel per Werkzeug geholt, nicht geraten
 - [ ] `geprueft:` in den Dateien gesetzt, deren Inhalt der Repo-Besitzer in dieser Session bestätigt hat; im Zweifel nicht gesetzt
+- [ ] Herkunft jeder zurückgeschriebenen Aussage geklärt: was aus der Session eigene Ableitung des Modells ist, steht im Satz markiert und nicht als Tatsache
 - [ ] Log enthält Sackgassen, Korrekturen, einmal genannte Randbedingungen und wörtliche Essentials, soweit in der Session vorhanden
 - [ ] Lernschleife gelaufen: jede Korrektur/Erkenntnis kategorisiert; dauerhaftes Verhalten in Skill/AGENTS.md, Dauerwissen in Wissensdateien zurückgeschrieben (fehlende Zieldatei angelegt, Überholtes ersetzt, Verlaufswert geprüft), im Log vermerkt
 - [ ] Konsistenz-Suche für jeden überholten Fakt gelaufen

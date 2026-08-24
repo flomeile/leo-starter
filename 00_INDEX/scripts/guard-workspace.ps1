@@ -72,6 +72,11 @@ $repo = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)).TrimEnd('\')
 # Zeichenkette, weil ein Repo direkt auf einem Laufwerk sonst einen doppelten
 # Trenner ergibt: Split-Path liefert dort den Laufwerksnamen samt Trennzeichen.
 $artifacts = (Join-Path (Split-Path -Parent $repo) ((Split-Path -Leaf $repo) + " Artifacts")).TrimEnd('\')
+# Das Belegarchiv ist der zweite Geschwisterordner, nach demselben Muster gebildet:
+# dort liegen die Primaerquellen, aus denen Wissensnotizen entstanden sind
+# (Abschnitt 5). Getrennt von Artifacts, weil die Herkunft unterschiedlich ist:
+# Artifacts traegt, was das System erzeugt hat, das Archiv, was von aussen kam.
+$archiv = (Join-Path (Split-Path -Parent $repo) ((Split-Path -Leaf $repo) + " Archiv")).TrimEnd('\')
 
 # --- Erlaubte Bereiche ------------------------------------------------------
 # Das Repo selbst, dazu drei Ausnahmen, die je einen Ablauf betreffen, der ohne
@@ -82,6 +87,8 @@ $allowPatterns = @(
     "$repo\*"                                      # alles darin
     $artifacts                                     # erzeugte Artefakte (Abschnitt 5)
     "$artifacts\*"
+    $archiv                                        # Primaerquellen-Archiv (Abschnitt 5)
+    "$archiv\*"
     "$([System.IO.Path]::GetTempPath())claude\*"   # Scratchpad des Werkzeugs
     "$env:TEMP\claude\*"                           # dasselbe, andere Schreibweise
     "$env:USERPROFILE\.claude\projects\*\memory"   # nur um Harness-Memory zu LOESCHEN

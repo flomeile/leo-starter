@@ -783,6 +783,7 @@ foreach ($f in $mdAll) {
 }
 
 $deadLinks = New-Object System.Collections.Generic.List[string]
+$ambiguousLinks = New-Object System.Collections.Generic.List[string]
 $linkCount = 0
 foreach ($f in $mdAll) {
     $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
@@ -798,10 +799,38 @@ foreach ($f in $mdAll) {
         if ([string]::IsNullOrWhiteSpace($target)) { continue }   # reiner Abschnittslink
         $linkCount++
         $probe = ($target + '.md').ToLower()
-        if ($relByLower.ContainsKey($probe)) { continue }
         $bn = (Split-Path $probe -Leaf)
-        if ($byBase.ContainsKey($bn) -and $byBase[$bn].Count -eq 1) { continue }
-        $deadLinks.Add("$rel -> [[$target]]")
+        # Qualifizierter Verweis (mit Ordnerpfad). Obsidian akzeptiert dafuer drei
+        # Schreibweisen: vault-relativ ab Repo-Wurzel, relativ zum Ordner der
+        # Quelldatei, und als eindeutiges Pfad-Ende. Wer nur eine davon prueft,
+        # meldet intakte Verweise als tot, und eine Warnung, die falsch liegt, wird
+        # nach dem dritten Mal ignoriert.
+        if ($probe -match '[\\/]') {
+            $probeSlash = $probe -replace '\\', '/'
+            if ($relByLower.ContainsKey($probeSlash)) { continue }
+            $relDir = (Split-Path $rel -Parent) -replace '\\', '/'
+            if ($relDir -and $relByLower.ContainsKey("$relDir/$probeSlash".ToLower())) { continue }
+            $suffixHits = @($relByLower.Keys | Where-Object { $_.EndsWith("/$probeSlash") })
+            if ($suffixHits.Count -eq 1) { continue }
+            if ($suffixHits.Count -gt 1) {
+                $ambiguousLinks.Add("$rel -> [[$target]] ($($suffixHits.Count) Kandidaten)")
+            } else {
+                $deadLinks.Add("$rel -> [[$target]]")
+            }
+            continue
+        }
+        # Blosser Dateiname: die Eindeutigkeit entscheidet, NICHT ein zufaelliger
+        # Treffer im Repo-Root. Stand die Root-Pruefung zuerst, loeste [[AGENTS]]
+        # aus einem Themenordner stumm auf die Root-AGENTS.md auf, obwohl die
+        # lokale gemeint war. Der Check meldete "alle Verweise loesen auf", und das
+        # LLM suchte den zitierten Abschnitt im falschen Dokument. Ein Verweis, der
+        # je nach Werkzeug woanders landet, ist kein gueltiger Verweis, auch wenn
+        # irgendeine Datei dieses Namens existiert.
+        if (-not $byBase.ContainsKey($bn)) {
+            $deadLinks.Add("$rel -> [[$target]]")
+        } elseif ($byBase[$bn].Count -gt 1) {
+            $ambiguousLinks.Add("$rel -> [[$target]] ($($byBase[$bn].Count) Kandidaten)")
+        }
     }
 
     foreach ($m in [regex]::Matches($txt, '\]\(([^)]+\.md)\)')) {
@@ -822,6 +851,12 @@ if ($deadLinks.Count -gt 0) {
     Add-Check "WARN" $cat "$($deadLinks.Count) tote(r) Verweis(e) von $linkCount geprueften Links. Ziel umbenannt, versioniert oder geloescht - Verweis nachziehen oder entfernen, nicht stehen lassen. Erste Treffer: $sample"
 } else {
     Add-Check "OK" $cat "Alle $linkCount Verweise (Wikilinks und Markdown-Links auf .md) loesen auf eine real existierende Datei auf."
+}
+if ($ambiguousLinks.Count -gt 0) {
+    $sampleA = ($ambiguousLinks | Select-Object -First 10) -join ' | '
+    Add-Check "WARN" $cat "$($ambiguousLinks.Count) mehrdeutige(r) Verweis(e): das Ziel existiert unter diesem Namen mehrfach, die Aufloesung haengt vom Werkzeug ab. Mit Ordnerpfad qualifizieren ([[<Themenordner>/<Datei>]]) oder, bei Systemdateien, als Pfad in Backticks schreiben (AGENTS.md Abschnitt 5). Treffer: $sampleA"
+} else {
+    Add-Check "OK" $cat "Kein Verweis ueber einen mehrdeutigen Dateinamen: jeder Wikilink zeigt auf genau eine Datei."
 }
 Write-Output "Link-Check erledigt."
 Write-Output ""
@@ -902,6 +937,152 @@ if ($fmIssues.Count -gt 0) {
     Add-Check "OK" $cat "Alle seit dem Stichtag angelegten Dateien tragen titel, zweck und einen zulaessigen type."
 }
 Write-Output "Frontmatter-Check erledigt."
+Write-Output ""
+
+
+# ---------------------------------------------------------------------------
+# HERKUNFT (Provenienz)
+# ---------------------------------------------------------------------------
+# AGENTS.md Abschnitt 6 verlangt dreierlei: Quelle zitieren, eigene Schluesse im
+# Satz markieren, `geprueft:` nur nach Bestaetigung. Ohne mechanische Gegenprobe
+# haengt das allein an der Disziplin des schreibenden Modells, und genau dort
+# faengt ein Wissenssystem unbemerkt an, Erfundenes wie Belegtes auszugeben.
+# Was pruefbar ist, wird hier geprueft. Ob eine Aussage stimmt, kann kein Skript
+# wissen; ob ihr Beleg ueberhaupt existiert und ob eine Datei ihren Status
+# ausweist, sehr wohl.
+$cat = "Herkunft"
+
+# Das Belegarchiv liegt als Geschwisterordner "<Repo> Archiv" neben dem Repo
+# (AGENTS.md Abschnitt 5). Fehlt es, bleibt $archivRoot leer und die
+# Archivpruefung schaltet sich still ab.
+$archivKandidat = Join-Path (Split-Path -Parent $repo) ((Split-Path -Leaf $repo) + " Archiv")
+$archivRoot = if (Test-Path -LiteralPath $archivKandidat) { $archivKandidat.TrimEnd('\') } else { $null }
+
+# --- a) Pfadverweise in Backticks, die ins Leere zeigen ---------------------
+# Der Link-Check oben sieht nur Wikilinks und Markdown-Links. Verweise auf
+# Systemdateien und auf Archivbelege stehen aber als Pfad in Backticks, und die
+# waren bis hierhin voellig ungeprueft: die Stelle, an der ein Beleg plausibel
+# benannt sein kann und trotzdem nirgendwohin zeigt.
+$provIssues = @()
+# Zustandsdateien, die erst zur Laufzeit entstehen (Zeitstempel des letzten Laufs),
+# sind keine Belege: Im frischen Repo existieren sie noch nicht, und ein Skill, der
+# sie erwaehnt, verweist auf ein Werkzeugergebnis, nicht auf eine Quelle.
+$phPattern  = '[<>*?%]|\.\.\.|YYYY|^~|last-run\.txt$|^zustand-'
+$cmdPattern = '^(git|pwsh|powershell|cd|python|schtasks|npm)\s|\s--\s'
+# 90_Inbox ist ausgenommen: Rohquellen verlassen die Inbox nach dem Ingest, ihr
+# Zitat in der Zieldatei bleibt bewusst stehen und ist die Herkunftsangabe selbst.
+$provExemptTarget = '^90_Inbox[\\/]'
+# Ein Satz, der das Anlegen einer Datei ankuendigt, verweist nicht auf sie.
+$planPattern = '(?i)(anlegen|anzulegen|neue Datei|wird erzeugt|entsteht|erstellen|festhalten|Ergebnis als|geplant)'
+$topLevel = @(Get-ChildItem -Path $repo -Directory | Where-Object { $_.Name -notmatch '^\.' } | ForEach-Object { $_.Name.ToLower() })
+$allBaseNames = @{}
+foreach ($x in (Get-ChildItem -Path $repo -Recurse -File | Where-Object { $_.FullName -notmatch $excludedDirPattern })) {
+    $allBaseNames[$x.Name.ToLower()] = $true
+}
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    if ($rel -match '^(03_Sessionlogs|04_Changelog)/') { continue }   # Append-only, alte Pfade sind dort Historie
+    $raw = Get-Content -Path $f.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $raw) { continue }
+    $noFence = [regex]::Replace($raw, '(?s)```.*?```', '')
+    foreach ($m in [regex]::Matches($noFence, '`([^`\r\n]+)`')) {
+        $t = $m.Groups[1].Value.Trim()
+        if ($t -notmatch '[\\/]') { continue }
+        # Archivbelege tragen jede erdenkliche Endung: PDF, Scan, Docx, Mailexport.
+        # Die Endungsliste haelt nur bei Repo-Verweisen das Rauschen fern (Fliesstext
+        # mit Schraegstrich). Ein Archivpfad wird immer geprueft, egal worauf er endet:
+        # Sonst laeuft die Belegpruefung leer und meldet trotzdem gruen.
+        $istArchivPfad = $archivRoot -and ($t -replace '\\','/').ToLower().StartsWith((($archivRoot -replace '\\','/') + '/').ToLower())
+        if (-not $istArchivPfad -and $t -notmatch '\.(md|ps1|txt|json)$') { continue }
+        if ($t -match $phPattern -or $t -match $cmdPattern) { continue }
+        $p = $t -replace '\\', '/'
+        if ($p -match '^[A-Za-z]:') {
+            if ($istArchivPfad) {
+                if (Test-Path -LiteralPath ($p -replace '/', '\')) { continue }
+                $provIssues += "$rel -> $t (Beleg fehlt im Archiv)"
+                continue
+            }
+            $repoSlash = ($repo -replace '\\','/') + '/'
+            if ($p.ToLower().StartsWith($repoSlash.ToLower())) { $p = $p.Substring($repoSlash.Length) } else { continue }
+        }
+        if ($p -match $provExemptTarget) { continue }
+        $firstSeg = ($p -split '/')[0].ToLower()
+        $baseName = (Split-Path $p -Leaf).ToLower()
+        if (($topLevel -notcontains $firstSeg) -and (-not $allBaseNames.ContainsKey($baseName))) { continue }
+        $abs    = Join-Path $repo ($p -replace '/', '\')
+        $absRel = Join-Path (Split-Path $f.FullName -Parent) ($p -replace '/', '\')
+        if ((Test-Path -LiteralPath $abs) -or (Test-Path -LiteralPath $absRel)) { continue }
+        $ctxStart = [Math]::Max(0, $m.Index - 120)
+        $ctx = $noFence.Substring($ctxStart, [Math]::Min(240, $noFence.Length - $ctxStart))
+        if ($ctx -match $planPattern) { continue }
+        $provIssues += "$rel -> $t"
+    }
+}
+if ($provIssues.Count -gt 0) {
+    $provIssues = $provIssues | Select-Object -Unique
+    $sampleP = ($provIssues | Select-Object -First 12) -join ' | '
+    Add-Check "WARN" $cat "$($provIssues.Count) Pfadverweis(e) in Backticks zeigen auf eine Datei, die es nicht gibt. Ein benannter Beleg, den niemand oeffnen kann, ist keine Quelle: Pfad korrigieren, Verweis entfernen oder als geplant kennzeichnen. Treffer: $sampleP"
+} else {
+    Add-Check "OK" $cat "Alle Pfadverweise in Backticks zeigen auf real existierende Dateien (Platzhalter, Kommandos, 90_Inbox-Zitate und fremde Systeme ausgenommen)."
+}
+
+# --- b) Status jeder Wissensdatei: bestaetigt oder ausgewiesener Vorschlag ---
+# Fehlt `geprueft:`, ist der Inhalt laut Abschnitt 6 ein Vorschlag. Diese Regel ist
+# beim Lesen aber unsichtbar: Ein Modell in einer Session sieht das Anlagedatum
+# einer Datei nicht und liest eine unbestaetigte Synthese wie Beschlusslage.
+# Deshalb muss der Status IN der Datei stehen, entweder als Feld oder als Satz.
+# Rohquellen sind ausgenommen: Eine unveraenderte Quelle ist der Beleg selbst.
+$statusHint = '(?i)(vorschlag|entwurf|unbest|nicht best|kein .?geprueft|nicht Beschlusslage)'
+$unklarStatus = @()
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    if ($rel -notmatch '^\d\d_') { continue }
+    if ($rel -match '^(00_INDEX|01_Basiskontext|02_Skills|03_Sessionlogs|04_Changelog|10_System|90_Inbox)/') { continue }
+    if ($fmExemptNames -contains $f.Name) { continue }
+    $raw = Get-Content -Path $f.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $raw) { continue }
+    if ($raw -match '(?m)^type:\s*rohquelle\s*$') { continue }
+    if ($raw -match '(?m)^geprueft:\s*\S') { continue }
+    if ($raw -match $statusHint) { continue }
+    $unklarStatus += $rel
+}
+if ($unklarStatus.Count -gt 0) {
+    $sampleS = ($unklarStatus | Select-Object -First 10) -join ' | '
+    Add-Check "WARN" $cat "$($unklarStatus.Count) Wissensdatei(en) weisen ihren Status nirgends aus: weder das Feld geprueft: noch ein Hinweis im Text. Ohne Bestaetigung sind sie Vorschlag, gelesen werden sie als Beschlusslage. Bestaetigen lassen (dann 'geprueft: <Kuerzel> <datum>' setzen) oder den Vorschlagshinweis in die Datei schreiben. Treffer: $sampleS"
+} else {
+    Add-Check "OK" $cat "Jede Wissensdatei weist ihren Status aus: bestaetigt per Feld geprueft: oder als Vorschlag im Text gekennzeichnet."
+}
+Write-Output "Herkunfts-Check erledigt."
+Write-Output ""
+
+
+# ---------------------------------------------------------------------------
+# FORMATDISZIPLIN (das Repo ist Gedaechtnis, kein Archiv)
+# ---------------------------------------------------------------------------
+# AGENTS.md Abschnitt 5: Themenordner tragen kuratiertes Wissen als Markdown.
+# PDFs, Scans, Exportformate und erzeugte Ausgabeformate gehoeren in die
+# Geschwisterordner "<Repo> Archiv" bzw. "<Repo> Artifacts". Ohne Pruefung
+# sickert das ueber Backups und Handablagen ein und macht das Repo still zum
+# Archiv: Binaerdateien blaehen Git auf, und die Suche kann Wissen nicht mehr
+# von Rohmaterial unterscheiden.
+$cat = "Formatdisziplin"
+$fremdformate = Get-ChildItem -Path $repo -Recurse -File |
+    Where-Object {
+        $_.FullName -notmatch $excludedDirPattern -and
+        $_.Extension -ne ".md" -and
+        # Zustandsdateien der Skripte sind Mechanik, kein Archivgut.
+        $_.Name -notlike "*last-run.txt" -and
+        $_.Name -notlike "zustand-*.json" -and
+        (($_.FullName.Substring($repo.Length + 1) -replace '\\', '/') -match '^\d\d_') -and
+        (($_.FullName.Substring($repo.Length + 1) -replace '\\', '/') -notmatch '^(00_INDEX|01_Basiskontext|02_Skills|03_Sessionlogs|04_Changelog|10_System)/')
+    }
+if ($fremdformate.Count -gt 0) {
+    $liste = ($fremdformate | ForEach-Object { $_.FullName.Substring($repo.Length + 1) -replace '\\', '/' }) -join ' | '
+    Add-Check "WARN" $cat "$($fremdformate.Count) Nicht-Markdown-Datei(en) in Themenordnern. Inhalt als Wissensnotiz uebernehmen, Datei ins Archiv bzw. nach Artifacts verschieben oder loeschen - aber erst nach Ruecksprache (Abschnitt 12). Treffer: $liste"
+} else {
+    Add-Check "OK" $cat "Themenordner enthalten ausschliesslich Markdown: kein Rohformat, kein erzeugtes Ausgabeformat, kein Archivgut."
+}
+Write-Output "Formatdisziplin-Check erledigt."
 Write-Output ""
 
 
