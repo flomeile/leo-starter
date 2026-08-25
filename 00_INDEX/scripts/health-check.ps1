@@ -1026,13 +1026,35 @@ if ($provIssues.Count -gt 0) {
     Add-Check "OK" $cat "Alle Pfadverweise in Backticks zeigen auf real existierende Dateien (Platzhalter, Kommandos, 90_Inbox-Zitate und fremde Systeme ausgenommen)."
 }
 
-# --- b) Status jeder Wissensdatei: bestaetigt oder ausgewiesener Vorschlag ---
+# --- b) Herkunft jeder Wissensdatei: bestaetigt, aus einer Quelle, oder Vorschlag ---
 # Fehlt `geprueft:`, ist der Inhalt laut Abschnitt 6 ein Vorschlag. Diese Regel ist
 # beim Lesen aber unsichtbar: Ein Modell in einer Session sieht das Anlagedatum
 # einer Datei nicht und liest eine unbestaetigte Synthese wie Beschlusslage.
-# Deshalb muss der Status IN der Datei stehen, entweder als Feld oder als Satz.
+# Deshalb muss die Herkunft IN der Datei stehen, an einer festen Stelle.
 # Rohquellen sind ausgenommen: Eine unveraenderte Quelle ist der Beleg selbst.
-$statusHint = '(?i)(vorschlag|entwurf|unbest|nicht best|kein .?geprueft|nicht Beschlusslage)'
+#
+# WARUM EIN FELD UND NICHT EIN WORT IM TEXT. Frueher genuegte ein Wortfund irgendwo
+# im Dateiinhalt. Zwei Fehler daran, beide von einem Nutzer dieses Grundgeruests
+# gemeldet, dessen Inhalt ueberwiegend englisch ist:
+#   1. Sprachbindung. Die Wortliste war deutsch. In einem englischsprachigen Repo
+#      liess sich der Ausweis nur erbringen, indem ein deutscher Satz in einer
+#      englischen Datei steht. Er sieht dort aus wie ein Versehen und wird geloescht.
+#   2. Der schwerere Fehler: Der Anker war der gesamte Dateiinhalt. Ein zufaelliges
+#      Vorkommen genuegte, etwa "Vorschlag" in einem Angebot oder "Entwurf" in einer
+#      Beschreibung. In einem gewachsenen Repo bestand so mehr als die Haelfte der
+#      betroffenen Dateien, ohne ueber sich selbst irgendetwas zu sagen.
+# Eine Datei, die faelschlich als ausgewiesen durchgeht, ist schlechter als keine
+# Pruefung: Sie erzeugt Vertrauen, das nichts traegt. Der Anker ist deshalb ein
+# Frontmatter-Feld mit geschlossenem Vokabular und deutschen wie englischen Werten.
+#
+# Das Feld heisst bewusst `herkunft:` und nicht `status:`. `**Status:**` bezeichnet im
+# Fliesstext nach Abschnitt 7 den Arbeitszustand eines Blocks (offen, laufend,
+# blockiert, erledigt). Dieselbe Vokabel zweimal mit zwei Bedeutungen zu belegen ist
+# der Weg, auf dem solche Konventionen zerfallen.
+#   vorschlag / proposal: vom LLM abgeleitet, nicht bestaetigt.
+#   quelle / source:      unmittelbar aus einer benannten Quelle oder aus den eigenen
+#                         Angaben des Nutzers, keine Ableitung, aber nicht bestaetigt.
+$herkunftFeld = '(?im)^herkunft:\s*(vorschlag|proposal|quelle|source)\s*$'
 $unklarStatus = @()
 foreach ($f in $mdAll) {
     $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
@@ -1041,16 +1063,22 @@ foreach ($f in $mdAll) {
     if ($fmExemptNames -contains $f.Name) { continue }
     $raw = Get-Content -Path $f.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
     if (-not $raw) { continue }
-    if ($raw -match '(?m)^type:\s*rohquelle\s*$') { continue }
-    if ($raw -match '(?m)^geprueft:\s*\S') { continue }
-    if ($raw -match $statusHint) { continue }
+    # Nur der Frontmatter-Block zaehlt, nicht die ganze Datei. Genau die fehlende
+    # Eingrenzung war der Fehler oben: Wer im Fliesstext sucht, findet frueher oder
+    # spaeter irgendwo etwas. Hat eine Datei kein Frontmatter, bleibt $fm leer und
+    # sie wird zu Recht gemeldet.
+    $fm = ''
+    if ($raw -match '(?s)^\uFEFF?---\r?\n(.*?)\r?\n---\r?\n') { $fm = $matches[1] }
+    if ($fm -match '(?m)^type:\s*rohquelle\s*$') { continue }
+    if ($fm -match '(?m)^geprueft:\s*\S') { continue }
+    if ($fm -match $herkunftFeld) { continue }
     $unklarStatus += $rel
 }
 if ($unklarStatus.Count -gt 0) {
     $sampleS = ($unklarStatus | Select-Object -First 10) -join ' | '
-    Add-Check "WARN" $cat "$($unklarStatus.Count) Wissensdatei(en) weisen ihren Status nirgends aus: weder das Feld geprueft: noch ein Hinweis im Text. Ohne Bestaetigung sind sie Vorschlag, gelesen werden sie als Beschlusslage. Bestaetigen lassen (dann 'geprueft: <Kuerzel> <datum>' setzen) oder den Vorschlagshinweis in die Datei schreiben. Treffer: $sampleS"
+    Add-Check "WARN" $cat "$($unklarStatus.Count) Wissensdatei(en) weisen ihre Herkunft nicht aus: weder 'geprueft:' noch 'herkunft:' im Frontmatter. Ohne Bestaetigung sind sie Vorschlag, gelesen werden sie als Beschlusslage. Setzen: 'geprueft: <Kuerzel> <datum>' nach der Bestaetigung, sonst 'herkunft: vorschlag' (vom LLM abgeleitet) oder 'herkunft: quelle' (unmittelbar aus einer benannten Quelle oder aus deinen eigenen Angaben). Englische Werte proposal und source sind gleichwertig. Treffer: $sampleS"
 } else {
-    Add-Check "OK" $cat "Jede Wissensdatei weist ihren Status aus: bestaetigt per Feld geprueft: oder als Vorschlag im Text gekennzeichnet."
+    Add-Check "OK" $cat "Jede Wissensdatei weist ihre Herkunft im Frontmatter aus: geprueft: (bestaetigt) oder herkunft: (vorschlag beziehungsweise quelle)."
 }
 Write-Output "Herkunfts-Check erledigt."
 Write-Output ""
