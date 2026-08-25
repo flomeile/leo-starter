@@ -17,6 +17,12 @@ Dies ist ein leeres Grundgerüst (Starter Pack, Version 1.12). Es enthält die k
 
 **2. Hol dir hin und wieder die Updates.** Das Gerüst wird weiterentwickelt. Sag dazu einfach "mechanik update" zu deinem Agenten. Er holt die neue Fassung von GitHub und arbeitet sie ein, ohne deine Inhalte, deine Personalisierung oder deine selbstgebauten Skills anzutasten. Wie das abgesichert ist, steht in `ANLEITUNG.md`, Teil 8 und in `10_System\Kern-Dateien.md`.
 
+## Einen Fehler in der Mechanik gefunden?
+
+Melde ihn als Issue **in diesem Repo** (`flomeile/leo-starter`), nicht in deiner eigenen Kopie. Beim Anlegen erscheint die Vorlage "Befund an der Mechanik". Sie fragt genau das ab, was zur Behebung gebraucht wird, insbesondere deine Umgebung: Die meisten Befunde hängen daran, und was auf einem Rechner läuft, beweist nichts über den anderen.
+
+**Zwei Dinge, die dabei zählen.** Dieses Repo ist öffentlich und ein Issue bleibt dauerhaft auffindbar, deshalb gehört kein Inhalt aus deinem eigenen System hinein, keine Personendaten und kein wörtliches Zitat aus einer privaten Datei. Und ein Befund wird gemessen statt übernommen: Ein Vorschlag kann zutreffen und trotzdem mit einer Konvention kollidieren, die von aussen nicht sichtbar ist. Wird er abgeändert, steht der Grund als Antwort im Issue.
+
 ## Zuerst lesen
 
 **`ANLEITUNG.md`** im Root: Sinn, Funktionsweise und die Schritt-für-Schritt-Einrichtung. Das ist dein Startpunkt. Sie deckt zwei Wege ab, einen mit eigenem Windows-Rechner und einen ohne eigenen Rechner (nur Tablet), und markiert Erklärungen für Einsteiger als **Grundlagen**-Kästen, die ein erfahrener Leser überspringen kann.
