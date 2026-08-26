@@ -1,4 +1,4 @@
-﻿# health-check.ps1
+# health-check.ps1
 # Zweck: Read-only Diagnose des gesamten KI_REPO-Systems. Veraendert NICHTS am Repo.
 # Denkt NICHT selbst nach: rein deterministische, mechanische Pruefungen, keine Halluzination.
 #
@@ -627,7 +627,10 @@ function Get-ImportSet([string]$file) {
     $raw = [regex]::Replace($raw, '`[^`\r\n]*`', '')   # Beispiele in Backticks ignorieren
     foreach ($line in ($raw -split "`r?`n")) {
         if ($line -match '^\s*@(\.{1,2}/)?(.+?)\s*$') {
-            [void]$set.Add(($matches[2] -replace '\\', '/').Trim().ToLower())
+            # Maskierte Leerzeichen ("Voice\ and\ Style.md") zuerst zuruecknehmen, sonst
+            # macht die Ersetzung darunter aus dem Escape-Backslash einen Pfadtrenner.
+            $ziel = $matches[2] -replace '\\ ', ' '
+            [void]$set.Add(($ziel -replace '\\', '/').Trim().ToLower())
         }
     }
     # Komma-Operator: verhindert, dass PowerShell die Menge beim Return entrollt. Ohne
@@ -644,6 +647,29 @@ Get-ChildItem -Path (Join-Path $repo "01_Basiskontext") -Filter "*.md" -File -Er
     Where-Object { $_.Name -ne "README.md" } |
     ForEach-Object { [void]$expected.Add("01_basiskontext/$($_.Name.ToLower())") }
 
+# Ein Import, der DASTEHT, ist noch kein Import, der LAEDT. Enthaelt ein Dateiname ein
+# Leerzeichen, liest der Importparser den Pfad nur bis dorthin, und die Datei kommt nie
+# im Kontext an, waehrend die Zeile voellig richtig aussieht. Am 26.08.2026 empirisch
+# nachgewiesen; ein maskiertes Leerzeichen ("Voice\ and\ Style.md") laedt, ein
+# Anfuehrungszeichen nicht. Diese Pruefung ist FAIL und nicht WARN: Ohne den geladenen
+# Basiskontext arbeitet das System ohne Stil- und Personenwissen weiter, ohne dass es
+# jemandem auffaellt.
+$importUnescaped = @()
+foreach ($datei in @("CLAUDE.md", "GEMINI.md")) {
+    $pfad = Join-Path $repo $datei
+    if (-not (Test-Path -LiteralPath $pfad)) { continue }
+    foreach ($line in (Get-Content -LiteralPath $pfad -Encoding UTF8 -ErrorAction SilentlyContinue)) {
+        if ($line -notmatch '^\s*@(\S.*)$') { continue }
+        $ziel = $matches[1].Trim()
+        if ($ziel -match '^"') { $importUnescaped += "$datei -> $ziel (Anfuehrungszeichen funktionieren nicht)"; continue }
+        if ($ziel -match '(?<!\\) ') { $importUnescaped += "$datei -> $ziel" }
+    }
+}
+if ($importUnescaped.Count -gt 0) {
+    Add-Check "FAIL" $cat "$($importUnescaped.Count) Importzeile(n) mit unmaskiertem Leerzeichen im Pfad. Diese Dateien werden NICHT geladen, obwohl die Zeile dasteht. Leerzeichen mit Backslash maskieren. Treffer: $($importUnescaped -join ' | ')"
+} else {
+    Add-Check "OK" $cat "Alle Importpfade in CLAUDE.md und GEMINI.md sind ladbar: kein unmaskiertes Leerzeichen, keine Anfuehrungszeichen."
+}
 foreach ($pair in @(@{ n = "CLAUDE.md"; s = $claudeImports }, @{ n = "GEMINI.md"; s = $geminiImports })) {
     $missing = @($expected | Where-Object { -not $pair.s.Contains($_) })
     if ($missing.Count -gt 0) {

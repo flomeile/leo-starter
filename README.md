@@ -1,4 +1,4 @@
-﻿---
+---
 titel: Leo
 zweck: Einstiegspunkt für Menschen
 type: readme

@@ -1,4 +1,4 @@
-﻿---
+---
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
