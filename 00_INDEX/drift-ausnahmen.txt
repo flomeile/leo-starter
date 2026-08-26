@@ -1,0 +1,16 @@
+# Drift-Ausnahmen fuer den System-Health-Check (Kategorie Aktualitaet)
+#
+# Eine Zeile je Commit, der Dateien angefasst hat, ohne eine Aussage darin zu aendern
+# (Massenlauf, Formatumstellung, Reparatur von Linkzielen). Solche Commits ueberspringt
+# die Drift-Pruefung, damit 'stand:' unangetastet bleibt und trotzdem keine Dauer-Warnung
+# entsteht. Alles ab '#' ist Kommentar, der Hash steht vorne (7 bis 40 Stellen).
+#
+# Beispiel:
+# a1b2c3d  # Umstellung aller Pfadnennungen auf Wikilinks, kein Fliesstext geaendert
+#
+# Diese Datei liegt bewusst neben dem Skript und nicht darin: health-check.ps1 gehoert
+# zum Kern und wird bei jedem Mechanik-Update ersetzt, diese Datei nicht. Neue Eintraege
+# NUR fuer nachweislich inhaltsneutrale Laeufe.
+#
+# Nicht noetig ist ein Eintrag fuer Commits, die nur 'herkunft:' oder 'geprueft:' im
+# Frontmatter ergaenzen: Die erkennt der Health-Check seit Version 1.13 selbst.

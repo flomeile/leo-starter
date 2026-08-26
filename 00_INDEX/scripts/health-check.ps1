@@ -324,6 +324,28 @@ $expiredFiles = @()
 # eintragen, Format "Themenordner/relativer Pfad".
 $knownDriftExceptions = @(
 )
+# Ein Commit, der an einer Datei ausschliesslich `herkunft:` oder `geprueft:` im
+# Frontmatter ergaenzt hat, aendert keine einzige Aussage darin und darf deshalb keine
+# Drift-Warnung ausloesen. Hintergrund (Issue #1 in diesem Repo, 26.08.2026): Der
+# Herkunftsnachweis aus Abschnitt 6 der AGENTS.md verlangt genau diese Nachtragung, und
+# ein solcher Migrationslauf macht jede betroffene Datei juenger als ihr 'stand:'. In
+# einem laenger gewachsenen Repo meldet die Kategorie Aktualitaet danach alle auf einmal,
+# obwohl keine Aussage geaendert wurde.
+# Geprueft wird der Diff dieses einen Commits fuer diese eine Datei: Bleibt nach Abzug
+# der beiden Frontmatter-Felder keine geaenderte Zeile uebrig, war er hier inhaltsneutral.
+# Ein leerer oder nicht lesbarer Diff (Merge-Commit, Umbenennung) gilt bewusst als
+# inhaltliche Aenderung, die Pruefung faellt also immer auf die Warnung zurueck.
+function Test-NurStatusfelder([string]$hash, [string]$pfad) {
+    $diff = & git -C $repo show --format="" --unified=0 $hash -- "$pfad" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $diff) { return $false }
+    $inhaltszeilen = @($diff | Where-Object { $_ -match '^[+-]' -and $_ -notmatch '^(\+\+\+|---)' })
+    if ($inhaltszeilen.Count -eq 0) { return $false }
+    foreach ($z in $inhaltszeilen) {
+        if ($z -notmatch '^[+-]\s*(herkunft|geprueft):') { return $false }
+    }
+    return $true
+}
+
 # Rein mechanische Commits, die den Inhalt einer Datei NICHT veraendert haben und
 # deshalb bei der Drift-Berechnung uebersprungen werden. Hintergrund: Ein Massenlauf
 # ueber viele Dateien (z.B. eine Umstellung der Linkschreibweise) aendert keine
@@ -331,10 +353,20 @@ $knownDriftExceptions = @(
 # setzen, behaupteten anschliessend auch alte Notizen, sie seien heute geprueft
 # worden, also genau die Fehlinformation, die 'stand:' verhindern soll. Umgekehrt
 # wuerde eine Dauer-Warnung ueber alle betroffenen Dateien den Check unbrauchbar
-# machen. Deshalb: Commit ueberspringen, 'stand:' unangetastet lassen. Eintraege sind
-# die kurzen Commit-Hashes, NUR fuer nachweislich inhaltsneutrale Massenlaeufe.
-$mechanicalCommits = @(
-)
+# machen. Deshalb: Commit ueberspringen, 'stand:' unangetastet lassen.
+#
+# Die Liste steht bewusst NICHT hier im Skript, sondern in 00_INDEX\drift-ausnahmen.txt:
+# health-check.ps1 gehoert zum Kern und wird bei jedem Mechanik-Update ersetzt, ein hier
+# eingetragener Hash waere danach weg. Die Ausnahmedatei gehoert dir und wird von keinem
+# Update angefasst. Format: eine Zeile je Commit, alles ab '#' ist Kommentar. Neue
+# Eintraege NUR fuer nachweislich inhaltsneutrale Massenlaeufe.
+$mechanicalCommits = @()
+$driftAusnahmeDatei = Join-Path $repo "00_INDEX\drift-ausnahmen.txt"
+if (Test-Path -LiteralPath $driftAusnahmeDatei) {
+    $mechanicalCommits = @(Get-Content -LiteralPath $driftAusnahmeDatei -Encoding UTF8 -ErrorAction SilentlyContinue |
+        ForEach-Object { ($_ -split '#')[0].Trim() } |
+        Where-Object { $_ -match '^[0-9a-fA-F]{7,40}$' })
+}
 Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name -ne "_INDEX.md" -and $_.FullName -notmatch $excludedDirPattern } | ForEach-Object {
     $hasExpiry = $false
     $gb = Select-String -Path $_.FullName -Pattern '^gueltig_bis:\s*(\d{4}-\d{2}-\d{2})' -List -ErrorAction SilentlyContinue
@@ -369,6 +401,13 @@ Get-ChildItem -Path $repo -Recurse -Filter "*.md" -File | Where-Object { $_.Name
                 $skip = $false
                 foreach ($mc in $mechanicalCommits) { if ($parts[0].StartsWith($mc)) { $skip = $true; break } }
                 if ($skip) { continue }
+                # Der Blick in den Diff lohnt erst, wenn dieser Commit ueberhaupt eine
+                # Warnung ausloesen wuerde. Liegt er innerhalb der Toleranz, wird kein
+                # git show aufgerufen: Die teurere Pruefung trifft nur Kandidaten.
+                if ("$($parts[1])" -match '^\d{4}-\d{2}-\d{2}$') {
+                    $kandidat = [datetime]::ParseExact($parts[1], "yyyy-MM-dd", $null)
+                    if ((New-TimeSpan -Start $d -End $kandidat).Days -gt 7 -and (Test-NurStatusfelder $parts[0] $_.FullName)) { continue }
+                }
                 $gitDateRaw = $parts[1]
                 break
             }

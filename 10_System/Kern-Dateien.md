@@ -2,8 +2,8 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 1.12-starter
-stand: 2026-08-24
+version: 1.13-starter
+stand: 2026-08-26
 ---
 
 # Kern-Dateien: was ein Update anfassen darf
@@ -61,6 +61,7 @@ Alles andere. Ein Update liest diese Dateien höchstens, um zu prüfen, ob deine
 - Alle Skills, die du selbst gebaut hast
 - `02_Skills\Skill-Register.md` (dein Verzeichnis, wächst mit deinen Skills; der Update-Skill schlägt dir nur die Zeile für neue Kern-Skills vor)
 - `00_INDEX\INDEX.md`, `00_INDEX\INDEX-Geruest.md` und alle `_INDEX.md` (maschinell erzeugt, aus deinen Inhalten)
+- `00_INDEX\drift-ausnahmen.txt` (Commits, die der Health-Check bei der Drift-Prüfung überspringt; sie stammen aus deiner Historie, deshalb gehört die Datei dir. Sie liegt bewusst neben dem Prüfskript und nicht darin, weil das Skript Kategorie A ist und ein dort eingetragener Hash beim nächsten Update verloren wäre)
 - `03_Sessionlogs\*`, `04_Changelog\*`, `90_Inbox\*`
 
 ## Wenn du doch eine Kern-Datei ändern willst
