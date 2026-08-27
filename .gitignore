@@ -1,5 +1,4 @@
-.obsidian/workspace*
-.obsidian/cache
+.obsidian/
 .trash/
 *.tmp
 .timestamp
