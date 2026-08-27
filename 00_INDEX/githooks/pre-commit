@@ -11,6 +11,11 @@
 #   BLOCKIERT wird nur bei BESCHAEDIGUNG:
 #     (1) Merge-Konflikt-Marker in einer gestageten .md
 #     (2) zerstoerte AUTO:...:BEGIN/END-Paare in den mechanischen Indexdateien
+#     (3) eindeutige Zugangsschluessel im gestageten Inhalt (seit v1.17): nur
+#         Muster mit anbieter-typischem Praefix und Mindestlaenge, damit
+#         Doku-Saetze UEBER Schluessel nie blockieren. Ein committeter
+#         Schluessel ist Beschaedigung, nicht Hygiene: Er steht danach in der
+#         Historie und gilt als kompromittiert.
 #   ALLES ANDERE wird nur AUSGEGEBEN und bleibt Sache des Health-Checks:
 #     fehlendes/unvollstaendiges Frontmatter, unbekannter type, abgelaufenes
 #     gueltig_bis.
@@ -41,7 +46,12 @@ for tool in git awk sed grep date; do
 done
 
 staged=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=ACM -- '*.md' 2>/dev/null)
-[ -z "$staged" ] && exit 0
+# allstaged (alle Dateitypen) muss VOR dem fruehen Exit stehen: Der Secret-Scan
+# unten prueft auch Commits ganz ohne .md, etwa eine einzelne .ps1 oder .json.
+# Gefunden im Negativtest: Ein Fake-Schluessel in einer .ps1 ging durch, weil
+# der Hook hier bereits ausstieg, bevor der Scan je lief.
+allstaged=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=ACM 2>/dev/null)
+[ -z "$staged" ] && [ -z "$allstaged" ] && exit 0
 added=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=A -- '*.md' 2>/dev/null)
 today=$(date +%Y-%m-%d)
 
@@ -167,6 +177,28 @@ while IFS= read -r f; do
 done <<EOF
 $staged
 EOF
+
+# --- BLOCKIEREND 3: eindeutige Zugangsschluessel (Secret-Scan) --------------
+# Versehentlich eingecheckte Schluessel sind der haeufigste reale Schaden in
+# Repos dieser Bauart. Geprueft werden ALLE gestageten Textdateien, nicht nur
+# .md: Schluessel landen typischerweise in .ps1, .json und .yml. Die Muster
+# verlangen Praefix plus Mindestlaenge; die Regex-Notation selbst (etwa in
+# dieser Datei oder in Doku) erfuellt die Mindestlaenge nie und blockiert
+# deshalb nicht. allstaged ist oben vor dem fruehen Exit berechnet.
+secretpat='sk-ant-[A-Za-z0-9_-]{24,}|sk-or-v1-[A-Za-z0-9]{24,}|sk-proj-[A-Za-z0-9_-]{24,}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{36,}|AKIA[0-9A-Z]{16}|xox[bpoas]-[A-Za-z0-9-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    case "$f" in
+        *.png|*.jpg|*.jpeg|*.gif|*.pdf|*.xlsx|*.docx|*.pptx|*.zip|*.ico|*.woff|*.woff2|*.svg) continue ;;
+    esac
+    hits=$(git show ":$f" 2>/dev/null | tr -d '\r' | grep -En "$secretpat" | cut -d: -f1 | head -3 | tr '\n' ' ')
+    if [ -n "$hits" ]; then
+        errors="$errors
+  - $f: Muster eines echten Zugangsschluessels im gestageten Inhalt (Zeile(n): $hits). Schluessel entfernen, dann beim Anbieter rotieren: Er war im Diff sichtbar und gilt als kompromittiert."
+    fi
+done <<EOF2
+$allstaged
+EOF2
 
 # Die Schleife lief in DIESER Shell (Here-Doc statt Pipe), $errors und $notes
 # sind hier also gefuellt.
