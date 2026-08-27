@@ -1296,6 +1296,32 @@ if ($fremdformate.Count -gt 0) {
 Write-Output "Formatdisziplin-Check erledigt."
 Write-Output ""
 
+# ---------------------------------------------------------------------------
+# SYSTEMDOKU: T-/E-Kennungen muessen eindeutig sein
+# ---------------------------------------------------------------------------
+# Arbeiten zwei Sessions parallel, koennen beide dieselbe naechste Nummer
+# vergeben (T23 und T23). Ab dann zeigt jeder Querverweis auf zwei verschiedene
+# Eintraege, und kein Leser merkt es. Die Pruefung liest nur Ueberschriften und
+# kostet praktisch nichts. Fehlt eine der Dateien, wird sie uebersprungen.
+$cat = "Systemdoku"
+$kennungsDateien = @(
+    @{ Pfad = "10_System\Technik.md";        Muster = '^##\s+(T\d+)\b' },
+    @{ Pfad = "10_System\Entscheidungen.md"; Muster = '^##\s+(E\d+)\b' }
+)
+foreach ($kd in $kennungsDateien) {
+    $kdVoll = Join-Path $repo $kd.Pfad
+    if (-not (Test-Path -LiteralPath $kdVoll)) { continue }
+    $kdTreffer = @(Select-String -LiteralPath $kdVoll -Pattern $kd.Muster | ForEach-Object { $_.Matches[0].Groups[1].Value })
+    $kdDoppelt = @($kdTreffer | Group-Object | Where-Object { $_.Count -gt 1 })
+    if ($kdDoppelt.Count -gt 0) {
+        Add-Check "WARN" $cat "$($kd.Pfad): Kennung(en) mehrfach vergeben: $(($kdDoppelt | ForEach-Object { $_.Name }) -join ', '). Vermutlich haben parallele Sessions dieselbe Nummer benutzt. Den juengeren Eintrag auf die naechste freie Nummer heben und die Querverweise nachziehen."
+    } else {
+        Add-Check "OK" $cat "$($kd.Pfad): alle $($kdTreffer.Count) Kennungen eindeutig."
+    }
+}
+Write-Output "Systemdoku-Check erledigt."
+Write-Output ""
+
 
 # ---------------------------------------------------------------------------
 # BERICHT

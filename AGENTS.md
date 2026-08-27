@@ -2,8 +2,8 @@
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 1.15-starter
-letzte_aenderung: 2026-08-26
+version: 1.16-starter
+letzte_aenderung: 2026-08-27
 ---
 
 # AGENTS.md: Master-Anweisung für Leo
