@@ -917,6 +917,32 @@ if ($deadLinks.Count -gt 0) {
 } else {
     Add-Check "OK" $cat "Alle $linkCount Verweise (Wikilinks und Markdown-Links auf .md) loesen auf eine real existierende Datei auf."
 }
+# Verweise ohne Begruendung. AGENTS.md Abschnitt 5 verlangt zu jedem Wikilink einen
+# Halbsatz, WARUM er da steht. Der Halbsatz ist der eigentliche Wert: Er sagt dem
+# lesenden Modell, ob sich das Oeffnen lohnt. Ein Link ohne ihn ist eine Linie im
+# Graphen und sonst nichts, und genau daraus besteht ein Wissensnetz, das sich selbst
+# verknuepft. Geprueft wird nur der eindeutige Fall: eine Zeile, in der ausser dem
+# Verweis so gut wie nichts steht.
+$linksOhneGrund = @()
+foreach ($f in $mdLinkSources) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    if ($rel -notmatch '^\d\d_') { continue }
+    if ($rel -match '^(00_INDEX|01_Basiskontext|02_Skills|03_Sessionlogs|04_Changelog|10_System|90_Inbox)/') { continue }
+    if ($fmExemptNames -contains $f.Name) { continue }
+    $zeilenNr = 0
+    foreach ($line in (Get-Content -LiteralPath $f.FullName -Encoding UTF8 -ErrorAction SilentlyContinue)) {
+        $zeilenNr++
+        if ($line -notmatch '\[\[') { continue }
+        $rest = ([regex]::Replace($line, '\[\[[^\]]*\]\]', '')).Trim(" `t-*|>#[]()")
+        if ($rest.Length -lt 25) { $linksOhneGrund += "$rel Z$zeilenNr" }
+    }
+}
+if ($linksOhneGrund.Count -gt 0) {
+    $sampleG = ($linksOhneGrund | Select-Object -First 10) -join ' | '
+    Add-Check "WARN" $cat "$($linksOhneGrund.Count) Verweis(e) stehen ohne Begruendung in der Zeile. AGENTS.md Abschnitt 5 verlangt einen Halbsatz, warum der Verweis da ist; ohne ihn muss die naechste Session die Datei oeffnen, um das herauszufinden. Ergaenzen oder Verweis streichen. Treffer: $sampleG"
+} else {
+    Add-Check "OK" $cat "Jeder Verweis in einem Themenordner steht in einem Satz, der sagt, warum er da ist."
+}
 if ($ambiguousLinks.Count -gt 0) {
     $sampleA = ($ambiguousLinks | Select-Object -First 10) -join ' | '
     Add-Check "WARN" $cat "$($ambiguousLinks.Count) mehrdeutige(r) Verweis(e): das Ziel existiert unter diesem Namen mehrfach, die Aufloesung haengt vom Werkzeug ab. Mit Ordnerpfad qualifizieren ([[<Themenordner>/<Datei>]]) oder, bei Systemdateien, als Pfad in Backticks schreiben (AGENTS.md Abschnitt 5). Treffer: $sampleA"
@@ -1144,6 +1170,98 @@ if ($unklarStatus.Count -gt 0) {
     Add-Check "WARN" $cat "$($unklarStatus.Count) Wissensdatei(en) weisen ihre Herkunft nicht aus: weder 'geprueft:' noch 'herkunft:' im Frontmatter. Ohne Bestaetigung sind sie Vorschlag, gelesen werden sie als Beschlusslage. Setzen: 'geprueft: <Kuerzel> <datum>' nach der Bestaetigung, sonst 'herkunft: vorschlag' (vom LLM abgeleitet) oder 'herkunft: quelle' (unmittelbar aus einer benannten Quelle oder aus deinen eigenen Angaben). Englische Werte proposal und source sind gleichwertig. Treffer: $sampleS"
 } else {
     Add-Check "OK" $cat "Jede Wissensdatei weist ihre Herkunft im Frontmatter aus: geprueft: (bestaetigt) oder herkunft: (vorschlag beziehungsweise quelle)."
+}
+# --- Belegketten: endet jede Kette bei einer echten Quelle? --------------------
+# Wenn eine Notiz als Quelle eine ANDERE Notiz nennt, ist ihr Beleg selbst ein
+# Erzeugnis. Das ist erlaubt und oft richtig, aber nur, solange die Kette irgendwo
+# bei etwas endet, das nicht aus diesem System stammt: einer Rohquelle, einem
+# Archivbeleg, einer benannten externen Quelle. Endet sie nicht, ist der Beleg ein
+# Selbstverweis, und so entsteht Wissen, das auf Wissen steht, das niemand geprueft
+# hat. Gemeldet werden Zyklus (A belegt B, B belegt A) und Sackgasse (die zitierte
+# Notiz nennt selbst keine Quelle). Die blosse Tiefe wird NICHT gemeldet.
+$quellZeile = '(?im)^\s*(\*\*)?(Quelle|Quellen|Beleg|Belege|Grundlage)(n)?(\*\*)?\s*:'
+$fmCache = @{}
+function Get-FrontmatterType([string]$pfad) {
+    if ($fmCache.ContainsKey($pfad)) { return $fmCache[$pfad] }
+    $typ = ""
+    $roh = Get-Content -LiteralPath $pfad -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if ($roh -and $roh -match '(?s)^\uFEFF?---\r?\n(.*?)\r?\n---\r?\n') {
+        if ($matches[1] -match '(?m)^type:\s*(\S+)') { $typ = $matches[1] }
+    }
+    $fmCache[$pfad] = $typ
+    return $typ
+}
+function Get-Belege([string]$relPfad) {
+    $voll = Join-Path $repo ($relPfad -replace '/', '\')
+    $roh = Get-Content -LiteralPath $voll -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $roh) { return @{ intern = @(); extern = $false; hatQuelle = $false } }
+    $intern = New-Object System.Collections.Generic.List[string]
+    $extern = $false; $hatQuelle = $false
+    foreach ($line in ($roh -split "`r?`n")) {
+        if ($line -notmatch $quellZeile) { continue }
+        $hatQuelle = $true
+        $ziele = @()
+        foreach ($m in [regex]::Matches($line, '\[\[([^\]]+)\]\]')) { $ziele += (($m.Groups[1].Value -split '\|')[0] -split '#')[0].Trim() }
+        foreach ($m in [regex]::Matches($line, '\]\(([^)]+\.md)\)')) { $ziele += [uri]::UnescapeDataString(($m.Groups[1].Value -split '#')[0]) }
+        foreach ($z in $ziele) {
+            $probe = ($z + '.md') -replace '\\', '/'
+            if ($z -match '\.md$') { $probe = $z -replace '\\', '/' }
+            $treffer = $null
+            if ($relByLower.ContainsKey($probe.ToLower())) { $treffer = $relByLower[$probe.ToLower()] }
+            else {
+                $bn = (Split-Path $probe -Leaf).ToLower()
+                if ($byBase.ContainsKey($bn) -and $byBase[$bn].Count -eq 1) { $treffer = $byBase[$bn][0] }
+                else {
+                    $dir = (Split-Path $relPfad -Parent) -replace '\\', '/'
+                    if ($dir -and $relByLower.ContainsKey("$dir/$probe".ToLower())) { $treffer = $relByLower["$dir/$probe".ToLower()] }
+                }
+            }
+            if ($treffer) { $intern.Add($treffer) } else { $extern = $true }
+        }
+        $rest = [regex]::Replace($line, '\[\[[^\]]+\]\]', '')
+        $rest = [regex]::Replace($rest, '\[[^\]]*\]\([^)]+\)', '')
+        $rest = ($rest -replace $quellZeile, '').Trim(' .,;:*-')
+        if ($rest.Length -ge 15) { $extern = $true }
+    }
+    return @{ intern = @($intern); extern = $extern; hatQuelle = $hatQuelle }
+}
+$belegCache = @{}
+function Resolve-Beleg([string]$rel) {
+    if (-not $belegCache.ContainsKey($rel)) { $belegCache[$rel] = Get-Belege $rel }
+    return $belegCache[$rel]
+}
+$kettenBefunde = @(); $kettenGeprueft = 0
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    if ($rel -notmatch '^\d\d_') { continue }
+    if ($rel -match '^(00_INDEX|01_Basiskontext|02_Skills|03_Sessionlogs|04_Changelog|10_System|90_Inbox)/') { continue }
+    if ($fmExemptNames -contains $f.Name) { continue }
+    $start = Resolve-Beleg $rel
+    if (-not $start.hatQuelle -or $start.intern.Count -eq 0) { continue }
+    if ($start.extern) { continue }
+    $kettenGeprueft++
+    $pfadListe = New-Object System.Collections.Generic.List[string]
+    $pfadListe.Add($rel)
+    $aktuell = $start; $tiefe = 0; $ergebnis = $null
+    while ($tiefe -lt 6) {
+        $tiefe++
+        $naechste = @($aktuell.intern)[0]
+        if (-not $naechste) { $ergebnis = "Sackgasse"; break }
+        if ($pfadListe -contains $naechste) { $pfadListe.Add($naechste); $ergebnis = "Zyklus"; break }
+        $pfadListe.Add($naechste)
+        if ((Get-FrontmatterType (Join-Path $repo ($naechste -replace '/', '\'))) -eq 'rohquelle') { $ergebnis = "ok"; break }
+        $aktuell = Resolve-Beleg $naechste
+        if ($aktuell.extern) { $ergebnis = "ok"; break }
+        if (-not $aktuell.hatQuelle -or $aktuell.intern.Count -eq 0) { $ergebnis = "Sackgasse"; break }
+    }
+    if (-not $ergebnis) { $ergebnis = "zu tief" }
+    if ($ergebnis -ne "ok") { $kettenBefunde += "$ergebnis`: " + ($pfadListe -join ' -> ') }
+}
+if ($kettenBefunde.Count -gt 0) {
+    $sampleK = ($kettenBefunde | Select-Object -First 8) -join ' | '
+    Add-Check "WARN" $cat "$($kettenBefunde.Count) Belegkette(n) enden nicht bei einer echten Quelle. Ein Zyklus heisst, zwei Notizen belegen sich gegenseitig; eine Sackgasse heisst, die zitierte Notiz nennt selbst keine Quelle. In beiden Faellen steht Wissen auf Wissen. Beheben, indem die urspruengliche Quelle in der Zeile genannt wird (Absender und Datum, Archivpfad oder URL). Treffer: $sampleK"
+} else {
+    Add-Check "OK" $cat "Alle $kettenGeprueft rein internen Belegketten enden bei einer Rohquelle oder einer benannten externen Angabe: kein Zyklus, keine Sackgasse."
 }
 Write-Output "Herkunfts-Check erledigt."
 Write-Output ""
