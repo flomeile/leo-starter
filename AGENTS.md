@@ -1,9 +1,9 @@
----
+﻿---
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 1.17-starter
-letzte_aenderung: 2026-08-27
+version: 1.18-starter
+letzte_aenderung: 2026-08-29
 ---
 
 # AGENTS.md: Master-Anweisung für Leo
@@ -157,6 +157,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 - **Über den Inhalt einer Quelle entscheidet die Quelle.** Widerspricht eine Wissensnotiz der archivierten Primärquelle, aus der sie stammt (`<Repo> Archiv`, Abschnitt 5), gewinnt die Quelle. Was in einer Mail stand, entscheidet die Mail und nicht die Notiz darüber; eine abweichende Notiz ist ein Lesefehler und wird korrigiert, nicht verteidigt. Das ist der Zweck des Archivs und der einzige Fall, in dem etwas ausserhalb des Repos Vorrang hat. **Streng davon zu trennen ist der Widerspruch über den Sachverhalt:** Ob etwas heute noch gilt, entscheidet die jüngere belegte Aussage nach der Regel oben, und die steht meistens im Repo. Ein Dokument von vor einem Jahr gibt korrekt wieder, was damals galt, und ist trotzdem überholt in dem, was daraus folgt. Kurz: Das Archiv gewinnt über das, was gesagt wurde, das Repo über das, was heute gilt.
 - **Themenspezifisches gehört nie in den Basiskontext:** `01_Basiskontext` enthält nur, was themenübergreifend in jeder Session zählt. Klar themenspezifische Details leben ausschliesslich in der lokalen AGENTS.md bzw. den Dateien ihres Themas; der Basiskontext verweist höchstens dorthin. Bei Widerspruch geht die Themen-Datei vor.
 - **Rückschreiben statt nur archivieren:** Korrekturen und Erkenntnisse mit Dauerwert gehören zusätzlich zum Log in die zuständige steuernde Datei (Skill, lokale AGENTS.md, Wissensdatei; Basiskontext nur mit Bestätigung). Fehlt eine passende Wissensdatei, wird sie angelegt; Dauerwissen bleibt nie nur im Log. Überholtes wird dabei in der Wissensdatei ersetzt, nicht daneben stehen gelassen (Ausnahme: alter Stand mit eigenem Verlaufswert bleibt als datierte, als überholt gekennzeichnete Verlaufszeile). Ein überholter Fakt wird per Synonym-Volltextsuche in ALLEN kuratierten Dateien nachgezogen, nicht nur in einer. Jede neue oder wesentlich geänderte Wissensdatei bekommt sofort ihre kuratierte Index-Beschreibung. Durchgesetzt wird das im Wrap-Up (Skill `leo-wrap-up`, Lernschleife).
+- **Neue Regeln folgen der Trennlinie steuernd/begründend.** Diese Datei wird in jeder Session vollständig geladen; jedes Wort hier kostet also in jeder Session Kontext. Deshalb kommt eine neue Regel als normativer Satz mit Datum und höchstens einem Halbsatz Anlass hierher; ihre Erzählung (Vorgeschichte, Wortlaut, Verlauf des Anlassfalls) gehört in eine Begleitdatei `10_System\Detailregeln aus AGENTS.md.md`, die nur gelesen wird, wenn an einer Regel gebaut oder gezweifelt wird. Eine Regel hier gilt in voller Härte, auch wenn ihre Erzählung nicht daneben steht; gekürzt wird nie durch Löschen von Regeln, sondern durch Auslagern von Begründungen. Der System-Health-Check wacht darüber (Kategorie `Lean`).
 
 ## 11. Skills
 

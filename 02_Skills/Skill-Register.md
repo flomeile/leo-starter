@@ -2,8 +2,8 @@
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
-version: 1.17-starter
-letzte_aenderung: 2026-08-27
+version: 1.18-starter
+letzte_aenderung: 2026-08-29
 ---
 
 # Skill-Register
@@ -21,9 +21,10 @@ Namenskonvention: Alle Skill-Dateien tragen das Präfix `leo-`. Das macht sichtb
 | Leo Themenordner anlegen | "neuer themenordner", "themenordner anlegen", "neues thema anlegen" | 02_Skills/leo-themenordner-anlegen.md | Neuen Themenordner vollständig anlegen (README, AGENTS.md, Routing, Index) |
 | Leo Skill erstellen | "neuen skill", "skill erstellen", "skill bauen" | 02_Skills/leo-skill-ersteller.md | Baut einen neuen Skill normgerecht (inkl. Präfix) und trägt ihn ins Register ein |
 | Leo Mechanik-Update | "mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen" | 02_Skills/leo-mechanik-update.md | Holt Verbesserungen am Grundgerüst von GitHub und arbeitet sie ein, ohne eigene Anpassungen und eigene Skills zu beschädigen |
+| Leo System-Optimierung | "system-optimierung", "system optimieren", "optimierungslauf", "pruefset fahren", "prüfset fahren", "messlauf", "regeltreue messen" | 02_Skills/leo-system-optimierung.md | Misst mit kalten Prüfset-Läufen (dein Prüfset, beim ersten Mal aus der Vorlage `10_System\Pruefset-Vorlage.md` angelegt), ob das System seine eigenen Regeln einhält, leitet aus jedem Durchfaller die richtige Fix-Sorte ab (Regel härten, Regel präzisieren, mechanisches Netz, oder bewusst nichts) und misst nach; sinkt die Quote, wird zurückgerollt. Der Health-Check erinnert mechanisch (Kategorie `Lean`, Messlauf-Wächter) |
 
 ## Regel
 Wenn ein neuer Skill gebaut wird (via Skill-Ersteller), wird diese Tabelle ergänzt. Trigger-Worte müssen eindeutig bleiben. Neue Skill-Dateien tragen immer das Präfix `leo-`.
 
 ## Hinweis für den Aufbau
-Dies ist der Starter-Satz mit vier Kern-Skills. Weitere nützliche Skills (Voice-Check, Faktencheck, Inbox-Ingest, First-Principles) baust du dir bei Bedarf selbst über den Skill-Ersteller ("skill erstellen"). Der Ersteller-Skill trägt die Norm dafür.
+Dies ist der Starter-Satz mit den Kern-Skills. Weitere nützliche Skills (Voice-Check, Faktencheck, Inbox-Ingest, First-Principles) baust du dir bei Bedarf selbst über den Skill-Ersteller ("skill erstellen"). Der Ersteller-Skill trägt die Norm dafür.

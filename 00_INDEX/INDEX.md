@@ -1,4 +1,4 @@
----
+﻿---
 titel: INDEX (Landkarte des Leo)
 zweck: Einstiegspunkt der Agentic Search; Hierarchie, Bereiche, Systemdateien
 type: index
@@ -14,16 +14,16 @@ Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themeno
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-08-27 16:52 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-08-29 16:04 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)
   - scripts\  (0 Dateien)
 - 01_Basiskontext\  (4 Dateien)
-- 02_Skills\  (7 Dateien)
+- 02_Skills\  (8 Dateien)
 - 03_Sessionlogs\  (1 Dateien)
 - 04_Changelog\  (2 Dateien)
-- 10_System\  (8 Dateien)
+- 10_System\  (10 Dateien)
 - 90_Inbox\  (1 Dateien)
 <!-- AUTO:BAUM:END -->
 
@@ -60,6 +60,7 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 - **02_Skills\leo-themenordner-anlegen.md** — Neuen Themenordner vollständig anlegen (Ordner, README, lokale AGENTS.md, Index; Routing zieht das Skript nach).
 - **02_Skills\leo-skill-ersteller.md** — Norm und Anleitung, um neue Skills zu bauen (inkl. leo-Präfix und Definition of Done) und ins Register einzutragen.
 - **02_Skills\leo-mechanik-update.md** — Holt Verbesserungen am Grundgerüst von GitHub (`upstream`-Remote, Versions-Tags) und arbeitet sie ein, ohne eigene Anpassungen zu beschädigen: erst committen als Rückweg, Kern-Dateien nur dort ersetzen, wo lokal nichts geändert wurde, sonst einarbeiten, eigene Skills gegen die neuen Konventionen prüfen, Stand in MEIN-SYSTEM.md fortschreiben.
+- **02_Skills\leo-system-optimierung.md** — Misst mit kalten Prüfset-Läufen, ob das System seine eigenen Regeln einhält (Trigger "messlauf"): Prüfset fahren, am Beleg urteilen, je Durchfaller die richtige Fix-Sorte wählen, nachmessen, bei sinkender Quote zurückrollen. Erster Aufbau aus `10_System\Pruefset-Vorlage.md`.
 
 ### 03_Sessionlogs / 04_Changelog
 
@@ -74,4 +75,6 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 - **10_System\Manual.md** — Bedienungsanleitung: welches Werkzeug wofür, Projekt-Setup, Prompting-Muster, Skills, Wrap-Up, Rollback, Wartung.
 - **10_System\Modellwahl.md** — Modellempfehlungen für den Betrieb, mit Stand-Datum und Aktualisierungs-Anleitung.
 - **10_System\Kern-Dateien.md** — Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen (Kategorie A), welche nur eingearbeitet werden (B) und welche dir gehören und nie angefasst werden (C). Grundlage für den Skill `leo-mechanik-update`.
+- **10_System\Detailregeln aus AGENTS.md.md** — Nimmt nach der Trennlinie steuernd/begründend die Präzedenzfälle und Langbegründungen auf, die nicht in die Root-AGENTS.md gehören; wächst über die Lernschleife des Wrap-Ups und wird von Updates nie ersetzt.
+- **10_System\Pruefset-Vorlage.md** — Vorlage für das eigene Regeltreue-Prüfset (zwölf Fälle mit Eingabe, Erwartung, hartem Abbruchkriterium und geprüfter Regel; generische Fälle sofort nutzbar, Platzhalter für repo-spezifische). Wird im selben Ordner zur Datei Pruefset.md kopiert, die ab dann dir gehört.
 - **10_System\AGENTS.md** — Lokale Rollen-Datei: System-Experte.

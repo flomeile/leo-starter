@@ -1324,6 +1324,100 @@ Write-Output ""
 
 
 # ---------------------------------------------------------------------------
+# FRONTMATTER-WERTE: Umlautersatz in titel:/zweck:
+# ---------------------------------------------------------------------------
+# Die Umlaut-Regel (AGENTS.md, Kopf) gilt auch fuer Frontmatter-WERTE; nur die
+# Schluessel sind ASCII. Beobachtung aus der Praxis: Modelle schreiben "Haelt"
+# oder "fuer" in zweck:-Werte, obwohl der Fliesstext korrekt ist, vermutlich
+# weil die ASCII-Schluessel daneben stehen; Textregeln allein haben das nicht
+# verhindert, deshalb dieses mechanische Netz. Die Heuristik ist eine Liste
+# eindeutiger deutscher Ersatzmuster; bewusst keine generische ae/oe/ue-Suche,
+# weil korrekte Woerter wie "Quelle", "Steuer" oder "Dauer" sonst anschlagen.
+# SPRACHHINWEIS: Arbeitet dein Repo nicht auf Deutsch, die Liste leeren oder
+# durch eigene Muster ersetzen; ein leeres $umlautTells schaltet den Check ab.
+$cat = "Frontmatter"
+$fmWertCutoffTag = "2026-08-29"   # Bestandsschutz: nur Dateien ab diesem Anlagedatum pruefen
+$umlautTells = '(?i)\b(fuer|ueber\w*|haelt|traegt|laeuft|laesst|enthaelt|erklaert|gehoert|noetig|moeglich\w*|spaeter\w*|waehrend|taeglich\w*|woechentlich\w*|zustaendig\w*|rueck\w*|pruef\w*|uebersicht\w*|schluessel\w*|verfuegbar\w*|regelmaessig\w*|zusaetzlich\w*|vollstaendig\w*|grundsaetzlich\w*|ausfuehr\w*|einfuehr\w*|durchfuehr\w*|aenderung\w*|qualitaet\w*|aktivitaet\w*)\b'
+if ($umlautTells) {
+    $fmWertCutoff = [datetime]::ParseExact($fmWertCutoffTag, "yyyy-MM-dd", $null)
+    $fmWertBefunde = New-Object System.Collections.Generic.List[string]
+    foreach ($f in $mdAll) {
+        $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+        if ($fmExemptNames -contains $f.Name) { continue }
+        $skipPrefix = $false
+        foreach ($p in $fmExemptPrefix) { if ($rel.StartsWith($p)) { $skipPrefix = $true; break } }
+        if ($skipPrefix) { continue }
+        $addDatum = $addDates[$rel]
+        if (-not $addDatum -or ([datetime]::ParseExact($addDatum, "yyyy-MM-dd", $null) -lt $fmWertCutoff)) { continue }
+        $kopf = Get-Content -Path $f.FullName -TotalCount 12 -Encoding UTF8
+        foreach ($zeile in $kopf) {
+            if ($zeile -match '^(titel|zweck):\s*(.+)$') {
+                if ($Matches[2] -match $umlautTells) { $fmWertBefunde.Add("$rel ($($Matches[1]):)") }
+            }
+        }
+    }
+    if ($fmWertBefunde.Count -gt 0) {
+        $sampleFW = ($fmWertBefunde | Select-Object -First 8) -join ' | '
+        Add-Check "WARN" $cat "$($fmWertBefunde.Count) seit $fmWertCutoffTag angelegte Datei(en) mit Umlautersatz (ae/oe/ue) in titel:- oder zweck:-Werten. Die Umlaut-Regel gilt auch fuer Frontmatter-Werte, nur die Schluessel sind ASCII (AGENTS.md, Kopf). Werte korrigieren. Treffer: $sampleFW"
+    } else {
+        Add-Check "OK" $cat "Keine Umlautersatz-Muster in titel:/zweck:-Werten neu angelegter Dateien (Bestand vor $fmWertCutoffTag ist ausgenommen)."
+    }
+    Write-Output "Frontmatter-Werte-Check erledigt."
+    Write-Output ""
+}
+
+
+# ---------------------------------------------------------------------------
+# LEAN (Groesse des in jeder Session geladenen Pflichtkontexts)
+# ---------------------------------------------------------------------------
+# AGENTS.md Abschnitt 10, Trennlinie steuernd/begruendend: Die Root-AGENTS.md
+# traegt nur normative Regeln, Erzaehlungen wandern in die Begleitdatei
+# 10_System\Detailregeln aus AGENTS.md.md. Die Schwelle ist ein Drift-Waechter
+# ueber der eigenen Baseline, kein Zielwert: Waechst die Datei darueber, sind
+# Erzaehlungen zurueckgewachsen; dann auslagern, nie Regeln loeschen.
+# Passe $leanSchwelleKB an, wenn du die Baseline deiner AGENTS.md bewusst
+# verschiebst (Startwert des Grundgeruests: rund 51 KB, Schwelle 60).
+$cat = "Lean"
+$leanSchwelleKB = 60
+$agentsSize = (Get-Item (Join-Path $repo "AGENTS.md")).Length
+if ($agentsSize -gt ($leanSchwelleKB * 1024)) {
+    Add-Check "WARN" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB). Erzaehlungen nach der Trennlinie in 10_System\Detailregeln aus AGENTS.md.md auslagern; Regeln bleiben vollstaendig stehen." -f ($agentsSize / 1KB))
+} else {
+    Add-Check "OK" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB)." -f ($agentsSize / 1KB))
+}
+
+# Messlauf-Waechter: Die Regeltreue-Messung (Skill leo-system-optimierung,
+# Pruefset in 10_System\Pruefset.md) darf nicht daran haengen, dass jemand an
+# sie denkt. Existiert ein Pruefset, wird gewarnt, wenn eine Kernaenderung
+# (AGENTS.md, Einstiegsdateien, Settings, Guard-Hook) laut Git NACH dem letzten
+# protokollierten Messlauf liegt oder der letzte Lauf aelter als 42 Tage ist.
+# Ohne Pruefset ist die Messung optional; dann nur ein stiller INFO-Hinweis.
+$pruefsetPfad = Join-Path $repo "10_System\Pruefset.md"
+if (Test-Path $pruefsetPfad) {
+    $laufDaten = Select-String -Path $pruefsetPfad -Pattern '^#{2,3} .*Lauf.*?(\d{4}-\d{2}-\d{2})' | ForEach-Object { $_.Matches[0].Groups[1].Value }
+    $letzterLauf = ($laufDaten | Sort-Object | Select-Object -Last 1)
+    if ($letzterLauf) {
+        $kernPfade = @("AGENTS.md", "CLAUDE.md", ".claude/settings.json", "00_INDEX/scripts/guard-workspace.ps1")
+        $kernDatum = (& git -C $repo log -1 --format=%ad --date=format:%Y-%m-%d -- @kernPfade 2>$null)
+        $laufDT = [datetime]::ParseExact($letzterLauf, "yyyy-MM-dd", $null)
+        if ($kernDatum -and ([datetime]::ParseExact($kernDatum, "yyyy-MM-dd", $null) -gt $laufDT)) {
+            Add-Check "WARN" $cat "Kernaenderung vom $kernDatum liegt nach dem letzten Pruefset-Messlauf ($letzterLauf). Nachmessung faellig: Skill leo-system-optimierung fahren (Trigger 'messlauf')."
+        } elseif (((Get-Date) - $laufDT).TotalDays -gt 42) {
+            Add-Check "WARN" $cat "Letzter Pruefset-Messlauf am $letzterLauf, aelter als 42 Tage. Stichprobe faellig: Skill leo-system-optimierung fahren (Trigger 'messlauf')."
+        } else {
+            Add-Check "OK" $cat "Letzter Pruefset-Messlauf am $letzterLauf, keine ungemessene Kernaenderung seither."
+        }
+    } else {
+        Add-Check "WARN" $cat "In 10_System\Pruefset.md ist kein Messlauf-Datum erkennbar (Muster '## ... Lauf ... YYYY-MM-DD'). Protokollformat pruefen."
+    }
+} else {
+    Add-Check "INFO" $cat "Kein 10_System\Pruefset.md vorhanden. Die Regeltreue-Messung ist optional; die Vorlage liegt in 10_System\Pruefset-Vorlage.md (Skill leo-system-optimierung)."
+}
+Write-Output "Lean-Check erledigt."
+Write-Output ""
+
+
+# ---------------------------------------------------------------------------
 # BERICHT
 # ---------------------------------------------------------------------------
 Write-Output "=== Ergebnis ==="

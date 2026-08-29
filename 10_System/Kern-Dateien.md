@@ -2,8 +2,8 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 1.17-starter
-stand: 2026-08-26
+version: 1.18-starter
+stand: 2026-08-29
 ---
 
 # Kern-Dateien: was ein Update anfassen darf
@@ -25,6 +25,8 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `02_Skills\leo-system-health-check.md` | Kern-Skill |
 | `02_Skills\leo-themenordner-anlegen.md` | Kern-Skill |
 | `02_Skills\leo-skill-ersteller.md` | Kern-Skill |
+| `02_Skills\leo-system-optimierung.md` | Kern-Skill: Regeltreue-Messung mit kaltem Prüfset (seit 1.18) |
+| `10_System\Pruefset-Vorlage.md` | Vorlage für das eigene Prüfset; die daraus angelegte `Pruefset.md` gehört dir und wird nie ersetzt (seit 1.18) |
 | `02_Skills\README.md` | Erklärt, was ein Skill ist |
 | `00_INDEX\scripts\build-index-geruest.ps1` | Index-Automatik |
 | `00_INDEX\scripts\health-check.ps1` | Prüfskript |
@@ -49,6 +51,7 @@ Diese Dateien sind Mechanik, tragen aber zwingend etwas von dir. Ein Update darf
 | `.claude\settings.json` | Hängt die Arbeitsbereich-Sperre ein. Dein Anteil sind eigene Berechtigungen und weitere Hooks, die ein Update nicht anfassen darf |
 | `.github\copilot-instructions.md` | dasselbe |
 | `ANLEITUNG.md` | Nichts, solange du sie nicht ergänzt hast. Wenn doch, gilt sie als deine Datei |
+| `10_System\Detailregeln aus AGENTS.md.md` | Alle Präzedenzfälle und Langbegründungen darin; das Grundgerüst liefert nur die leere Keimdatei (seit 1.18) |
 
 ## C. Deins: wird nie angefasst
 
