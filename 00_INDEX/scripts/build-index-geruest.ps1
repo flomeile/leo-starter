@@ -170,6 +170,43 @@ foreach ($d in $roleDirs) {
 Set-AutoBlock -file (Join-Path $repo "AGENTS.md") -blockName "ROLLEN" -bodyLines $rollen
 Write-Output "Rollen-Tabelle in AGENTS.md aktualisiert ($($roleDirs.Count) Ordner)."
 
+# --- Skill-Kurzliste in AGENTS.md (seit 2.1) ---------------------------------
+# Zweck: Name, Trigger, erster Zwecksatz und der situative Anlass ("Von selbst,
+# wenn") aller Skills stehen dadurch in jeder Session im Kontext. Das LLM soll
+# Skills aktiv vorschlagen, wenn die Situation passt, statt auf ein Trigger-Wort
+# zu warten; die Substanz bleibt im Register und in der Skill-Datei.
+$registerFile = Join-Path $repo "02_Skills\Skill-Register.md"
+$skillLines = New-Object System.Collections.Generic.List[string]
+$skillLines.Add("| Skill | Trigger-Worte | Wofuer | Von selbst, wenn |")
+$skillLines.Add("|---|---|---|---|")
+$anzSkills = 0
+if (Test-Path $registerFile) {
+    foreach ($zeile in (Get-Content -Path $registerFile -Encoding UTF8)) {
+        $t = $zeile.Trim()
+        if (-not $t.StartsWith("|")) { continue }
+        if ($t -match "^\|\s*Skill\s*\|") { continue }
+        if ($t -match "^\|\s*-+") { continue }
+        $cols = ($t.Trim("|") -split "\|") | ForEach-Object { $_.Trim() }
+        if ($cols.Count -lt 4) { continue }
+        if ($cols[2] -notmatch "\.md\s*$") { continue }
+        $zweck = $cols[3]
+        # Erster Satz, danach gekappt: Die Kurzliste soll klein bleiben, sonst
+        # kostet sie in jeder Session genau das, was sie sparen soll.
+        $punkt = $zweck.IndexOf(". ", 30)
+        if ($punkt -ge 0) { $zweck = $zweck.Substring(0, $punkt) }
+        if ($zweck.Length -gt 200) { $zweck = $zweck.Substring(0, 197) + "..." }
+        $anlassSp = if ($cols.Count -ge 5) { $cols[4] } else { "" }
+        $skillLines.Add("| $($cols[0]) | $($cols[1]) | $zweck | $anlassSp |")
+        $anzSkills++
+    }
+}
+if ($anzSkills -gt 0) {
+    Set-AutoBlock -file (Join-Path $repo "AGENTS.md") -blockName "SKILLS" -bodyLines $skillLines
+    Write-Output "Skill-Kurzliste in AGENTS.md aktualisiert ($anzSkills Skills)."
+} else {
+    Write-Output "WARNUNG: Keine Skill-Zeilen im Register erkannt, Kurzliste nicht angetastet."
+}
+
 $bereiche = New-Object System.Collections.Generic.List[string]
 foreach ($d in ($roleDirs | Where-Object { Test-IsThemenordner $_ })) {
     $rolle = Get-Rolle (Join-Path $d.FullName "AGENTS.md")

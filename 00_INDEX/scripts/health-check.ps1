@@ -186,7 +186,7 @@ function Test-AutoBlockMarkers([string]$file, [string[]]$blockNames) {
     }
 }
 Test-AutoBlockMarkers (Join-Path $repo "00_INDEX\INDEX.md") @("BAUM", "BEREICHE")
-Test-AutoBlockMarkers (Join-Path $repo "AGENTS.md") @("ROLLEN")
+Test-AutoBlockMarkers (Join-Path $repo "AGENTS.md") @("ROLLEN", "SKILLS")
 Write-Output "Auto-Block-Checks erledigt."
 
 # ---------------------------------------------------------------------------
@@ -1469,6 +1469,16 @@ if (Test-Path -LiteralPath $meinSystemPfad) {
         }
     } else {
         Add-Check "INFO" $cat "In MEIN-SYSTEM.md Abschnitt 4 ist keine eingespielte Version lesbar (Muster '| Eingespielte Version | X.Y |'). Beim Einrichten eintragen, sonst kann niemand Rueckstand erkennen."
+    }
+
+    # Nutzungsmodus gesetzt? (seit 2.1) Das LLM ist verantwortlich, den Modus im
+    # Gespraech zu klaeren und einzutragen (AGENTS.md, Abschnitt 1); diese Pruefung
+    # ist der mechanische Anstoss dafuer. Gesetzt heisst: hinter dem Feld steht
+    # mitbauen oder benutzen, nicht mehr der kursive Platzhalter.
+    if ($msText -match '(?m)^\s*-\s*\*\*Nutzungsmodus:\*\*\s*`?(mitbauen|benutzen)`?\b') {
+        Add-Check "OK" $cat "Nutzungsmodus ist gesetzt: $($Matches[1])."
+    } else {
+        Add-Check "WARN" $cat "In MEIN-SYSTEM.md Abschnitt 5 ist kein Nutzungsmodus gesetzt (mitbauen oder benutzen). Das LLM fragt den Besitzer in der naechsten Session, erklaert den Unterschied kurz und traegt die Antwort selbst ein (AGENTS.md, Abschnitt 1, seit 2.1)."
     }
 } else {
     Add-Check "WARN" $cat "MEIN-SYSTEM.md fehlt im Root. Die persoenliche Ebene (Name, Pfade, eigene Regeln, eingespielte Version) hat damit keinen Ort."

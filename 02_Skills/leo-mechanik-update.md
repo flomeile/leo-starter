@@ -144,6 +144,8 @@ Meldet der Health-Check etwas Neues, das vorher nicht da war, gehört es in den 
 
 In `MEIN-SYSTEM.md`, Abschnitt 4: eingespielte Version und Datum auf den neuen Stand. Trägt der Nutzer Abweichungen an Kern-Dateien mit sich, ergänze Abschnitt 3 um das, was du in Schritt 5 gefunden hast.
 
+**Führt das Update auf 2.x und fehlt in `MEIN-SYSTEM.md`, Abschnitt 5 ein gesetzter Nutzungsmodus** (Platzhalter oder leer): Frag den Besitzer jetzt, erkläre den Unterschied in zwei, drei Sätzen (`mitbauen`: er löst Wartung und Updates selbst mit Trigger-Worten aus; `benutzen`: das System wartet und aktualisiert sich selbst und fragt nur vor einem Update), trag seine Antwort selbst dort ein und bestätige es in einem Satz. Du bist verantwortlich, dass der Eintrag sauber steht und der Besitzer weiss, was er entschieden hat (AGENTS.md, Abschnitt 1, seit 2.1). Mag er nicht entscheiden, setz `benutzen` und sag ihm, wie er es ändert.
+
 Dann committen, mit einer Nachricht, die den Versionssprung nennt:
 
 ```powershell
