@@ -1,5 +1,5 @@
-# Git-Hooks muessen LF-Zeilenenden behalten. core.autocrlf ist auf Florians
-# Rechner true; ohne diese Regel checkt Git den Hook mit CRLF aus, und /bin/sh
+# Git-Hooks muessen LF-Zeilenenden behalten. core.autocrlf ist auf Windows oft
+# true; ohne diese Regel checkt Git den Hook mit CRLF aus, und /bin/sh
 # bricht dann bei jedem Commit mit "\r: command not found" ab. Das wuerde auf
 # einem neuen Rechner jeden Commit unmoeglich machen, inklusive der beiden
 # Automatiken (Task Scheduler, Obsidian-Git).

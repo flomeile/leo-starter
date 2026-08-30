@@ -3,7 +3,7 @@ name: leo-skill-ersteller
 trigger: '"neuen skill", "skill erstellen", "skill bauen"'
 zweck: Baut einen neuen Skill normgerecht und trägt ihn ins Register ein
 type: skill
-version: 1.6-starter
+version: 1.7-starter
 ---
 
 # Skill: Leo Skill-Ersteller
@@ -44,7 +44,7 @@ Frag: Was soll der Skill tun, wodurch wird er ausgelöst, schreibt er Dateien, b
 Erstelle `02_Skills\leo-<name>.md` nach der Norm oben. Schlank und eindeutig; ein Skill löst genau eine Aufgabe.
 
 ### 3. Ins Register eintragen
-Ergänze die Tabelle in `02_Skills\Skill-Register.md`: Name, Trigger-Worte, Datei, Zweck.
+Ergänze die Tabelle in `02_Skills\Skill-Register.md`: Name, Trigger-Worte, Datei, Zweck, und die fünfte Spalte "Von selbst, wenn" mit dem situativen Anlass, bei dem der Skill auch ohne Trigger-Wort vorgeschlagen oder ausgeführt werden soll (seit 2.1; sie speist die Kurzliste in der `AGENTS.md`, Abschnitt 11). Ein Skill ohne diese Spalte funktioniert per Trigger-Wort weiter, wird aber nie von selbst vorgeschlagen, und genau das macht den Grossteil seines Werts im Alltag aus.
 
 Danach den Skill-Zeiger nachziehen, damit der neue Skill per `/name` anspringt:
 ```powershell
@@ -66,6 +66,6 @@ Führe den Skill `02_Skills\leo-system-health-check.md` aus (aktualisiert Index-
 ## Definition of Done
 - [ ] Neue Skill-Datei erfüllt alle neun Normpunkte, inklusive eigener Definition of Done
 - [ ] Trigger-Worte gegen das komplette Register auf Kollision geprüft
-- [ ] Registereintrag in `02_Skills\Skill-Register.md` existiert (Name, Trigger, Datei, Zweck)
+- [ ] Registereintrag in `02_Skills\Skill-Register.md` existiert (Name, Trigger, Datei, Zweck, "Von selbst, wenn")
 - [ ] Index-Mechanik gelaufen, Beschreibung der neuen Skill-Datei kuratiert
 - [ ] Abschluss-Bestätigung nennt Skill-Namen und Trigger-Worte

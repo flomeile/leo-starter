@@ -1,18 +1,18 @@
-﻿---
+---
 titel: Index-Geruest (mechanisch erzeugt)
 zweck: Vollstaendige, deterministische Baumliste aller Markdown-Dateien im Repo
 type: index-geruest
-erzeugt: 2026-08-30 15:26
+erzeugt: 2026-08-30 18:16
 hinweis: Automatisch erzeugt. Nicht von Hand bearbeiten. Sicherheitsnetz und Delta-Quelle fuer die kuratierten Indizes.
 ---
 
 # Index-Geruest
 
-Mechanisch aus dem Dateisystem erzeugt am 2026-08-30 15:26. Volle Hierarchie, jede real existierende .md-Datei.
+Mechanisch aus dem Dateisystem erzeugt am 2026-08-30 18:16. Volle Hierarchie, jede real existierende .md-Datei.
 Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geaendert.
 
-- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 51.9 KB | 2026-08-30
-- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 51.3 KB | 2026-08-30
+- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 57.7 KB | 2026-08-30
+- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 55.1 KB | 2026-08-30
 - CLAUDE.md | CLAUDE.md | 1.6 KB | 2026-08-27
 - GEMINI.md | GEMINI.md | 1.7 KB | 2026-08-26
 - MEIN-SYSTEM.md | Mein System | 4.7 KB | 2026-08-30
@@ -27,14 +27,14 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - README.md | 01_Basiskontext | 0.8 KB | 2026-07-17
   - Voice and Style.md | Voice and Style | 3.9 KB | 2026-07-17
 - 02_Skills\
-  - leo-mechanik-update.md | Skill: Mechanik aktualisieren | 13.3 KB | 2026-08-11
-  - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 6.4 KB | 2026-08-07
+  - leo-mechanik-update.md | Skill: Mechanik aktualisieren | 14 KB | 2026-08-30
+  - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 6.8 KB | 2026-08-30
   - leo-system-health-check.md | Skill: System Health Check | 15.7 KB | 2026-08-30
   - leo-system-optimierung.md | Skill: Leo System-Optimierung | 6.5 KB | 2026-08-29
   - leo-themenordner-anlegen.md | Skill: Themenordner anlegen | 4 KB | 2026-07-17
   - leo-wrap-up.md | Skill: Leo Wrap-Up | 13.2 KB | 2026-08-29
   - README.md | 02_Skills | 1.3 KB | 2026-07-17
-  - Skill-Register.md | Skill-Register | 3.8 KB | 2026-08-30
+  - Skill-Register.md | Skill-Register | 4.5 KB | 2026-08-30
 - 03_Sessionlogs\
   - README.md | 03_Sessionlogs | 0.6 KB | 2026-07-17
 - 04_Changelog\

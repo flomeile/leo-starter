@@ -192,8 +192,19 @@ if (Test-Path $registerFile) {
         $zweck = $cols[3]
         # Erster Satz, danach gekappt: Die Kurzliste soll klein bleiben, sonst
         # kostet sie in jeder Session genau das, was sie sparen soll.
-        $punkt = $zweck.IndexOf(". ", 30)
-        if ($punkt -ge 0) { $zweck = $zweck.Substring(0, $punkt) }
+        # Satzende suchen, aber Abkuerzungen ueberspringen: "(inkl. Praefix)" ist kein
+        # Satzende, und ein dort abgeschnittener Zweck liest sich wie ein Fehler.
+        $abk = @("inkl", "z.B", "u.a", "ca", "bzw", "ggf", "evtl", "etc", "Nr", "vgl", "ff", "usw")
+        $suchAb = 30
+        while ($true) {
+            $punkt = $zweck.IndexOf(". ", $suchAb)
+            if ($punkt -lt 0) { break }
+            $vor = $zweck.Substring(0, $punkt)
+            $letztes = ($vor -split "[\s\(\[]")[-1]
+            if ($abk -contains $letztes) { $suchAb = $punkt + 2; continue }
+            $zweck = $zweck.Substring(0, $punkt)
+            break
+        }
         if ($zweck.Length -gt 200) { $zweck = $zweck.Substring(0, 197) + "..." }
         $anlassSp = if ($cols.Count -ge 5) { $cols[4] } else { "" }
         $skillLines.Add("| $($cols[0]) | $($cols[1]) | $zweck | $anlassSp |")
