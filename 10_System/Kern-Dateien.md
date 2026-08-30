@@ -2,7 +2,7 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 1.20-starter
+version: 2.0-starter
 stand: 2026-08-30
 ---
 
