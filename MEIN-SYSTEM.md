@@ -69,7 +69,7 @@ Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechani
 
 | | |
 |---|---|
-| Eingespielte Version | 1.19 |
+| Eingespielte Version | 1.20 |
 | Eingespielt am | *(Datum deiner Einrichtung)* |
 | Quelle | https://github.com/flomeile/leo-starter |
 
