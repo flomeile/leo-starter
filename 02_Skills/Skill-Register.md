@@ -2,15 +2,15 @@
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
-version: 1.18-starter
-letzte_aenderung: 2026-08-29
+version: 1.19-starter
+letzte_aenderung: 2026-08-30
 ---
 
 # Skill-Register
 
 Die Root-`AGENTS.md` verweist auf diese Datei. Wenn ein Trigger-Wort genannt wird, schau hier nach, welcher Skill gemeint ist, öffne die zugehörige Datei und führe sie gemäss ihrer Anweisung aus.
 
-Für den Alltag reichen zwei Trigger: **"wrap up"** am Ende einer substanziellen Session, **"health check"** wann immer unklar ist, ob alles aktuell ist. Der Rest läuft automatisch (Task Scheduler täglich, optional Obsidian-Git laufend).
+Für den Alltag reichen zwei Trigger: **"wrap up"** am Ende einer substanziellen Session, **"health check"** wann immer unklar ist, ob alles aktuell ist. Der Rest läuft automatisch (Task Scheduler täglich, optional Obsidian-Git laufend). Und wer nie ein Trigger-Wort sagt, weil er nur MIT dem System arbeitet: Nutzungsmodus `benutzen` in `MEIN-SYSTEM.md`, Abschnitt 5 eintragen, dann fährt das LLM fällige Wartung ungefragt selbst (AGENTS.md, Abschnitt 1, seit 1.19).
 
 Namenskonvention: Alle Skill-Dateien tragen das Präfix `leo-`. Das macht sichtbar, dass der Skill in `C:\Leo` liegt und von dort aus funktioniert, unabhängig vom Harness. Trigger-Worte selbst brauchen das Präfix nicht.
 

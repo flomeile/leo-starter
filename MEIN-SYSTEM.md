@@ -69,7 +69,7 @@ Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechani
 
 | | |
 |---|---|
-| Eingespielte Version | 1.3 |
+| Eingespielte Version | 1.19 |
 | Eingespielt am | *(Datum deiner Einrichtung)* |
 | Quelle | https://github.com/flomeile/leo-starter |
 
@@ -79,6 +79,7 @@ Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechani
 
 Kurznotizen zu deiner Umgebung, damit das LLM nicht jedes Mal nachfragt. Was hier nicht steht, ist auch nicht schlimm.
 
+- **Nutzungsmodus:** *(`mitbauen` oder `benutzen`. `mitbauen` heisst: Du löst Wartung selbst aus, mit Trigger-Worten wie "health check" und "wrap up". `benutzen` heisst: Du arbeitest nur inhaltlich mit dem System, und das LLM fährt fällige Wartung ungefragt selbst; die Regel dazu steht in der AGENTS.md, Abschnitt 1. Wenn du das hier liest und nicht weisst, was ein Trigger-Wort ist, bist du `benutzen`.)*
 - **Werkzeug:** *(z.B. Claude Code auf dem eigenen Rechner, oder ein Chat-Harness mit Dateizugriff)*
 - **Fernsicherung:** *(privates GitHub-Repo? nur lokal? Wenn nur lokal: es gibt kein Netz unter dir, siehe ANLEITUNG Teil 5)*
 - **Automatik:** *(läuft der tägliche Index-Sync als geplante Aufgabe? Hook aktiv?)*

@@ -1,4 +1,4 @@
-# health-check.ps1
+﻿# health-check.ps1
 # Zweck: Read-only Diagnose des gesamten KI_REPO-Systems. Veraendert NICHTS am Repo.
 # Denkt NICHT selbst nach: rein deterministische, mechanische Pruefungen, keine Halluzination.
 #
@@ -131,10 +131,29 @@ try {
             $lastRun = if ($info) { $info.LastRunTime } else { $null }
             if ($state -eq "Disabled") {
                 Add-Check "WARN" $cat "Task '$($t.TaskName)' ist DEAKTIVIERT."
+            } elseif ($lastResult -in @(267008, 267009, 267011)) {
+                # 0x0004xxxx sind ZUSTAENDE des Task Schedulers, keine Fehler:
+                # 267008 = bereit (noch kein abgeschlossener Lauf), 267009 = laeuft
+                # gerade, 267011 = noch nie gelaufen (erster Trigger steht aus).
+                # Befund aus dem Betrieb eines Nutzersystems (30.08.2026): Ein frisch registrierter
+                # Task meldete sonst sofort einen "Fehlercode", und ein Task, der
+                # waehrend seines eigenen Diagnoselaufs prueft, meldete sich selbst
+                # als fehlgeschlagen, weil er noch lief.
+                Add-Check "INFO" $cat "Task '$($t.TaskName)' meldet Zustand $lastResult (bereit/laeuft/noch nie gelaufen). Kein Fehler."
             } elseif ($null -ne $lastResult -and $lastResult -ne 0) {
                 Add-Check "WARN" $cat "Task '$($t.TaskName)' letzter Lauf mit Fehlercode $lastResult (Stand $lastRun)."
             } else {
-                Add-Check "OK" $cat "Task '$($t.TaskName)' aktiv, letzter Lauf ok ($lastRun)."
+                # Ein Task, der OK meldet, aber seit Wochen nicht lief, ist praktisch
+                # derselbe Ausfall wie ein fehlender Task, sieht im Bericht aber gruen
+                # aus (Befund aus einem Nutzersystem, 30.08.2026: fuenf Tage ganz ohne registrierten
+                # Task blieben unsichtbar, weil das Protokoll durch Handlaeufe gefuellt
+                # aussah). 14 Tage decken auch zweiwoechentliche Turnusse ab.
+                $lastRunAlter = if ($lastRun -and $lastRun.Year -gt 2000) { ((Get-Date) - $lastRun).TotalDays } else { $null }
+                if ($null -ne $lastRunAlter -and $lastRunAlter -gt 14) {
+                    Add-Check "WARN" $cat "Task '$($t.TaskName)' meldet OK, lief aber zuletzt vor $([int]$lastRunAlter) Tagen ($lastRun). Ein Task ohne Laeufe ist praktisch kein Task: Trigger und Rechnerlaufzeiten pruefen."
+                } else {
+                    Add-Check "OK" $cat "Task '$($t.TaskName)' aktiv, letzter Lauf ok ($lastRun)."
+                }
             }
         }
     }
@@ -923,12 +942,16 @@ if ($deadLinks.Count -gt 0) {
 # Graphen und sonst nichts, und genau daraus besteht ein Wissensnetz, das sich selbst
 # verknuepft. Geprueft wird nur der eindeutige Fall: eine Zeile, in der ausser dem
 # Verweis so gut wie nichts steht.
+# $fmExemptNames wird erst in Abschnitt 14 definiert; hier stand die Variable frueher
+# vor ihrer Definition und die Ausnahme lief still ins Leere (Befund 30.08.2026 im
+# Ursprungssystem, dort identisch behoben). Namensliste identisch zu Abschnitt 14 halten.
+$linkExemptNames = @("AGENTS.md", "CLAUDE.md", "GEMINI.md", "_INDEX.md", "README.md")
 $linksOhneGrund = @()
 foreach ($f in $mdLinkSources) {
     $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
     if ($rel -notmatch '^\d\d_') { continue }
     if ($rel -match '^(00_INDEX|01_Basiskontext|02_Skills|03_Sessionlogs|04_Changelog|10_System|90_Inbox)/') { continue }
-    if ($fmExemptNames -contains $f.Name) { continue }
+    if ($linkExemptNames -contains $f.Name) { continue }
     $zeilenNr = 0
     foreach ($line in (Get-Content -LiteralPath $f.FullName -Encoding UTF8 -ErrorAction SilentlyContinue)) {
         $zeilenNr++
@@ -1366,6 +1389,93 @@ if ($umlautTells) {
     Write-Output ""
 }
 
+# ---------------------------------------------------------------------------
+# FRONTMATTER-WERTE: unzitierter Doppelpunkt mit Leerzeichen
+# ---------------------------------------------------------------------------
+# Ein unzitierter Wert mit "Doppelpunkt plus Leerzeichen" (oder Doppelpunkt am
+# Zeilenende) macht den YAML-Block ungueltig, und der Fehler ist im Editor fast
+# unsichtbar. Zitierte Werte ("titel: \"X: Y\""), Zeiten (17:10), 1:1 und URLs
+# sind gueltig und schlagen nicht an. Im Ursprungssystem am 30.08.2026 am
+# Gesamtbestand kalibriert: 0 Fehltreffer ueber alle Werte mit Doppelpunkt.
+$cat = "Frontmatter"
+$fmDoppelpunkt = @()
+foreach ($f in $mdAll) {
+    $rel = $f.FullName.Substring($repo.Length + 1) -replace '\\', '/'
+    $kopf = Get-Content -Path $f.FullName -TotalCount 25 -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not $kopf -or $kopf[0].Trim() -ne '---') { continue }
+    for ($i = 1; $i -lt $kopf.Count; $i++) {
+        if ($kopf[$i].Trim() -eq '---') { break }
+        if ($kopf[$i] -match '^([a-zA-Z_-]+):\s+(.*)$') {
+            $fmSchluessel = $Matches[1]
+            $wert = $Matches[2].Trim()
+            if ($wert -match '^["'']') { continue }
+            if ($wert -match ':(\s|$)') { $fmDoppelpunkt += "$rel (${fmSchluessel}:)" }
+        }
+    }
+}
+if ($fmDoppelpunkt.Count -gt 0) {
+    $sampleDP = ($fmDoppelpunkt | Select-Object -First 8) -join ' | '
+    Add-Check "WARN" $cat "$($fmDoppelpunkt.Count) Datei(en) mit unzitiertem Doppelpunkt in einem Frontmatter-Wert; der Block ist damit ungueltiges YAML. Wert umformulieren (Doppelpunkt raus) oder in Anfuehrungszeichen setzen. Treffer: $sampleDP"
+} else {
+    Add-Check "OK" $cat "Kein Frontmatter-Wert bricht seinen Block durch einen unzitierten Doppelpunkt (Zeiten, 1:1 und URLs ohne Leerzeichen danach sind gueltig und ausgenommen)."
+}
+Write-Output "Doppelpunkt-Check erledigt."
+Write-Output ""
+
+# ---------------------------------------------------------------------------
+# EIGENE SKILLS OHNE EINTRAG IN MEIN-SYSTEM.md (Abschnitt 3)
+# ---------------------------------------------------------------------------
+# MEIN-SYSTEM.md Abschnitt 3 ist die Liste, die der Update-Skill liest, um eigene
+# Bauten zu schonen. Sie veraltet still (Befund aus einem Nutzersystem, 30.08.2026). Mechanisch
+# pruefbar ist der Skill-Teil: Jede Skill-Datei, die nicht zum Kern gehoert und
+# in MEIN-SYSTEM.md nirgends genannt wird, fehlt dort. Die Kernliste unten ist
+# identisch zu 10_System\Kern-Dateien.md zu halten.
+$cat = "Mein-System"
+$kernSkills = @('leo-mechanik-update.md','leo-skill-ersteller.md','leo-system-health-check.md',
+                'leo-system-optimierung.md','leo-themenordner-anlegen.md','leo-wrap-up.md')
+$meinSystemPfad = Join-Path $repo "MEIN-SYSTEM.md"
+if (Test-Path -LiteralPath $meinSystemPfad) {
+    $msText = Get-Content -LiteralPath $meinSystemPfad -Raw -Encoding UTF8
+    $eigeneOhneEintrag = @(Get-ChildItem (Join-Path $repo "02_Skills") -Filter "*.md" -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notin (@("README.md","Skill-Register.md") + $kernSkills) } |
+        Where-Object { -not $msText.Contains($_.Name) } |
+        ForEach-Object { $_.Name })
+    if ($eigeneOhneEintrag.Count -gt 0) {
+        Add-Check "WARN" $cat "$($eigeneOhneEintrag.Count) eigene Skill-Datei(en) ohne Eintrag in MEIN-SYSTEM.md Abschnitt 3: $($eigeneOhneEintrag -join ', '). Ohne den Eintrag muss der Update-Skill raten, was dir gehoert."
+    } else {
+        Add-Check "OK" $cat "Jeder eigene Skill (ausserhalb des Kerns) ist in MEIN-SYSTEM.md genannt."
+    }
+
+    # Versions-Rueckstand (Befund aus einem Nutzersystem, 30.08.2026): Wer nie ein Trigger-Wort sagt,
+    # zieht nie ein Update und erfaehrt es nicht; sechs Versionen Rueckstand nach
+    # fuenf Tagen, darunter ein Bug, der die halbe Personalisierung lahmlegte. Die
+    # billigste Pruefung im ganzen Check: eingespielte Version (Abschnitt 4) gegen
+    # den hoechsten Tag im Grundgeruest-Repo. Kein Netz oder kein Git: nur INFO.
+    $quelleRepo = "https://github.com/flomeile/leo-starter"
+    $eingespielt = $null
+    if ($msText -match '(?m)^\|\s*Eingespielte Version\s*\|\s*([0-9]+\.[0-9]+)\s*\|') { $eingespielt = $Matches[1] }
+    if ($eingespielt) {
+        $tagsRaw = & git ls-remote --tags $quelleRepo 2>$null
+        if ($LASTEXITCODE -eq 0 -and $tagsRaw) {
+            $neueste = @($tagsRaw | ForEach-Object { if ($_ -match 'refs/tags/v([0-9]+\.[0-9]+)$') { [version]$Matches[1] } }) |
+                Sort-Object | Select-Object -Last 1
+            if ($neueste -and ([version]$eingespielt -lt $neueste)) {
+                Add-Check "WARN" $cat "Grundgeruest-Rueckstand: eingespielt ist $eingespielt, verfuegbar ist $neueste. Update ansteht: Trigger 'mechanik update' (Skill leo-mechanik-update). Steht in Abschnitt 4 von MEIN-SYSTEM.md noch der Auslieferungswert, dort zuerst die real eingespielte Version eintragen."
+            } elseif ($neueste) {
+                Add-Check "OK" $cat "Grundgeruest aktuell: Version $eingespielt entspricht dem neuesten Stand ($neueste)."
+            }
+        } else {
+            Add-Check "INFO" $cat "Grundgeruest-Version nicht pruefbar (kein Netz oder git ls-remote fehlgeschlagen). Kein Befund."
+        }
+    } else {
+        Add-Check "INFO" $cat "In MEIN-SYSTEM.md Abschnitt 4 ist keine eingespielte Version lesbar (Muster '| Eingespielte Version | X.Y |'). Beim Einrichten eintragen, sonst kann niemand Rueckstand erkennen."
+    }
+} else {
+    Add-Check "WARN" $cat "MEIN-SYSTEM.md fehlt im Root. Die persoenliche Ebene (Name, Pfade, eigene Regeln, eingespielte Version) hat damit keinen Ort."
+}
+Write-Output "Mein-System-Check erledigt."
+Write-Output ""
+
 
 # ---------------------------------------------------------------------------
 # LEAN (Groesse des in jeder Session geladenen Pflichtkontexts)
@@ -1384,6 +1494,23 @@ if ($agentsSize -gt ($leanSchwelleKB * 1024)) {
     Add-Check "WARN" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB). Erzaehlungen nach der Trennlinie in 10_System\Detailregeln aus AGENTS.md.md auslagern; Regeln bleiben vollstaendig stehen." -f ($agentsSize / 1KB))
 } else {
     Add-Check "OK" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB)." -f ($agentsSize / 1KB))
+}
+# Der gesamte Pflichtkontext, nicht nur die AGENTS.md (Befund aus einem Nutzersystem, 30.08.2026):
+# MEIN-SYSTEM.md und der Basiskontext werden nach derselben Mechanik in jeder
+# Session vollstaendig geladen, und MEIN-SYSTEM.md ist die Datei, die am
+# schnellsten waechst, weil jede eigene Regel dort landet. Die Trennlinie
+# steuernd/begruendend (AGENTS.md Abschnitt 10) gilt fuer sie genauso: Normative
+# eigene Regeln bleiben, Erzaehlungen dazu gehoeren in eine eigene Begleitdatei.
+# Schwelle anpassen, wenn der eigene Pflichtkontext bewusst waechst.
+$leanKontextSchwelleKB = 100
+$kontextDateien = @((Join-Path $repo "AGENTS.md"), (Join-Path $repo "CLAUDE.md"), (Join-Path $repo "MEIN-SYSTEM.md")) +
+    @(Get-ChildItem (Join-Path $repo "01_Basiskontext") -Filter "*.md" -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ne "README.md" } | ForEach-Object { $_.FullName })
+$kontextTotal = ($kontextDateien | Where-Object { Test-Path $_ } | ForEach-Object { (Get-Item $_).Length } | Measure-Object -Sum).Sum
+if ($kontextTotal -gt ($leanKontextSchwelleKB * 1024)) {
+    Add-Check "WARN" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext) ist {0:N0} KB (Schwelle $leanKontextSchwelleKB KB). Das zahlt jede Session vor dem ersten Wort. Erzaehlungen auslagern, Themenspezifisches in den Themenordner; Regeln bleiben vollstaendig." -f ($kontextTotal / 1KB))
+} else {
+    Add-Check "INFO" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext): {0:N0} KB (Schwelle $leanKontextSchwelleKB KB)." -f ($kontextTotal / 1KB))
 }
 
 # Messlauf-Waechter: Die Regeltreue-Messung (Skill leo-system-optimierung,

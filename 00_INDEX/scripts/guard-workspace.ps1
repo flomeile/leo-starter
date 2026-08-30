@@ -125,6 +125,33 @@ function Test-Allowed([string]$path) {
     return $false
 }
 
+# --- Formatdisziplin (AGENTS.md Abschnitt 5, mechanisiert 30.08.2026) --------
+# Themenordner tragen kuratiertes Markdown; erzeugte Ausgabeformate (PDF, PNG,
+# Office, HTML-Zwischenprodukte) gehoeren in den Artefakte-Ordner neben dem Repo.
+# Die Textregel ist im Ursprungssystem zweimal an einer expliziten Ortsangabe
+# gescheitert ("speichere es im selben Ordner"); auf eine zweimal wirkungslose
+# Textregel folgt ein mechanisches Netz. Zustandsdateien der Skripte sind
+# ausgenommen, 90_Inbox bleibt als Transit frei.
+$artefaktEndungen = @('.pdf','.png','.jpg','.jpeg','.gif','.svg','.webp','.ico',
+                      '.docx','.doc','.xlsx','.xls','.pptx','.ppt','.zip','.7z',
+                      '.html','.htm','.mp4','.mp3','.wav')
+function Test-ArtefaktVerbot([string]$path) {
+    if ([string]::IsNullOrWhiteSpace($path)) { return $false }
+    $p = $path.Trim().Trim('"').Trim("'")
+    if ($p -match '^/([a-zA-Z])/(.*)$') { $p = $matches[1].ToUpper() + ":\" + ($matches[2] -replace '/', '\') }
+    $p = $p -replace '/', '\'
+    if ($p -notmatch '^[a-zA-Z]:\\') { return $false }
+    try { $p = [System.IO.Path]::GetFullPath($p) } catch { }
+    if (-not $p.StartsWith($repo + '\', [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
+    $rel = $p.Substring($repo.Length + 1)
+    if ($rel -notmatch '^(2\d|3\d|05)_') { return $false }
+    $name = [System.IO.Path]::GetFileName($p)
+    if ($name -like '*last-run.txt' -or $name -like 'zustand-*.json') { return $false }
+    $ext = [System.IO.Path]::GetExtension($p).ToLower()
+    return ($artefaktEndungen -contains $ext)
+}
+$artefaktGrund = "Erzeugte Ausgabeformate gehoeren nicht in Themenordner, sondern in den Artefakte-Ordner neben dem Repo (AGENTS.md, Abschnitt 5). Eine explizite Ortsangabe hebt die Regel nicht still auf: Regel benennen, Artefakte-Pfad vorschlagen; besteht [NAME] auf dem Themenordner, legt er die Datei selbst ab oder entscheidet die Lockerung."
+
 $tool = [string]$in.tool_name
 $ti   = $in.tool_input
 
@@ -133,6 +160,9 @@ if ($tool -in @("Write", "Edit", "NotebookEdit", "MultiEdit")) {
     $target = [string]$ti.file_path
     if (-not (Test-Allowed $target)) {
         Write-Decision "deny" "Ausserhalb des Repos ($repo) wird nichts geschrieben. Blockierter Pfad: $target. Harte Regel, siehe AGENTS.md Abschnitt 18. Wenn das wirklich gewollt ist, gibt es zwei saubere Wege, und beide entscheidet [NAME]: die Datei von Hand an den Zielort legen, oder den Pfad dauerhaft in die Liste `$allowPatterns in 00_INDEX\scripts\guard-workspace.ps1 eintragen. Diese Liste erweiterst du nicht selbst, um an ein blockiertes Ziel zu kommen."
+    }
+    if (Test-ArtefaktVerbot $target) {
+        Write-Decision "deny" "Blockierter Pfad: $target. $artefaktGrund"
     }
     Write-Decision "durch" ""
 }
@@ -153,7 +183,8 @@ if ($tool -in @("Bash", "PowerShell")) {
         '\bmkdir\b','\brmdir\b','\brm\b','\bmv\b','\bcp\b','\btouch\b','\btee\b','\bdel\b','\berase\b',
         '\bgit\s+(add|commit|push|checkout|reset|clean|rm|mv|init|apply|restore|stash|tag)\b',
         '\bnpm\s+(install|i|uninstall|link)\b','\bpip\s+install\b',
-        '>>','\|\s*Out-File','\|\s*Set-Content','\|\s*Add-Content'
+        '>>','\|\s*Out-File','\|\s*Set-Content','\|\s*Add-Content',
+        '--print-to-pdf','--screenshot'
     )
     $isWrite = $false
     foreach ($v in $writeVerbs) { if ($cmd -match $v) { $isWrite = $true; break } }
@@ -183,12 +214,26 @@ if ($tool -in @("Bash", "PowerShell")) {
     }
     # Zweiter Durchgang: unquotierte Pfade. Endet zwangslaeufig am Leerzeichen,
     # den Abschneidefall faengt Test-Allowed ab.
-    foreach ($rx in @('[a-zA-Z]:[\\/][^"''`;,|)\s]*', '(?<!\\)\\\\[a-zA-Z0-9._-]+\\(?!\\)[^"''`;,|)\s]+', '(?<![\w.])/[a-zA-Z]/[^"''`;,|)\s]*')) {
+    # Der linke Anker vor dem Laufwerksmuster verhindert, dass mitten in einem Wort
+    # ein "Laufwerk" gefunden wird: file:///C:/... enthaelt sonst den Fund e:///,
+    # und jeder Chrome-Aufruf mit Datei-URL waere blockiert (Fix aus dem
+    # Ursprungssystem vom 11.08.2026, hier nachgezogen am 30.08.2026).
+    foreach ($rx in @('(?<![A-Za-z0-9])[a-zA-Z]:[\\/][^"''`;,|)\s]*', '(?<!\\)\\\\[a-zA-Z0-9._-]+\\(?!\\)[^"''`;,|)\s]+', '(?<![\w.])/[a-zA-Z]/[^"''`;,|)\s]*')) {
         foreach ($m in [regex]::Matches($cmd, $rx)) { $found += $m.Value }
     }
     foreach ($f in ($found | Select-Object -Unique)) {
         if (-not (Test-Allowed $f)) {
             Write-Decision "deny" "Schreibendes Kommando mit Ziel ausserhalb des Repos ($repo). Blockierter Pfad: $f. Harte Regel, siehe AGENTS.md Abschnitt 18. Wenn das wirklich gewollt ist, entscheidet [NAME]: die Datei von Hand an den Zielort legen, oder den Pfad dauerhaft in die Liste `$allowPatterns eintragen. Diese Liste erweiterst du nicht selbst."
+        }
+    }
+    # Formatdisziplin im Shell-Zweig bewusst eng: Nur die AUSGABE-Ziele der bekannten
+    # Erzeuger werden geprueft (Chrome-Export, Umleitungen), nicht jeder Pfad im
+    # Kommando. Sonst blockiert die Sperre auch das sanktionierte Aufraeumen, etwa
+    # Move-Item eines gestrandeten PDFs AUS dem Themenordner in den Artefakte-Ordner.
+    foreach ($m in [regex]::Matches($cmd, '(?:--print-to-pdf=|--screenshot=|>{1,2}\s*)"?([^"\r\n;|]+?)"?(?=\s|$)')) {
+        $ziel = $m.Groups[1].Value.Trim()
+        if (Test-ArtefaktVerbot $ziel) {
+            Write-Decision "deny" "Schreibendes Kommando, blockiertes Ausgabeziel: $ziel. $artefaktGrund"
         }
     }
     Write-Decision "durch" ""

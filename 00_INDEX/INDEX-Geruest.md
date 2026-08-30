@@ -2,21 +2,21 @@
 titel: Index-Geruest (mechanisch erzeugt)
 zweck: Vollstaendige, deterministische Baumliste aller Markdown-Dateien im Repo
 type: index-geruest
-erzeugt: 2026-08-29 16:04
+erzeugt: 2026-08-30 15:26
 hinweis: Automatisch erzeugt. Nicht von Hand bearbeiten. Sicherheitsnetz und Delta-Quelle fuer die kuratierten Indizes.
 ---
 
 # Index-Geruest
 
-Mechanisch aus dem Dateisystem erzeugt am 2026-08-29 16:04. Volle Hierarchie, jede real existierende .md-Datei.
+Mechanisch aus dem Dateisystem erzeugt am 2026-08-30 15:26. Volle Hierarchie, jede real existierende .md-Datei.
 Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geaendert.
 
-- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 49.8 KB | 2026-08-29
-- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 46.4 KB | 2026-08-29
+- AGENTS.md | AGENTS.md: Master-Anweisung für Leo | 51.9 KB | 2026-08-30
+- ANLEITUNG.md | Leo: Anleitung zum eigenen Second Brain | 51.3 KB | 2026-08-30
 - CLAUDE.md | CLAUDE.md | 1.6 KB | 2026-08-27
 - GEMINI.md | GEMINI.md | 1.7 KB | 2026-08-26
-- MEIN-SYSTEM.md | Mein System | 4.3 KB | 2026-08-07
-- README.md | Leo: Dein Second Brain | 3.5 KB | 2026-08-29
+- MEIN-SYSTEM.md | Mein System | 4.7 KB | 2026-08-30
+- README.md | Leo: Dein Second Brain | 3.5 KB | 2026-08-30
 - 00_INDEX\
   - README.md | 00_INDEX | 1.1 KB | 2026-07-17
   - githooks\
@@ -29,12 +29,12 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
 - 02_Skills\
   - leo-mechanik-update.md | Skill: Mechanik aktualisieren | 13.3 KB | 2026-08-11
   - leo-skill-ersteller.md | Skill: Leo Skill-Ersteller | 6.4 KB | 2026-08-07
-  - leo-system-health-check.md | Skill: System Health Check | 15.2 KB | 2026-08-29
+  - leo-system-health-check.md | Skill: System Health Check | 15.7 KB | 2026-08-30
   - leo-system-optimierung.md | Skill: Leo System-Optimierung | 6.5 KB | 2026-08-29
   - leo-themenordner-anlegen.md | Skill: Themenordner anlegen | 4 KB | 2026-07-17
   - leo-wrap-up.md | Skill: Leo Wrap-Up | 13.2 KB | 2026-08-29
   - README.md | 02_Skills | 1.3 KB | 2026-07-17
-  - Skill-Register.md | Skill-Register | 3.5 KB | 2026-08-29
+  - Skill-Register.md | Skill-Register | 3.8 KB | 2026-08-30
 - 03_Sessionlogs\
   - README.md | 03_Sessionlogs | 0.6 KB | 2026-07-17
 - 04_Changelog\
@@ -44,7 +44,7 @@ Format je Datei: Name | Basis-Beschreibung (erste Ueberschrift) | Groesse | geae
   - AGENTS.md | Rolle: System-Experte | 1.4 KB | 2026-08-03
   - Architektur.md | Architektur des KI-Systems | 4.5 KB | 2026-08-03
   - Detailregeln aus AGENTS.md.md | Detailregeln, ausgelagert aus der AGENTS.md | 1.2 KB | 2026-08-29
-  - Kern-Dateien.md | Kern-Dateien: was ein Update anfassen darf | 5.6 KB | 2026-08-29
+  - Kern-Dateien.md | Kern-Dateien: was ein Update anfassen darf | 5.8 KB | 2026-08-30
   - Manual.md | Manual: So nutzt du dein KI-System | 4.8 KB | 2026-08-03
   - Modellwahl.md | Modellwahl (Stand: siehe `stand:` im Frontmatter) | 3.7 KB | 2026-08-05
   - Pruefset-Vorlage.md | Prüfset-Vorlage: Regeltreue-Messung | 7.4 KB | 2026-08-29
