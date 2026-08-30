@@ -14,13 +14,13 @@ Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themeno
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-08-30 18:16 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-08-30 21:42 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)
   - scripts\  (0 Dateien)
 - 01_Basiskontext\  (4 Dateien)
-- 02_Skills\  (8 Dateien)
+- 02_Skills\  (12 Dateien)
 - 03_Sessionlogs\  (1 Dateien)
 - 04_Changelog\  (2 Dateien)
 - 10_System\  (10 Dateien)
@@ -61,6 +61,10 @@ Diese Liste zeigt nur Rolle und Pfade, KEINE Datei-Beschreibungen. Die eigentlic
 - **02_Skills\leo-skill-ersteller.md** — Norm und Anleitung, um neue Skills zu bauen (inkl. leo-Präfix und Definition of Done) und ins Register einzutragen.
 - **02_Skills\leo-mechanik-update.md** — Holt Verbesserungen am Grundgerüst von GitHub (`upstream`-Remote, Versions-Tags) und arbeitet sie ein, ohne eigene Anpassungen zu beschädigen: erst committen als Rückweg, Kern-Dateien nur dort ersetzen, wo lokal nichts geändert wurde, sonst einarbeiten, eigene Skills gegen die neuen Konventionen prüfen, Stand in MEIN-SYSTEM.md fortschreiben.
 - **02_Skills\leo-system-optimierung.md** — Misst mit kalten Prüfset-Läufen, ob das System seine eigenen Regeln einhält (Trigger "messlauf"): Prüfset fahren, am Beleg urteilen, je Durchfaller die richtige Fix-Sorte wählen, nachmessen, bei sinkender Quote zurückrollen. Erster Aufbau aus `10_System\Pruefset-Vorlage.md`.
+- **02_Skills\leo-voice-check.md** — Prüft einen fertigen ausgehenden Text (Mail, Präsentation, Post, Angebot) gegen die eigene Voice-Datei und die generischen KI-Tells (Floskeln, Pauschalaussagen, Reframe-Konstruktionen, Verb-Aufblähung, Haltung, Verständlichkeit) und liefert die bereinigte Fassung samt Änderungsliste. Springt bei jedem ausgehenden Text von selbst an.
+- **02_Skills\leo-faktencheck.md** — Prüft jede überprüfbare Tatsachenbehauptung eines Textes einzeln gegen Primärquellen per Websuche (Zahlen, Zitate, Personen, Superlative zuerst), fällt je Behauptung eines von fünf Urteilen mit Quelle und bietet den korrigierten Entwurf an. Ohne Websuch-Werkzeug wird nichts simuliert.
+- **02_Skills\leo-notiz.md** — Verankert einen offenen Punkt so im Repo, dass er wiederkommt: zuständige Datei suchen, Duplikate und Widersprüche prüfen, Status-Block mit Owner, nächstem Zug und Wiedervorlage-Datum setzen, stand: und Index nachziehen.
+- **02_Skills\leo-first-principles.md** — Dekonstruiert ein Modell, einen Prozess oder eine Branchenlösung auf fundamentale Grundwahrheiten und baut von Null neu auf (Dekonstruktion, Annahmen-Check, Neuaufbau, Barrieren, Prototyp-Test), endet immer mit einem konkreten ersten Zug samt Zeithorizont.
 
 ### 03_Sessionlogs / 04_Changelog
 

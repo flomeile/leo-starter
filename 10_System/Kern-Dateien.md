@@ -2,7 +2,7 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 2.1-starter
+version: 2.3-starter
 stand: 2026-08-30
 ---
 
@@ -26,6 +26,10 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `02_Skills\leo-themenordner-anlegen.md` | Kern-Skill |
 | `02_Skills\leo-skill-ersteller.md` | Kern-Skill |
 | `02_Skills\leo-system-optimierung.md` | Kern-Skill: Regeltreue-Messung mit kaltem Prüfset (seit 1.18) |
+| `02_Skills\leo-voice-check.md` | Arbeits-Skill: ausgehende Texte gegen die eigene Voice-Datei prüfen (seit 2.3) |
+| `02_Skills\leo-faktencheck.md` | Arbeits-Skill: Tatsachenbehauptungen gegen Primärquellen prüfen (seit 2.3) |
+| `02_Skills\leo-notiz.md` | Arbeits-Skill: offene Punkte als Status-Block mit Wiedervorlage verankern (seit 2.3) |
+| `02_Skills\leo-first-principles.md` | Arbeits-Skill: Modelle und Prozesse von Grund auf neu denken (seit 2.3) |
 | `10_System\Pruefset-Vorlage.md` | Vorlage für das eigene Prüfset; die daraus angelegte `Pruefset.md` gehört dir und wird nie ersetzt (seit 1.18) |
 | `02_Skills\README.md` | Erklärt, was ein Skill ist |
 | `00_INDEX\scripts\build-index-geruest.ps1` | Index-Automatik |

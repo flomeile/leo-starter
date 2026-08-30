@@ -1428,11 +1428,18 @@ Write-Output ""
 # MEIN-SYSTEM.md Abschnitt 3 ist die Liste, die der Update-Skill liest, um eigene
 # Bauten zu schonen. Sie veraltet still (Befund aus einem Nutzersystem, 30.08.2026). Mechanisch
 # pruefbar ist der Skill-Teil: Jede Skill-Datei, die nicht zum Kern gehoert und
-# in MEIN-SYSTEM.md nirgends genannt wird, fehlt dort. Die Kernliste unten ist
-# identisch zu 10_System\Kern-Dateien.md zu halten.
+# in MEIN-SYSTEM.md nirgends genannt wird, fehlt dort. Die Kernliste wird aus
+# 10_System\Kern-Dateien.md gelesen (eine Wahrheit, keine Kopie); die statische
+# Liste darunter ist nur der Rueckfall, falls die Datei fehlt.
 $cat = "Mein-System"
 $kernSkills = @('leo-mechanik-update.md','leo-skill-ersteller.md','leo-system-health-check.md',
                 'leo-system-optimierung.md','leo-themenordner-anlegen.md','leo-wrap-up.md')
+$kernDateienPfad = Join-Path $repo "10_System\Kern-Dateien.md"
+if (Test-Path -LiteralPath $kernDateienPfad) {
+    $ausListe = @(Select-String -LiteralPath $kernDateienPfad -Pattern '02_Skills\\(leo-[\w-]+\.md)' -AllMatches |
+        ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    if ($ausListe.Count -gt 0) { $kernSkills = $ausListe }
+}
 $meinSystemPfad = Join-Path $repo "MEIN-SYSTEM.md"
 if (Test-Path -LiteralPath $meinSystemPfad) {
     $msText = Get-Content -LiteralPath $meinSystemPfad -Raw -Encoding UTF8
@@ -1518,9 +1525,9 @@ $kontextDateien = @((Join-Path $repo "AGENTS.md"), (Join-Path $repo "CLAUDE.md")
         Where-Object { $_.Name -ne "README.md" } | ForEach-Object { $_.FullName })
 $kontextTotal = ($kontextDateien | Where-Object { Test-Path $_ } | ForEach-Object { (Get-Item $_).Length } | Measure-Object -Sum).Sum
 if ($kontextTotal -gt ($leanKontextSchwelleKB * 1024)) {
-    Add-Check "WARN" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext) ist {0:N0} KB (Schwelle $leanKontextSchwelleKB KB). Das zahlt jede Session vor dem ersten Wort. Erzaehlungen auslagern, Themenspezifisches in den Themenordner; Regeln bleiben vollstaendig." -f ($kontextTotal / 1KB))
+    Add-Check "WARN" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext) ist auf {0:N0} KB gewachsen (Wachstums-Marke $leanKontextSchwelleKB KB). Reiner Hinweis, KEIN Kuerzungsauftrag: bei Gelegenheit mit dem Skill leo-system-optimierung (Trigger 'messlauf') pruefen, ob sich ohne Verlust an Arbeitsqualitaet sparen laesst, und das Ergebnis dem Besitzer vorlegen. Nie eigenmaechtig streichen, um unter die Marke zu kommen." -f ($kontextTotal / 1KB))
 } else {
-    Add-Check "INFO" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext): {0:N0} KB (Schwelle $leanKontextSchwelleKB KB)." -f ($kontextTotal / 1KB))
+    Add-Check "INFO" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext): {0:N0} KB (Wachstums-Marke $leanKontextSchwelleKB KB)." -f ($kontextTotal / 1KB))
 }
 
 # Messlauf-Waechter: Die Regeltreue-Messung (Skill leo-system-optimierung,
