@@ -2,8 +2,8 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 2.3-starter
-stand: 2026-08-30
+version: 2.4-starter
+stand: 2026-08-31
 ---
 
 # Kern-Dateien: was ein Update anfassen darf
@@ -39,6 +39,8 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `00_INDEX\scripts\weekly-diagnose.ps1` | Unbeaufsichtigte Wochendiagnose; bei jedem Lauf entsteht `10_System\health-check-report.txt`, und diese Berichtsdatei gehört dir (seit 1.19) |
 | `00_INDEX\githooks\pre-commit` | Schutz vor beschädigten Commits |
 | `.gitattributes` | Zeilenenden-Behandlung |
+| `README.md` | Was dieses Grundgerüst ist. Beschreibt die Mechanik, nicht dich |
+| `00_INDEX\README.md` | Erklärt, wie die Indexdateien zusammenspielen |
 
 Die generierten Skill-Zeiger in `.claude\skills\`, `.agents\skills\`, `.gemini\skills\`, `.cursor\skills\`, `.cline\skills\` und `.opencode\skills\` stehen bewusst in keiner der drei Kategorien: Sie werden bei jedem Health-Check neu aus deinem Register erzeugt und sind jederzeit wegwerfbar. Ein Update muss sie weder ersetzen noch schützen. Eigene Skills, die du dort liegen siehst, sind kein Verlust, wenn sie verschwinden: Die Wahrheit steht in `02_Skills`.
 
@@ -56,13 +58,16 @@ Diese Dateien sind Mechanik, tragen aber zwingend etwas von dir. Ein Update darf
 | `.claude\settings.json` | Hängt die Arbeitsbereich-Sperre ein. Dein Anteil sind eigene Berechtigungen und weitere Hooks, die ein Update nicht anfassen darf |
 | `.github\copilot-instructions.md` | dasselbe |
 | `ANLEITUNG.md` | Nichts, solange du sie nicht ergänzt hast. Wenn doch, gilt sie als deine Datei |
+| `.gitignore` | Deine eigenen Ignore-Zeilen. Neue Zeilen aus dem Grundgerüst werden ergänzt, deine nie entfernt |
 | `10_System\Detailregeln aus AGENTS.md.md` | Alle Präzedenzfälle und Langbegründungen darin; das Grundgerüst liefert nur die leere Keimdatei (seit 1.18) |
 
 ## C. Deins: wird nie angefasst
 
 Alles andere. Ein Update liest diese Dateien höchstens, um zu prüfen, ob deine eigenen Bauten noch zur neuen Mechanik passen, und meldet dir das. Geändert wird hier nichts.
 
-- `MEIN-SYSTEM.md` und alles darin
+- `MEIN-SYSTEM.md`, Abschnitte 1, 2 und 5: dein Inhalt, ein Update fasst ihn nie an.
+
+  **Eine eng begrenzte Ausnahme, Abschnitt 3 und 4 derselben Datei.** Die beiden sind die Buchhaltung des Update-Skills über sich selbst und nicht dein Inhalt: Abschnitt 4 trägt die eingespielte Version, Abschnitt 3 die Liste deiner Abweichungen an Kern-Dateien. Beides schreibt der Skill fort, weil er sonst beim nächsten Lauf nicht weiss, von welchem Stand du kommst und was dir gehört. Er darf dort ausschliesslich diese beiden Dinge und den Schutzhinweis darüber schreiben, nie etwas anderes und nie in Abschnitt 1, 2 oder 5.
 - `01_Basiskontext\*` (deine Person, dein Stil, deine Ziele)
 - Alle Themenordner, die du angelegt hast, samt ihrer lokalen `AGENTS.md` und `_INDEX.md`
 - `10_System\*` ausser `Kern-Dateien.md` (Architektur, Technik, Manual, Modellwahl, Zielsetzung beschreiben **dein** System, sobald du es aufgebaut hast)
@@ -70,6 +75,7 @@ Alles andere. Ein Update liest diese Dateien höchstens, um zu prüfen, ob deine
 - `02_Skills\Skill-Register.md` (dein Verzeichnis, wächst mit deinen Skills; der Update-Skill schlägt dir nur die Zeile für neue Kern-Skills vor)
 - `00_INDEX\INDEX.md`, `00_INDEX\INDEX-Geruest.md` und alle `_INDEX.md` (maschinell erzeugt, aus deinen Inhalten)
 - `00_INDEX\drift-ausnahmen.txt` (Commits, die der Health-Check bei der Drift-Prüfung überspringt; sie stammen aus deiner Historie, deshalb gehört die Datei dir. Sie liegt bewusst neben dem Prüfskript und nicht darin, weil das Skript Kategorie A ist und ein dort eingetragener Hash beim nächsten Update verloren wäre)
+- `00_INDEX\lean-baseline.txt` (die Referenzgrössen, gegen die der Health-Check das Wachstum deines Pflichtkontexts misst. Sie beschreiben dein System, nicht das Grundgerüst, und der Check schreibt sie selbst fort. Löschen ist ungefährlich: Der nächste Lauf legt sie mit deinen heutigen Werten neu an)
 - `03_Sessionlogs\*`, `04_Changelog\*`, `90_Inbox\*`
 
 ## Wenn du doch eine Kern-Datei ändern willst
@@ -77,6 +83,8 @@ Alles andere. Ein Update liest diese Dateien höchstens, um zu prüfen, ob deine
 Erlaubt, aber trag es in `MEIN-SYSTEM.md`, Abschnitt 3 ein. Der Update-Skill liest das, überschreibt deine Änderung dann nicht stillschweigend, sondern legt dir die neue Fassung daneben und arbeitet deine Anpassung ein.
 
 Ohne diesen Eintrag merkt der Skill die Abweichung trotzdem (er vergleicht), aber er muss dich dann fragen, statt es zu wissen. Das kostet dich eine Rückfrage, nicht deine Arbeit.
+
+Ergänzen ist dort erwünscht, löschen nicht: Was der Update-Skill in Abschnitt 3 hinterlassen hat, bleibt stehen. Und die Tabelle in Abschnitt 4 wird gar nicht von Hand angefasst, auch nicht kosmetisch; warum, steht dort.
 
 ## Für den Fall, dass diese Liste und die Wirklichkeit auseinandergehen
 

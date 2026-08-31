@@ -2,7 +2,7 @@
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
-version: 2.3-starter
+version: 2.4-starter
 letzte_aenderung: 2026-08-30
 ---
 

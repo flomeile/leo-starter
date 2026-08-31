@@ -2,7 +2,7 @@
 titel: Mein System (persönliche Ebene)
 zweck: Alles, was an diesem System dir gehört - Name, Pfad, eigene Regeln, eigene Bauten. Wird von Updates nie angefasst.
 type: master-regeln
-stand: 2026-08-30
+stand: 2026-08-31
 ---
 
 # Mein System
@@ -26,6 +26,7 @@ Diese Tabelle löst die Platzhalter auf, die in der `AGENTS.md` und in den Skill
 | Skill-Präfix | Präfix der Skill-Dateien (im Gerüst `leo-`) | `leo-` |
 | Repo-Pfad | Wo das Repo auf deinem Rechner liegt (im Gerüst `C:\Leo`) | `C:\Leo` |
 | Kürzel | Dein Kürzel für das Feld `geprueft:` | *(z.B. deine Initialen)* |
+| Arbeitssprache | Die Sprache, in der das System mit dir spricht (jede Antwort, jeder Bericht) | Deutsch |
 
 **Wichtig:** Wenn du dein System umbenennst oder woanders ablegst, änderst du **nur diese Tabelle**, nicht die `AGENTS.md`. Dort stehen "Leo" und `C:\Leo` als generische Bezeichnung; das LLM liest hier nach, was bei dir tatsächlich gilt. Damit bleibt die `AGENTS.md` bei allen Nutzern identisch und ist gefahrlos aktualisierbar.
 
@@ -44,6 +45,8 @@ Beispiele für das, was hierher gehört: eine Stilregel, die nur für dich gilt;
 ---
 
 ## 3. Was ich selbst gebaut habe
+
+> **Dieser Abschnitt und Abschnitt 4 werden mitgeführt, nicht umgebaut.** Der Skill `leo-mechanik-update` schreibt in beide: hier trägt er ein, welche Abweichungen an Kern-Dateien er bei dir gefunden hat, in Abschnitt 4 die eingespielte Version. Ergänze hier gerne, so viel du willst. Lösche aber nicht, was der Skill hinterlassen hat, und baue die Struktur nicht um. Beides liest er beim nächsten Update wieder, und was er nicht mehr findet, behandelt er als nicht vorhanden. Der Rest dieser Datei gehört dir allein, dort schreibt kein Update.
 
 Die Liste dessen, was bei dir über das Grundgerüst hinausgeht. Sie hat einen konkreten Zweck: Beim Aktualisieren der Mechanik prüft das LLM, ob deine eigenen Bauten noch zur neuen Fassung passen. Ohne diese Liste müsste es raten.
 
@@ -65,11 +68,13 @@ Trage hier ein, wenn du doch einmal eine Kern-Datei angepasst hast (siehe `10_Sy
 
 ## 4. Stand meines Grundgerüsts
 
+> **Diese Tabelle führt der Update-Skill, nicht du.** Ändere weder die Zeilen noch die Spalten noch die Schreibweise, auch nicht kosmetisch, und schreib die Version nicht von Hand um. Die Zeile "Eingespielte Version" wird maschinell gelesen, vom Skill `leo-mechanik-update` und vom System-Health-Check. Passt das Format nicht mehr, findet keiner von beiden die Version: Das Update vergleicht dann gegen die falsche Ausgangslage und kann dir eigene Anpassungen überschreiben, und der Health-Check meldet nie wieder, dass eine neue Version bereitsteht. Stimmt der Wert hier nicht, sag es dem LLM, statt ihn selbst zu korrigieren; es trägt ihn richtig ein.
+
 Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechanik-update` liest diesen Wert, um zu wissen, was sich seither geändert hat, und schreibt ihn danach fort.
 
 | | |
 |---|---|
-| Eingespielte Version | 2.3 |
+| Eingespielte Version | 2.4 |
 | Eingespielt am | *(Datum deiner Einrichtung)* |
 | Quelle | https://github.com/flomeile/leo-starter |
 

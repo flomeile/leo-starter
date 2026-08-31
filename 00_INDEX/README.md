@@ -9,7 +9,7 @@ type: readme
 Enthält die zentrale Landkarte des Second Brain. Der Index ist zweistufig:
 
 - **INDEX.md** (hier): Ordnerbaum (mechanisch aktuell), Themenbereiche, Beschreibungen der Systemdateien. Zuerst lesen.
-- **_INDEX.md je Themenordner** (z.B. `20_Business\_INDEX.md`): Dateiliste (mechanisch aktuell) plus kuratierte Beschreibungen der Wissensdateien dort.
+- **_INDEX.md je Themenordner** (also `<Themenordner>\_INDEX.md`): Dateiliste (mechanisch aktuell) plus kuratierte Beschreibungen der Wissensdateien dort.
 - **INDEX-Geruest.md**: vollständige, deterministische Baumliste aller .md-Dateien. Sicherheitsnetz und Delta-Quelle, kein Einstiegspunkt. Wird beim ersten Skript-Lauf erzeugt.
 
 ## Pflege (Rollenteilung)

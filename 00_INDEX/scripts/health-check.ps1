@@ -35,6 +35,32 @@ function Add-Check([string]$Level, [string]$Category, [string]$Message) {
     $results.Add([PSCustomObject]@{ Level = $Level; Category = $Category; Message = $Message })
 }
 
+# Skill-Praefix dieses Systems (seit 2.4). Das Grundgeruest nennt seine Skills
+# durchgaengig leo-*, wer sein System umbenannt hat, hat lokal andere Dateinamen.
+# Jede Kern-Datei, die einen Skill beim Namen nennt (Kern-Dateien.md, Verweise
+# zwischen Skills), zeigt bei ihm dann scheinbar ins Leere. Das ist kein Fehler
+# seines Systems, sondern eine Namenskonvention, und wird auch nicht heilbar:
+# Diese Dateien kommen bei jedem Update neu aus dem Grundgeruest. Gemessen im
+# Trockenlauf am 31.08.2026: 1 FAIL und 8 WARN, die kein Nutzer je loswerden kann.
+# Test-RepoPfad loest deshalb beide Schreibweisen auf.
+$skillPraefix = 'leo-'
+$msPfadFuerPraefix = Join-Path $repo "MEIN-SYSTEM.md"
+if (Test-Path -LiteralPath $msPfadFuerPraefix) {
+    $msRoh = Get-Content -LiteralPath $msPfadFuerPraefix -Raw -Encoding UTF8
+    if ($msRoh -match '(?m)^\|\s*Skill-Pr[äa]fix\s*\|[^|]*\|\s*`?([a-z0-9]+-)`?\s*\|') { $skillPraefix = $Matches[1] }
+}
+
+function Test-RepoPfad([string]$RelPfad) {
+    if ([string]::IsNullOrWhiteSpace($RelPfad)) { return $false }
+    $norm = $RelPfad.Replace('\', '/')
+    if (Test-Path -LiteralPath (Join-Path $repo $norm)) { return $true }
+    if ($skillPraefix -ne 'leo-' -and $norm -match '(^|/)leo-([\w-]+\.md)$') {
+        $alt = $norm -replace '(^|/)leo-([\w-]+\.md)$', ('$1' + $skillPraefix + '$2')
+        if (Test-Path -LiteralPath (Join-Path $repo $alt)) { return $true }
+    }
+    return $false
+}
+
 Write-Output "=== Leo System Health Check ==="
 Write-Output "Start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Write-Output ""
@@ -315,7 +341,7 @@ foreach ($sd in $systemCoverageDirs) {
 # Typischer Ausloeser: Eine Datei wird umbenannt (z.B. Umlaut-Korrektur), der
 # Index-Eintrag traegt aber weiter den alten Namen. Sammeleintraege ("...") matcht
 # die Regex nicht.
-$orphanedRoot = @($describedInRoot | Where-Object { -not (Test-Path (Join-Path $repo $_)) })
+$orphanedRoot = @($describedInRoot | Where-Object { -not (Test-RepoPfad $_) })
 if ($orphanedRoot.Count -gt 0) {
     Add-Check "FAIL" $cat "$($orphanedRoot.Count) kuratierte Beschreibung(en) in 00_INDEX\INDEX.md verweisen auf nicht existierende Dateien: $($orphanedRoot -join ', ')"
 } else {
@@ -529,7 +555,19 @@ if (-not (Test-Path $registerFile)) {
         if (-not (Test-Path (Join-Path $repo $relPath))) { $brokenRefs += $relPath }
     }
     if ($brokenRefs.Count -gt 0) {
-        Add-Check "FAIL" $cat "Skill-Register verweist auf nicht existierende Datei(en): $($brokenRefs -join ', ')"
+        # Haeufigste Ursache bei umbenannten Systemen: Das Register nennt die Skills noch
+        # mit dem Praefix des Grundgeruests, die Dateien tragen laengst das eigene. Der
+        # Hinweis spart die Suche nach der Ursache (Trockenlauf 31.08.2026).
+        $nurPraefix = @($brokenRefs | Where-Object {
+            $bn = Split-Path $_ -Leaf
+            $rest = $bn -replace '^[a-z0-9]+-', ''
+            @(Get-ChildItem -Path $skillDir -Filter "*$rest" -File -ErrorAction SilentlyContinue).Count -gt 0
+        })
+        $zusatz = ""
+        if ($nurPraefix.Count -gt 0) {
+            $zusatz = " Bei $($nurPraefix.Count) davon existiert dieselbe Datei unter einem anderen Praefix: Das Register wurde beim Umbenennen des Systems nicht nachgezogen. Dateinamen im Register auf das eigene Praefix aendern (MEIN-SYSTEM.md, Abschnitt 1), danach das Index-Skript laufen lassen."
+        }
+        Add-Check "FAIL" $cat "Skill-Register verweist auf nicht existierende Datei(en): $($brokenRefs -join ', ').$zusatz"
     }
 
     $triggerRows = [regex]::Matches($registerText, '(?m)^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|')
@@ -1126,6 +1164,8 @@ foreach ($f in $mdAll) {
         $abs    = Join-Path $repo ($p -replace '/', '\')
         $absRel = Join-Path (Split-Path $f.FullName -Parent) ($p -replace '/', '\')
         if ((Test-Path -LiteralPath $abs) -or (Test-Path -LiteralPath $absRel)) { continue }
+        # Umbenanntes System: leo-x.md im Text, w1-x.md auf der Platte (siehe Test-RepoPfad)
+        if (Test-RepoPfad $p) { continue }
         $ctxStart = [Math]::Max(0, $m.Index - 120)
         $ctx = $noFence.Substring($ctxStart, [Math]::Min(240, $noFence.Length - $ctxStart))
         if ($ctx -match $planPattern) { continue }
@@ -1443,6 +1483,19 @@ if (Test-Path -LiteralPath $kernDateienPfad) {
 $meinSystemPfad = Join-Path $repo "MEIN-SYSTEM.md"
 if (Test-Path -LiteralPath $meinSystemPfad) {
     $msText = Get-Content -LiteralPath $meinSystemPfad -Raw -Encoding UTF8
+
+    # Praefix-Aufloesung (seit 2.4): Die Kernliste nennt die Skills mit dem Praefix des
+    # Grundgeruests (leo-). Wer sein System umbenannt hat, hat lokal andere Dateinamen.
+    # Ohne diese Aufloesung gelten bei ihm ALLE Kern-Skills als eigene Bauten, und die
+    # Meldung unten warnt dauerhaft vor Dateien, die gar nicht ihm gehoeren; die eine
+    # echte Warnung geht darin unter. Gemessen in einem Trockenlauf am 31.08.2026:
+    # 11 gemeldete "eigene" Skills, von denen genau einer wirklich eigen war.
+    $praefix = 'leo-'
+    if ($msText -match '(?m)^\|\s*Skill-Pr[äa]fix\s*\|[^|]*\|\s*`?([a-z0-9]+-)`?\s*\|') { $praefix = $Matches[1] }
+    if ($praefix -ne 'leo-') {
+        $kernSkills = @($kernSkills | ForEach-Object { $_ -replace '^leo-', $praefix })
+    }
+
     $eigeneOhneEintrag = @(Get-ChildItem (Join-Path $repo "02_Skills") -Filter "*.md" -File -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -notin (@("README.md","Skill-Register.md") + $kernSkills) } |
         Where-Object { -not $msText.Contains($_.Name) } |
@@ -1505,29 +1558,70 @@ Write-Output ""
 # Passe $leanSchwelleKB an, wenn du die Baseline deiner AGENTS.md bewusst
 # verschiebst (Startwert des Grundgeruests: rund 51 KB, Schwelle 60).
 $cat = "Lean"
-$leanSchwelleKB = 60
+
+# Mitwachsende Marke statt fester Grenze (seit 2.4). Eine feste KB-Zahl waere
+# eine Wachstumsbremse, und das ist ausdruecklich nicht der Zweck: Wer viel
+# arbeitet, dessen System wird groesser und besser. Der Zweck ist ein Hinweis
+# von Zeit zu Zeit, dass sich ein Optimierungslauf lohnen koennte, ohne dass
+# dabei je Qualitaet geopfert wird. Deshalb misst der Check gegen die eigene
+# letzte Referenzgroesse: Waechst der Pflichtkontext seit dem letzten Hinweis um
+# mehr als 15 Prozent, meldet er sich einmal und zieht die Referenz danach selbst
+# nach. So kommt der Hinweis bei jedem Wachstumsschritt genau einmal und nie als
+# Dauerwarnung, und ein erfolgreicher Optimierungslauf senkt die Referenz sofort.
+# Die Baseline-Datei gehoert dem Besitzer (Kern-Dateien.md, Kategorie C). Wer neu
+# kalibrieren will, loescht sie einfach; der naechste Lauf legt sie neu an.
+$leanWachstum = 1.15
+$leanBaselinePfad = Join-Path $repo "00_INDEX\lean-baseline.txt"
+
 $agentsSize = (Get-Item (Join-Path $repo "AGENTS.md")).Length
-if ($agentsSize -gt ($leanSchwelleKB * 1024)) {
-    Add-Check "WARN" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB). Erzaehlungen nach der Trennlinie in 10_System\Detailregeln aus AGENTS.md.md auslagern; Regeln bleiben vollstaendig stehen." -f ($agentsSize / 1KB))
-} else {
-    Add-Check "OK" $cat ("Root-AGENTS.md ist {0:N0} KB gross (Drift-Schwelle $leanSchwelleKB KB)." -f ($agentsSize / 1KB))
-}
-# Der gesamte Pflichtkontext, nicht nur die AGENTS.md (Befund aus einem Nutzersystem, 30.08.2026):
-# MEIN-SYSTEM.md und der Basiskontext werden nach derselben Mechanik in jeder
-# Session vollstaendig geladen, und MEIN-SYSTEM.md ist die Datei, die am
-# schnellsten waechst, weil jede eigene Regel dort landet. Die Trennlinie
-# steuernd/begruendend (AGENTS.md Abschnitt 10) gilt fuer sie genauso: Normative
-# eigene Regeln bleiben, Erzaehlungen dazu gehoeren in eine eigene Begleitdatei.
-# Schwelle anpassen, wenn der eigene Pflichtkontext bewusst waechst.
-$leanKontextSchwelleKB = 100
 $kontextDateien = @((Join-Path $repo "AGENTS.md"), (Join-Path $repo "CLAUDE.md"), (Join-Path $repo "MEIN-SYSTEM.md")) +
     @(Get-ChildItem (Join-Path $repo "01_Basiskontext") -Filter "*.md" -File -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -ne "README.md" } | ForEach-Object { $_.FullName })
 $kontextTotal = ($kontextDateien | Where-Object { Test-Path $_ } | ForEach-Object { (Get-Item $_).Length } | Measure-Object -Sum).Sum
-if ($kontextTotal -gt ($leanKontextSchwelleKB * 1024)) {
-    Add-Check "WARN" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext) ist auf {0:N0} KB gewachsen (Wachstums-Marke $leanKontextSchwelleKB KB). Reiner Hinweis, KEIN Kuerzungsauftrag: bei Gelegenheit mit dem Skill leo-system-optimierung (Trigger 'messlauf') pruefen, ob sich ohne Verlust an Arbeitsqualitaet sparen laesst, und das Ergebnis dem Besitzer vorlegen. Nie eigenmaechtig streichen, um unter die Marke zu kommen." -f ($kontextTotal / 1KB))
+
+$leanBasis = @{ agents = 0.0; kontext = 0.0 }
+if (Test-Path -LiteralPath $leanBaselinePfad) {
+    foreach ($z in (Get-Content -LiteralPath $leanBaselinePfad -Encoding UTF8)) {
+        if ($z -match '^\s*agents_kb\s*=\s*([0-9.]+)') { $leanBasis.agents = [double]$Matches[1] }
+        if ($z -match '^\s*kontext_kb\s*=\s*([0-9.]+)') { $leanBasis.kontext = [double]$Matches[1] }
+    }
+}
+
+function Write-LeanBaseline([double]$AgentsKB, [double]$KontextKB) {
+    $inhalt = @(
+        "# Referenzgroessen fuer den Wachstums-Hinweis des Health-Checks (Kategorie Lean).",
+        "# Keine Grenze und kein Zielwert: Der Check meldet sich, wenn der in jeder Session",
+        "# geladene Pflichtkontext seit diesen Werten um mehr als 15 Prozent gewachsen ist,",
+        "# und schreibt die Werte danach selbst fort. Wachstum wird nie gekappt.",
+        "# Neu kalibrieren: diese Datei loeschen, der naechste Lauf legt sie neu an.",
+        ("agents_kb=" + $AgentsKB.ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)),
+        ("kontext_kb=" + $KontextKB.ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)),
+        ("gesetzt=" + (Get-Date -Format "yyyy-MM-dd"))
+    )
+    Set-Content -LiteralPath $leanBaselinePfad -Value $inhalt -Encoding UTF8
+}
+
+$agentsKB = [math]::Round($agentsSize / 1KB, 1)
+$kontextKB = [math]::Round($kontextTotal / 1KB, 1)
+
+if ($leanBasis.agents -le 0 -or $leanBasis.kontext -le 0) {
+    Write-LeanBaseline $agentsKB $kontextKB
+    Add-Check "INFO" $cat ("Wachstums-Referenz neu angelegt: AGENTS.md {0:N1} KB, Pflichtkontext {1:N1} KB. Ab jetzt meldet sich der Check, wenn einer der beiden Werte um mehr als 15 Prozent darueber liegt." -f $agentsKB, $kontextKB)
 } else {
-    Add-Check "INFO" $cat ("Pflichtkontext jeder Session (AGENTS.md + CLAUDE.md + MEIN-SYSTEM.md + 01_Basiskontext): {0:N0} KB (Wachstums-Marke $leanKontextSchwelleKB KB)." -f ($kontextTotal / 1KB))
+    $agentsGewachsen  = $agentsKB  -gt ($leanBasis.agents  * $leanWachstum)
+    $kontextGewachsen = $kontextKB -gt ($leanBasis.kontext * $leanWachstum)
+    if ($agentsGewachsen -or $kontextGewachsen) {
+        $teile = @()
+        if ($agentsGewachsen)  { $teile += ("AGENTS.md {0:N1} KB statt {1:N1} KB" -f $agentsKB, $leanBasis.agents) }
+        if ($kontextGewachsen) { $teile += ("Pflichtkontext {0:N1} KB statt {1:N1} KB" -f $kontextKB, $leanBasis.kontext) }
+        Add-Check "WARN" $cat ("Der in jeder Session geladene Kontext ist spuerbar gewachsen: " + ($teile -join ", ") + ". Das ist normal, wenn viel gearbeitet wurde, und KEIN Kuerzungsauftrag. Bei Gelegenheit mit dem Skill leo-system-optimierung (Trigger 'messlauf') pruefen, ob sich etwas ohne jeden Verlust an Arbeitsqualitaet sparen laesst, und das Ergebnis dem Besitzer vorlegen. Nie eigenmaechtig streichen, damit eine Zahl faellt. Die Referenz ist auf die heutigen Werte nachgezogen, der Hinweis kommt also erst beim naechsten Wachstumsschritt wieder.")
+        Write-LeanBaseline $agentsKB $kontextKB
+    } else {
+        if ($agentsKB -lt $leanBasis.agents -or $kontextKB -lt $leanBasis.kontext) {
+            Write-LeanBaseline ([math]::Min($agentsKB, $leanBasis.agents)) ([math]::Min($kontextKB, $leanBasis.kontext))
+        }
+        Add-Check "OK" $cat ("Pflichtkontext jeder Session: AGENTS.md {0:N1} KB, gesamt {1:N1} KB (Referenz {2:N1} / {3:N1} KB, Hinweis ab plus 15 Prozent)." -f $agentsKB, $kontextKB, $leanBasis.agents, $leanBasis.kontext)
+    }
 }
 
 # Messlauf-Waechter: Die Regeltreue-Messung (Skill leo-system-optimierung,
