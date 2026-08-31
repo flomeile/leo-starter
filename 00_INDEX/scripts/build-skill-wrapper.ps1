@@ -48,7 +48,12 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 # Baust du einen eigenen Skill mit Seiteneffekten, traegst du ihn hier nach.
 # Wrap-Up und Health-Check stehen bewusst NICHT drin: dass die von selbst anspringen,
 # wenn eine Session zu Ende geht, ist gewollt.
-$noAutoInvoke = @("leo-mechanik-update")
+#
+# Das Kriterium ist nicht nur "loescht oder sendet", sondern auch "kostet Geld":
+# leo-system-optimierung startet je Lauf mehrere kalte Modell-Aufrufe und gehoert
+# deshalb ebenso hierher (Befund 31.08.2026, gemeldet von einem Nutzer des
+# Grundgeruests und im Ursprungssystem bestaetigt: Die Liste war dort sogar leer).
+$noAutoInvoke = @("leo-mechanik-update", "leo-system-optimierung")
 
 $targets = @(
     @{ Pfad = ".claude\skills";   Fuer = "Claude Code, Claude Desktop"; ClaudeFelder = $true },

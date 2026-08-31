@@ -1,6 +1,6 @@
 ---
 name: leo-system-optimierung
-description: 'Trigger: "system-optimierung", "system optimieren", "optimierungslauf", "pruefset fahren", "prüfset fahren", "messlauf", "regeltreue messen". Misst mit kalten Prüfset-Läufen (dein Prüfset, beim ersten Mal aus der Vorlage `10_System\Pruefset-Vorlage.md` angelegt), ob das System seine eigenen Regeln einhält, leitet aus jedem Durchfaller die richtige Fix-Sorte ab (Regel härten, Regel präzisieren, mechanisches Netz, oder bewusst nichts) und misst nach (vollstaendig im Skill)'
+description: 'NUR auf ausdrueckliche Anweisung ausfuehren, nie selbstaendig: dieser Skill hat Seiteneffekte, die sich nicht zurueckdrehen lassen. Trigger: "system-optimierung", "system optimieren", "optimierungslauf", "pruefset fahren", "prüfset fahren", "messlauf", "regeltreue messen". Misst mit kalten Prüfset-Läufen (dein Prüfset, beim ersten Mal aus der Vorlage `10_System\Pruefset-Vorlage.md` angelegt), ob das System seine eigenen Regeln einhält, leitet aus jedem Durchfaller die richtige Fix-Sorte ab (Regel härten, Regel präzisieren, mechanisches Netz, oder bewusst nichts) und misst nach (vollstaendig im Skill)'
 ---
 
 # Leo System-Optimierung

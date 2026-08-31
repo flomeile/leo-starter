@@ -148,7 +148,25 @@ function Test-ArtefaktVerbot([string]$path) {
     $name = [System.IO.Path]::GetFileName($p)
     if ($name -like '*last-run.txt' -or $name -like 'zustand-*.json') { return $false }
     $ext = [System.IO.Path]::GetExtension($p).ToLower()
-    return ($artefaktEndungen -contains $ext)
+    if (-not ($artefaktEndungen -contains $ext)) { return $false }
+    # Code-Projekte sind ausgenommen (Befund 31.08.2026, gemeldet von einem Nutzer des
+    # Grundgeruests). Die Sperre soll ERZEUGTE Ausgabeformate aus dem Gedaechtnis
+    # heraushalten, nicht Quelldateien: In einem Code-Projekt ist eine .html oder .svg
+    # kein Artefakt, sondern Quelltext, und sie gehoert zwingend neben den Rest des
+    # Projekts. Erkannt wird ein Projekt an einer Markierungsdatei irgendwo zwischen der
+    # Datei und dem Themenordner. Bewusst an einer Datei und nicht am Ordnernamen: Einen
+    # Namen trifft man versehentlich, eine package.json nicht. Wer ein Projekt ohne solche
+    # Datei fuehrt, legt eine leere `.code-projekt` daneben.
+    $marker = @('package.json','pyproject.toml','requirements.txt','Cargo.toml','go.mod',
+                'tsconfig.json','pom.xml','composer.json','.code-projekt')
+    $dir = [System.IO.Path]::GetDirectoryName($p)
+    while ($dir -and $dir.Length -gt $repo.Length) {
+        foreach ($m in $marker) {
+            if (Test-Path -LiteralPath (Join-Path $dir $m)) { return $false }
+        }
+        $dir = [System.IO.Path]::GetDirectoryName($dir)
+    }
+    return $true
 }
 $artefaktGrund = "Erzeugte Ausgabeformate gehoeren nicht in Themenordner, sondern in den Artefakte-Ordner neben dem Repo (AGENTS.md, Abschnitt 5). Eine explizite Ortsangabe hebt die Regel nicht still auf: Regel benennen, Artefakte-Pfad vorschlagen; besteht [NAME] auf dem Themenordner, legt er die Datei selbst ab oder entscheidet die Lockerung."
 
