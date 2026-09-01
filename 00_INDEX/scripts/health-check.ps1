@@ -44,10 +44,23 @@ function Add-Check([string]$Level, [string]$Category, [string]$Message) {
 # Trockenlauf am 31.08.2026: 1 FAIL und 8 WARN, die kein Nutzer je loswerden kann.
 # Test-RepoPfad loest deshalb beide Schreibweisen auf.
 $skillPraefix = 'leo-'
+# Name dieses Systems (seit 2.6). Wer sein System umbenannt hat, benennt seine
+# Scheduled Tasks danach; der Task-Check unten fand die vorher nicht und verlangte
+# als Umgehung einen Task namens "Leo ..." in einem System, in dem sonst kein
+# "Leo" mehr vorkommt. Ein solcher Fremdname wird frueher oder spaeter aufgeraeumt,
+# und damit geht die Pruefung still aus. Gemeldet als Issue #4 im Grundgeruest.
+# Zwei Absicherungen beim Aufloesen: getrimmt, und ein leer gelassener Wert faellt
+# auf "Leo" zurueck statt ein Leerzeichen als Suchmuster zu liefern (das passte auf
+# einem Testrechner auf 59 von 224 Tasks).
+$sysName = 'Leo'
 $msPfadFuerPraefix = Join-Path $repo "MEIN-SYSTEM.md"
 if (Test-Path -LiteralPath $msPfadFuerPraefix) {
     $msRoh = Get-Content -LiteralPath $msPfadFuerPraefix -Raw -Encoding UTF8
     if ($msRoh -match '(?m)^\|\s*Skill-Pr[äa]fix\s*\|[^|]*\|\s*`?([a-z0-9]+-)`?\s*\|') { $skillPraefix = $Matches[1] }
+    if ($msRoh -match '(?m)^\|\s*Systemname\s*\|[^|]*\|\s*`?([^|`]+?)`?\s*\|') {
+        $sysNameKandidat = $Matches[1].Trim()
+        if ($sysNameKandidat.Length -ge 2) { $sysName = $sysNameKandidat }
+    }
 }
 
 function Test-RepoPfad([string]$RelPfad) {
@@ -146,9 +159,17 @@ Write-Output "Git-Checks erledigt."
 # ---------------------------------------------------------------------------
 $cat = "Scheduled Tasks"
 try {
-    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "(Leo|KI[-_]?REPO)" }
+    # Der eigene Systemname wird mit Wortgrenzen gesucht, "Leo" und das alte
+    # "KI-REPO" bleiben unveraendert im Muster: Bestandsnutzer merken nichts.
+    # Die Wortgrenzen sind noetig, weil kurze Namen sonst fremde Tasks einsammeln
+    # (Systemname "AI" traf auf einem Testrechner 23 von 224 Tasks, alles Office,
+    # Google und Geraetehersteller). Aus demselben Grund bleiben die Tasks des
+    # Betriebssystems unter \Microsoft\ aussen vor; eigene Tasks liegen dort nie.
+    $taskMuster = '\b' + [regex]::Escape($sysName) + '\b|Leo|KI[-_]?REPO'
+    $tasks = Get-ScheduledTask -ErrorAction Stop |
+        Where-Object { $_.TaskPath -notlike '\Microsoft\*' -and $_.TaskName -match $taskMuster }
     if (-not $tasks -or $tasks.Count -eq 0) {
-        Add-Check "WARN" $cat "Keine Scheduled Task mit 'Leo' (oder alt 'KI-REPO') im Namen gefunden - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
+        Add-Check "WARN" $cat "Keine Scheduled Task gefunden, deren Name '$sysName' (oder 'Leo', oder alt 'KI-REPO') enthaelt - automatischer Index-Sync/Git-Push laeuft evtl. nicht (mehr)."
     } else {
         foreach ($t in $tasks) {
             $info = Get-ScheduledTaskInfo -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue
