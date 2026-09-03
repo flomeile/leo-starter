@@ -2,8 +2,8 @@
 titel: Kern-Dateien
 zweck: Legt fest, welche Dateien zum Grundgerüst gehören und bei einem Update ersetzt werden dürfen, und welche dir gehören
 type: systemdoku
-version: 2.6-starter
-stand: 2026-08-31
+version: 3.0-core
+stand: 2026-09-03
 ---
 
 # Kern-Dateien: was ein Update anfassen darf
@@ -85,6 +85,15 @@ Erlaubt, aber trag es in `MEIN-SYSTEM.md`, Abschnitt 3 ein. Der Update-Skill lie
 Ohne diesen Eintrag merkt der Skill die Abweichung trotzdem (er vergleicht), aber er muss dich dann fragen, statt es zu wissen. Das kostet dich eine Rückfrage, nicht deine Arbeit.
 
 Ergänzen ist dort erwünscht, löschen nicht: Was der Update-Skill in Abschnitt 3 hinterlassen hat, bleibt stehen. Und die Tabelle in Abschnitt 4 wird gar nicht von Hand angefasst, auch nicht kosmetisch; warum, steht dort.
+
+**Seit 3.0 sagt dir der Agent das vorher, nicht erst beim Update.** Willst du eine Datei der Kategorie A ändern oder ihn ändern lassen, protestiert er einmal, bevor er schreibt (`AGENTS.md`, Abschnitt "Diese Datei ist Mechanik"): Die Änderung geht beim nächsten Update verloren oder blockiert es, und es gibt zwei Wege, auf denen sie sicher ist. Der Health-Check prüft dasselbe laufend (Kategorie `Mein-System`): Er vergleicht jede Kern-Datei mit der Fassung der bei dir eingespielten Version und meldet Abweichungen, die in `MEIN-SYSTEM.md`, Abschnitt 3 nicht stehen. Dafür braucht er den Remote `upstream` auf das Core-Repo; fehlt der, sagt er das und prüft nicht stillschweigend nichts.
+
+**Die zwei sicheren Wege, je nachdem, für wen die Änderung ist:**
+
+1. **Nur für dich:** als eigene Regel nach `MEIN-SYSTEM.md`, Abschnitt 2. Sie hat Vorrang vor dem Kern, und kein Update fasst sie an. Das ist der Weg für neunzig Prozent der Fälle, auch wenn die Änderung sich wie eine Verbesserung an der Mechanik anfühlt.
+2. **Für alle Systeme auf diesem Kern:** als Pull Request gegen das Core-Repo (Adresse in `MEIN-SYSTEM.md`, Abschnitt 4). Dafür brauchst du einen Fork des Core-Repos auf GitHub, nicht deine Kopie aus der Vorlage; wie das geht, steht in `ANLEITUNG.md`, Teil 8. Ein Issue meldet einen Befund und überlässt die Behebung dem Herausgeber; ein Pull Request liefert die fertige Änderung mit. Beides wird gegen das Core-Repo gemessen, nicht ungeprüft übernommen, und beides ist öffentlich: kein Inhalt aus deinem System, keine Personendaten, keine wörtlichen Zitate aus privaten Dateien.
+
+Die direkte Änderung an der Kern-Datei bleibt erlaubt; sie ist nur der Weg, der beim nächsten Update Arbeit kostet. Bestehst du darauf, trägt der Agent die Abweichung im selben Zug in `MEIN-SYSTEM.md`, Abschnitt 3 ein.
 
 ## Für den Fall, dass diese Liste und die Wirklichkeit auseinandergehen
 

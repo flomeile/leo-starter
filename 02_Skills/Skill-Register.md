@@ -2,8 +2,8 @@
 titel: Skill-Register
 zweck: Zentrale Liste aller Skills mit Trigger-Wort und Dateipfad
 type: skill-register
-version: 2.6-starter
-letzte_aenderung: 2026-08-30
+version: 3.0-core
+letzte_aenderung: 2026-09-03
 ---
 
 # Skill-Register
@@ -31,4 +31,4 @@ Namenskonvention: Alle Skill-Dateien tragen das Präfix `leo-`. Das macht sichtb
 Wenn ein neuer Skill gebaut wird (via Skill-Ersteller), wird diese Tabelle ergänzt. Trigger-Worte müssen eindeutig bleiben. Neue Skill-Dateien tragen immer das Präfix `leo-`.
 
 ## Hinweis für den Aufbau
-Dies ist der Starter-Satz: sechs Kern-Skills für die Mechanik plus vier Arbeits-Skills (Voice-Check, Faktencheck, Notiz, First Principles), die von selbst anspringen, wenn ihre Situation eintritt. Weitere Skills (z.B. ein Inbox-Ingest für Rohquellen oder ein Wochenbriefing) baust du dir bei Bedarf selbst über den Skill-Ersteller ("skill erstellen"). Der Ersteller-Skill trägt die Norm dafür.
+Dies ist die Grundausstattung des Kerns: sechs Kern-Skills für die Mechanik plus vier Arbeits-Skills (Voice-Check, Faktencheck, Notiz, First Principles), die von selbst anspringen, wenn ihre Situation eintritt. Weitere Skills (z.B. ein Inbox-Ingest für Rohquellen oder ein Wochenbriefing) baust du dir bei Bedarf selbst über den Skill-Ersteller ("skill erstellen"). Der Ersteller-Skill trägt die Norm dafür.

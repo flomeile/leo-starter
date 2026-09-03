@@ -3,12 +3,12 @@ name: leo-mechanik-update
 trigger: '"mechanik update", "grundgeruest aktualisieren", "starter update", "update ziehen", "neue version holen"'
 zweck: Verbesserungen am Grundgerüst übernehmen, ohne eigene Anpassungen und eigene Bauten zu beschädigen
 type: skill
-version: 1.12-starter
+version: 1.13-core
 ---
 
 # Skill: Mechanik aktualisieren
 
-Holt die aktuelle Fassung des Grundgerüsts von `https://github.com/flomeile/leo-starter` und arbeitet sie hier ein.
+Holt die aktuelle Fassung des Kerns (Leo Core) von `https://github.com/flomeile/leo-core` und arbeitet sie hier ein. Bis Version 2.6 hiess das Repo `leo-starter`; GitHub leitet die alte Adresse dauerhaft um, trotzdem wird der Remote in Schritt 2 auf die neue Adresse gesetzt.
 
 **Oberste Regel, sie steht über allem anderen in diesem Skill: Es geht nichts von `[NAME]` verloren.** Lieber ein Update, das an einer Stelle stehen bleibt und nachfragt, als eines, das durchläuft und etwas überschreibt. Wenn du an irgendeinem Punkt unsicher bist, ob eine Datei dem Nutzer gehört: Sie gehört ihm. Nicht anfassen, melden.
 
@@ -50,7 +50,14 @@ Gibt es kein Git-Repo in diesem Ordner, brich hier ab und sag es. Ohne Versionie
 Einmalig, falls noch nicht vorhanden:
 
 ```powershell
-git remote add upstream https://github.com/flomeile/leo-starter.git
+git remote add upstream https://github.com/flomeile/leo-core.git
+git remote set-url --push upstream DISABLED
+```
+
+Existiert `upstream` bereits und zeigt noch auf die alte Adresse `flomeile/leo-starter` (prüfen mit `git remote -v`), wird er aktiv umgesetzt, statt auf die Umleitung von GitHub zu vertrauen; die Umleitung bricht, sobald jemand den alten Namen neu belegt:
+
+```powershell
+git remote set-url upstream https://github.com/flomeile/leo-core.git
 git remote set-url --push upstream DISABLED
 ```
 

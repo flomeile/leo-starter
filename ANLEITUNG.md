@@ -2,8 +2,8 @@
 titel: Anleitung zum eigenen Leo
 zweck: Erklärt, was Leo ist, wie er funktioniert und wie man ihn einsatzbereit macht, auf einem Windows-Rechner oder nur mit einem Tablet
 type: readme
-version: 1.9-starter
-letzte_aenderung: 2026-08-11
+version: 3.0-core
+letzte_aenderung: 2026-09-03
 ---
 
 # Leo: Anleitung zum eigenen Second Brain
@@ -99,7 +99,7 @@ Wenn du noch nie mit einem Agenten gearbeitet hast, fängst du hier an. Fünf Sc
 
 **0.2 GitHub-Konto.** Kostenlos auf https://github.com. GitHub ist der Ort, an dem dein Wissen zusätzlich gesichert liegt, und der Ort, von dem du das Grundgerüst holst. Merk dir deinen Benutzernamen, du brauchst ihn gleich.
 
-**0.3 Deine eigene Kopie des Grundgerüsts erzeugen.** Öffne https://github.com/flomeile/leo-starter. Oben rechts ist ein grüner Knopf **"Use this template"**, darunter wählst du **"Create a new repository"**. Auf der folgenden Seite:
+**0.3 Deine eigene Kopie des Kerns erzeugen.** Öffne https://github.com/flomeile/leo-core. Oben rechts ist ein grüner Knopf **"Use this template"**, darunter wählst du **"Create a new repository"**. Auf der folgenden Seite:
 
 - **Repository name:** `leo` (oder wie du dein System nennen willst)
 - **Private** auswählen, nicht Public. Hier landet dein persönliches Wissen.
@@ -197,7 +197,7 @@ Register-ScheduledTask -TaskName "Leo Index aktualisieren und Git Push" -Action 
 ```
 Der Befehl registriert bewusst beides in einem: den Index-Lauf UND das anschliessende Commit-und-Push der Index-Dateien (nur diese Pfade, nie `git add -A`). Eine frühere Fassung dieser Anleitung registrierte nur das Index-Skript; wer sie wörtlich befolgte, hatte eine Indexpflege und keine Sicherung, glaubte aber, gesichert zu sein. `-StartWhenAvailable` holt den Lauf nach, wenn der Rechner zur Triggerzeit aus war. Damit das Pushen funktioniert, muss Git ohne Passwortabfrage pushen können (GitHub-Login über den Credential Manager einmal einrichten, indem du einmal von Hand `git push` machst). Der Task-Name darf deinen eigenen Systemnamen tragen: Der Health-Check löst ihn aus `MEIN-SYSTEM.md`, Abschnitt 1 auf und findet den Task dann. "Leo" funktioniert unverändert weiter.
 
-**Optional, empfohlen: die wöchentliche Diagnose dazu.** Sie fährt jeden Montag den rein lesenden Systembefund; dabei entsteht die Datei `10_System\health-check-report.txt` (WARN und FAIL zuoberst), und die Tagessicherung committet sie mit. So ist der Systemzustand auf GitHub sichtbar, ohne dass jemand etwas startet, und das System driftet nicht unbemerkt, wenn du nie ein Trigger-Wort sagst:
+**Die wöchentliche Diagnose dazu: Pflicht im Nutzungsmodus `benutzen`, empfohlen im Modus `mitbauen`** (seit 3.0; bis 2.6 war sie optional, und optional heisst, dass sie bei genau den Nutzern nicht läuft, für die sie gebaut wurde). Sie fährt jeden Montag den rein lesenden Systembefund samt Versions-Wächter; dabei entsteht die Datei `10_System\health-check-report.txt` (WARN und FAIL zuoberst), und die Tagessicherung committet sie mit. Im Modus `benutzen` liest dein Agent diese Datei zu Beginn der nächsten Sitzung und sagt dir in zwei, drei Sätzen, was drinsteht und was zu tun ist; eine Datei, in die niemand schaut, wäre keine Meldung. So erfährst du auch von einer neuen Kern-Version, wenn du wochenlang keine Sitzung startest:
 ```powershell
 $pwsh = (Get-Command pwsh.exe).Source
 $action = New-ScheduledTaskAction -Execute $pwsh -WorkingDirectory "C:\Leo" -Argument '-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\weekly-diagnose.ps1"'
@@ -230,7 +230,7 @@ Dieser Weg kommt ohne Installation und ohne Kommandozeile aus. Der Ordner liegt 
 **Die Schritte:**
 
 1. GitHub-Konto anlegen, im Browser auf dem Tablet.
-2. Auf der Seite dieses Starter Packs auf GitHub den Knopf **"Use this template"** drücken und dein eigenes, **privates** Repo erstellen. Damit hast du deine eigene Kopie, unabhängig vom Original.
+2. Auf der Seite des Kerns auf GitHub (https://github.com/flomeile/leo-core) den Knopf **"Use this template"** drücken und dein eigenes, **privates** Repo erstellen. Damit hast du deine eigene Kopie, unabhängig vom Original; die Verbindung für Updates stellt dein Agent in der ersten Sitzung her (Teil 8).
 3. In der Claude-App unten auf **Code** tippen, dein Repo auswählen und eine Sitzung starten.
 4. Als erste Nachricht schreiben: "Lies die ANLEITUNG.md und richte mich ein." Der Agent füllt `MEIN-SYSTEM.md` aus und führt dich per Rückfragen durch den Basiskontext. Teil 5 musst du dafür nicht verstehen, der ist für Leute mit einem Windows-Rechner geschrieben.
 
@@ -256,21 +256,27 @@ Ehrlicherweise, und das ist die objektive, wissenschaftlich abgesicherte, von ei
 
 ---
 
-## Teil 8: Updates, wenn das Gerüst weiterentwickelt wird
+## Teil 8: Updates, wenn der Kern weiterentwickelt wird
 
-Der kanonische Leo-Starter liegt als GitHub-Template-Repo. Du holst dir deine eigene Kopie über den Knopf "Use this template"; damit bekommst du ein eigenes, unabhängiges Repo (kein Fork-Zwang, saubere Historie).
+Der Kern heisst seit Version 3.0 **Leo Core** und liegt unter https://github.com/flomeile/leo-core (bis 2.6: `leo-starter`; GitHub leitet die alte Adresse um, solange niemand den alten Namen neu belegt). "Starter" beschrieb den ersten Tag; was daraus geworden ist, ist ein laufend aktualisierter Kern, den die abgeleiteten Systeme ziehen und an den sie Verbesserungen zurückschicken. Die Kernschicht, die ein Update ersetzt, steht in `10_System\Kern-Dateien.md`; alles Persönliche bleibt stehen.
 
-Wenn das Gerüst später verbessert wird, holst du dir die Verbesserung mit einem Satz an deinen Agenten:
+**Kopie, Vorlage, Fork: drei Dinge, die auf GitHub ähnlich aussehen und Verschiedenes bewirken.** Die Unterscheidung entscheidet darüber, ob dein System je ein Update bekommt.
+
+- **Vorlage ("Use this template")** ist der Weg aus Teil 5 und 6: Du bekommst ein eigenes, unabhängiges Repo mit sauberer Historie. GitHub merkt sich dabei **keine** Verbindung zum Kern. Die Verbindung für Updates ist ein Git-Remote namens `upstream` in deinem lokalen Repo, und den legt der Skill `leo-mechanik-update` beim ersten Lauf an (oder du selbst, siehe unten). **Ohne diesen Remote ist dein System eine Kopie ohne Rückweg:** Es erfährt von keiner neuen Version, und der Health-Check sagt dir das seit 3.0 ausdrücklich (Kategorie `Mein-System`, "Kein Remote 'upstream'"), statt stillschweigend nichts zu prüfen. Genau so ist ein Nutzer fünf Wochen lang von jeder Verbesserung abgeschnitten gewesen, ohne dass es jemand merkte.
+- **Kopie** (ZIP-Download, Ordner von jemandem bekommen, ein Repo "händisch nachgebaut"): dasselbe wie die Vorlage, nur ohne Historie. Auch hier stellt erst der Remote `upstream` die Verbindung her.
+- **Fork** ist etwas anderes und für dein eigenes System nicht der richtige Weg: Ein Fork ist eine öffentlich sichtbare Abzweigung des Kerns auf GitHub, gedacht, um Änderungen an den Kern zurückzuschicken. Er ist der Weg, wenn du einen **Pull Request** gegen den Kern stellen willst (siehe "Verbesserungen zurückgeben" unten), nicht der Weg für dein privates Wissen.
+
+Wenn der Kern verbessert wird, holst du dir die Verbesserung mit einem Satz an deinen Agenten:
 
 > mechanik update
 
-Mehr musst du nicht tun und nicht wissen. Der Skill `leo-mechanik-update` erledigt den Rest.
+Mehr musst du nicht tun und nicht wissen. Der Skill `leo-mechanik-update` erledigt den Rest. Im Nutzungsmodus `benutzen` schlägt dir der Agent das Update von selbst vor, sobald der Health-Check einen Rückstand meldet; im Modus `mitbauen` sagst du es, wenn du es willst.
 
 ### Wenn dein System von einer Version vor 1.3 stammt
 
 Dann kennt es den Skill noch nicht, es gab ihn damals nicht. Das Trigger-Wort läuft ins Leere. Für dieses eine Mal gibst du deinem Agenten stattdessen diesen Satz:
 
-> Mein System stammt aus dem Grundgerüst https://github.com/flomeile/leo-starter, davon gibt es jetzt eine neue Version. Hol dir https://raw.githubusercontent.com/flomeile/leo-starter/main/02_Skills/leo-mechanik-update.md, lies die Datei und führe sie aus.
+> Mein System stammt aus dem Grundgerüst https://github.com/flomeile/leo-core (früher leo-starter), davon gibt es jetzt eine neue Version. Hol dir https://raw.githubusercontent.com/flomeile/leo-core/main/02_Skills/leo-mechanik-update.md, lies die Datei und führe sie aus.
 
 Der Skill bringt sich damit selbst mit und macht danach alles Weitere, inklusive der Migration deiner Personalisierung in die neue `MEIN-SYSTEM.md`. Ab dem nächsten Mal genügt "mechanik update".
 
@@ -288,11 +294,17 @@ Die Sorge bei so einem Update ist berechtigt: Du hast dein System personalisiert
 Einmalig die Quelle anbinden:
 
 ```powershell
-git remote add upstream https://github.com/flomeile/leo-starter.git
+git remote add upstream https://github.com/flomeile/leo-core.git
 git remote set-url --push upstream DISABLED
 ```
 
-Die zweite Zeile schaltet die Push-Adresse ab. `upstream` zeigt auf ein öffentliches Repository und wird nur zum Holen gebraucht; ein versehentliches `git push upstream main` würde sonst versuchen, dein privates System dorthin zu schreiben. Holen funktioniert unverändert, Pushen scheitert mit einer Fehlermeldung.
+Hast du den Remote noch aus der Zeit vor 3.0 und zeigt er auf `leo-starter` (`git remote -v` zeigt es), setzt du ihn um, statt auf die Umleitung zu vertrauen:
+
+```powershell
+git remote set-url upstream https://github.com/flomeile/leo-core.git
+```
+
+Die zweite Zeile beim Anbinden schaltet die Push-Adresse ab. `upstream` zeigt auf ein öffentliches Repository und wird nur zum Holen gebraucht; ein versehentliches `git push upstream main` würde sonst versuchen, dein privates System dorthin zu schreiben. Holen funktioniert unverändert, Pushen scheitert mit einer Fehlermeldung.
 
 Dann bei jedem Update holen und die gewünschte Version auschecken:
 
@@ -302,10 +314,24 @@ git fetch upstream --tags
 
 `git checkout v1.3 -- "<datei>"` holt eine einzelne Datei in der Fassung dieser Version zu dir. Das ist kein Merge, es gibt also keine Konflikte; die Datei wird schlicht ersetzt. Genau deshalb macht der Skill das nur bei Dateien, die du nie angefasst hast. Was sich zwischen zwei Versionen geändert hat, zeigt `git diff v1.2..v1.3 --stat`.
 
-Kurz: Dein Wissen gehört dir und liegt in deinem eigenen Repo. Das Gerüst kannst du aktualisieren, wann immer du willst, ohne deine Inhalte und ohne deine Anpassungen zu berühren.
+Kurz: Dein Wissen gehört dir und liegt in deinem eigenen Repo. Den Kern kannst du aktualisieren, wann immer du willst, ohne deine Inhalte und ohne deine Anpassungen zu berühren.
+
+### Verbesserungen zurückgeben: Issue oder Pull Request
+
+Zwei Wege, und sie unterscheiden sich darin, wer die Arbeit macht.
+
+- **Ein Issue meldet einen Befund.** Du beschreibst, was passiert und was erwartet wäre, der Herausgeber misst es gegen den Kern und behebt es in einer neuen Version. Anlegen unter https://github.com/flomeile/leo-core/issues mit dem Knopf **"New issue"**; die Vorlage "Befund an der Mechanik" fragt genau das ab, was zur Behebung gebraucht wird.
+- **Ein Pull Request liefert die fertige Änderung.** Der Weg, wenn du die Kern-Datei bei dir schon so umgebaut hast, wie sie sein sollte. Er braucht einen Fork:
+  1. Auf https://github.com/flomeile/leo-core oben rechts auf **"Fork"**, dann **"Create fork"**. Das ist eine öffentliche Abzweigung des Kerns unter deinem Namen, getrennt von deinem privaten System.
+  2. Sag deinem Agenten: "Bereite einen Pull Request gegen den Kern vor für die Änderung an <Datei>." Er klont den Fork ins Scratchpad, legt dort einen Zweig `feature/<kurzer-name>` an, überträgt die Änderung entpersonalisiert (kein Inhalt aus deinem System, keine Personendaten), pusht den Zweig und nennt dir die Adresse.
+  3. Auf der Seite deines Forks erscheint der Knopf **"Compare & pull request"**. Beschreibung: was sich ändert und warum, dazu deine Umgebung wie in der Issue-Vorlage. Knopf **"Create pull request"**.
+  4. Der Herausgeber prüft und merget, oder er antwortet im Pull Request, warum nicht oder was anders. Ein Pull Request, den derselbe erzeugt und zusammenführt, der ihn geschrieben hat, prüft nichts, deshalb liegt der Merge nie beim Einreicher.
+
+Beides ist öffentlich und bleibt dauerhaft auffindbar: kein Inhalt aus deinem System, keine Personendaten, keine wörtlichen Zitate aus privaten Dateien.
 
 ### Versionen dieses Pakets
 
+- **3.0 (2026-09-03), neuer Name Leo Core, neue Adresse `flomeile/leo-core`:** Der grösste inhaltliche Zuwachs seit 2.0, entstanden aus dem Regelwerk eines Nutzers, der fünf Wochen auf einem eingefrorenen Ableger gearbeitet hatte, und aus seinem Feedback. **Was neu ist:** (1) Zwei Git-Modi, gesetzt in `MEIN-SYSTEM.md`, Abschnitt 5: "Alleinarbeiter auf main" bleibt der Standard; "Zweige mit Freigabe" bringt ein vollständiges Zweig-Modell (main, rc, dev, feature, hotfix), die Pflicht, jeden Merge über eine Merge-Anfrage zu führen, und den Grundsatz, dass der Merge dem Besitzer gehört, nie dem Agenten. (2) Die Sitzungsprüfung meldet ungepushte Commits und Zweige ohne Remote, im Frischecheck und im Health-Check. (3) Eine Korrektur des Besitzers wird im selben Zug in die zuständige Datei geschrieben, nicht erst im Wrap-Up; ein Skill, der gehakt hat, wird nach der Ausführung nachgebessert. (4) Schweigen ist keine Antwort: Jeder Teil eines Auftrags endet mit ausgeführt, nicht ausgeführt oder nicht verstanden. (5) Ein Auftrag ohne Eingrenzung gilt für den ganzen Bestand, und was nie trivial ist (Skill-Namen, Ordnerstruktur, Namensschemata, Frontmatter-Felder, Kennungen), bleibt immer die Entscheidung des Besitzers. (6) Sechs prüfbare Kürze-Regeln plus ein Prüfstein: Eine Antwort, nach der der Besitzer die Aufgabe lieber selbst macht, hat ihr Ziel verfehlt; ob Dateiinhalte im Chat zusammengefasst werden, entscheidet der Besitzer in `MEIN-SYSTEM.md`, Abschnitt 5. (7) Sprechende Namen für Optionen, Pfade statt Kurznamen, "ein Commit ist keine Rückmeldung", Eigennamen folgen der Person. (8) Der Agent protestiert, bevor eine Kern-Datei direkt bearbeitet wird, und zeigt die zwei sicheren Wege (eigene Regel in `MEIN-SYSTEM.md`, Pull Request gegen den Kern); der Health-Check prüft Kern-Datei-Abweichungen laufend und sagt ausdrücklich, wenn er mangels `upstream`-Remote nichts prüfen kann. (9) Der Modus `mitbauen` ist nachweislich frei von Automatik; Update-Vorschlag und Diagnose-Zusammenfassung gibt es nur im Modus `benutzen`, dort liest der Agent die Wochendiagnose zu Sitzungsbeginn vor. (10) Teil 8 erklärt Vorlage, Kopie und Fork und den Weg für einen Pull Request. **Was du tun musst:** Der Update-Skill setzt deinen `upstream`-Remote selbst auf die neue Adresse. Trag danach den Git-Modus und den Antwortstil in `MEIN-SYSTEM.md`, Abschnitt 5 ein, oder lass es deinen Agenten fragen; fehlt der Eintrag, gilt Alleinarbeiter und Zusammenfassen. Wer im Modus `benutzen` die Wochendiagnose noch nicht registriert hat, holt Teil 5, Schritt 6 nach.
 - **2.6 (2026-09-01):** Der Scheduled-Task-Check findet jetzt auch die Tasks eines umbenannten Systems. Bisher suchte er fest nach "Leo" im Task-Namen; wer sein System anders genannt hat, musste seinen Task trotzdem "Leo ..." nennen, sonst meldete der Health-Check ihn als fehlend, obwohl er lief und sauber durchlief. Der Check löst den Systemnamen jetzt aus `MEIN-SYSTEM.md`, Abschnitt 1 auf, genau wie es 2.4 für das Skill-Präfix eingeführt hat. Zwei Details dabei: Der eigene Name wird mit Wortgrenzen gesucht, und die Tasks des Betriebssystems unter `\Microsoft\` bleiben aussen vor. Beides ist nötig, weil ein kurzer Systemname sonst fremde Tasks einsammelt (der Name "AI" traf auf einem Testrechner 23 von 224 Tasks, alles Office, Google und Gerätehersteller). "Leo" und das alte "KI-REPO" bleiben im Muster, für bestehende Systeme ändert sich nichts. **Was du tun musst:** nichts. Wer seinen Task bisher nur wegen dieser Prüfung "Leo ..." genannt hat, darf ihn jetzt nach seinem eigenen System benennen. Gemeldet von einem Nutzer des Grundgerüsts als Issue #4.
 - **2.5 (2026-08-31):** Zwei Mechanik-Korrekturen, beide aus Nutzer-Meldungen am Grundgerüst. **Erstens, Code-Projekte in Themenordnern:** Die Formatdisziplin-Sperre hält erzeugte Ausgabeformate (PDF, Bilder, Office, HTML) aus deinen Themenordnern heraus, damit dein Gedächtnis Markdown bleibt. Sie hat dabei bisher auch Quelldateien echter Code-Projekte blockiert: In einem Projekt ist eine `.html` oder `.svg` kein Artefakt, sondern Quelltext, und sie gehört zwingend neben den Rest des Projekts. Liegt in einem Ordner eine `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `tsconfig.json`, `pom.xml`, `composer.json` oder eine leere `.code-projekt`, gilt der ganze Unterbaum als Projekt und die Sperre lässt ihn in Ruhe. Überall sonst greift sie unverändert. **Zweitens, teure Skills lösen nicht mehr von selbst aus:** `leo-system-optimierung` startet je Lauf mehrere kalte Modell-Aufrufe und stand trotzdem nicht auf der Liste der Skills, die ein Modell nie von sich aus starten darf. Er steht jetzt darauf, wie `leo-mechanik-update`. Getriggert wird er weiterhin von dir. **Was du tun musst:** nichts.
 - **2.4 (2026-08-31):** Das Update selbst wurde gehärtet, gemessen an einem echten Testsystem, das vier Versionen übersprungen und sein System umbenannt hatte. Fünf Dinge. **Erstens, umbenannte Systeme:** Wer sein System nicht "Leo" nennt und ein eigenes Skill-Präfix nutzt, bekam bisher bei jedem Update die Grundgerüst-Dateien unter deren Namen zusätzlich ins Repo gelegt, also zwei Skills mit denselben Trigger-Worten nebeneinander. Update und Health-Check lösen das Präfix jetzt über `MEIN-SYSTEM.md` auf, und der Health-Check meldet dir nicht mehr deine eigenen Kern-Skills als fremde Bauten. **Zweitens, das Skill-Register wird nachgezogen:** Es gehört dir und wurde deshalb nie angefasst, mit der Folge, dass neue Kern-Skills zwar als Datei ankamen, aber in keiner Liste standen und im Alltag nie angesprungen sind. Das Update ergänzt jetzt fehlende Spalten, gleicht die Dateinamen an und trägt neue Kern-Skills ein, mit Ansage. **Drittens, ein Konflikt-Check vor dem ersten Schreibvorgang:** Er hält die Neuerungen gegen deine eigenen Regeln und dein Setup und legt dir jeden Widerspruch vor, solange Nichtstun noch die billigste Option ist. Eindeutiges löst er selbst, alles andere bekommst du in Alltagssprache mit einer Empfehlung. **Viertens, die Grössen-Marke wächst mit:** Es gibt keine feste Obergrenze mehr für den Kontext, der in jeder Session geladen wird. Der Health-Check misst gegen deine eigene letzte Referenzgrösse, meldet sich bei jedem Wachstumsschritt von 15 Prozent genau einmal und zieht die Referenz danach selbst nach. Ein System, in dem viel gearbeitet wird, darf wachsen. **Fünftens, zwei Schutzhinweise in `MEIN-SYSTEM.md`:** Abschnitt 3 und 4 führt der Update-Skill; wird die Versionstabelle dort von Hand umgebaut, findet weder das Update noch der Health-Check die eingespielte Version. Der Hinweis wird beim nächsten Update automatisch nachgetragen, falls er bei dir fehlt. **Was du tun musst:** nichts. Wenn dein System einen anderen Namen als "Leo" trägt, lohnt sich nach dem Update ein Blick in `MEIN-SYSTEM.md`, Abschnitt 1: Dort steht jetzt auch deine Arbeitssprache.

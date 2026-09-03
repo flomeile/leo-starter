@@ -10,11 +10,11 @@ hinweis: Der Ordnerbaum wird mechanisch aktualisiert (build-index-geruest.ps1). 
 
 So nutzt du diese Landkarte: (1) Im Ordnerbaum unten orientieren. (2) **Pflichtschritt für JEDEN Themenordner in der Liste "Themenbereiche" unten: den lokalen Index `<Ordner>\_INDEX.md` lesen** — dort und NUR dort stehen die Dateiliste und die kuratierten Beschreibungen der einzelnen Dokumente, dieser Root-Index enthält sie bewusst nicht. (3) Danach Volltextsuche mit Synonymen im Datei-Inhalt (siehe AGENTS.md, Suchstrategie). (4) Nur Treffer ganz lesen. Die vollständige mechanische Dateiliste steht in `INDEX-Geruest.md`.
 
-Im frischen Starter ist die Themenbereichs-Liste leer, bis du den ersten Themenordner anlegst (Skill `leo-themenordner-anlegen`, Trigger "neuer themenordner").
+Im frischen Kern ist die Themenbereichs-Liste leer, bis du den ersten Themenordner anlegst (Skill `leo-themenordner-anlegen`, Trigger "neuer themenordner").
 
 ## Ordnerbaum (mechanisch aktuell)
 <!-- AUTO:BAUM:BEGIN -->
-Stand: 2026-09-01 13:35 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
+Stand: 2026-09-03 09:46 (mechanisch aktualisiert, Anzahl = .md-Dateien inkl. Unterordner)
 
 - 00_INDEX\  (1 Dateien)
   - githooks\  (0 Dateien)

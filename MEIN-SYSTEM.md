@@ -38,7 +38,7 @@ Die Dateinamen deiner Skills musst du beim Umbenennen allerdings selbst mitziehe
 
 Hier stehen deine Ergänzungen und Abweichungen zur `AGENTS.md`. Sie haben Vorrang. Schreibe sie hierher und nicht in die `AGENTS.md`, dann kann ein Update sie nicht anfassen.
 
-Beispiele für das, was hierher gehört: eine Stilregel, die nur für dich gilt; ein Ablageort, den du anders handhabst; eine Regel, die du bewusst aussetzt; eine Konvention für deine Dateinamen.
+Beispiele für das, was hierher gehört: eine Stilregel, die nur für dich gilt; ein Ablageort, den du anders handhabst; eine Regel, die du bewusst aussetzt; eine Konvention für deine Dateinamen. Zwei Beispiele aus echten Systemen auf diesem Kern, beide bewusst nicht im Kern, weil andere Besitzer das Gegenteil wollen: "Zahlen immer als Ziffern, auch kleine und am Satzanfang" (eine Stilregel) und "Jede Abschlussmeldung trägt sechs Pflichtangaben: Auftrag im Wortlaut, Zeitpunkte, Ausgeführtes, Ergebnis mit Zahlen, Belege, Offenes" (ein auditierbares Meldungsformat, das mit den Kürze-Regeln der `AGENTS.md`, Abschnitt 1 kollidiert und deshalb nur hier stehen kann).
 
 *(Noch keine eigenen Regeln. Trag sie ein, sobald du welche hast.)*
 
@@ -76,7 +76,7 @@ Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechani
 |---|---|
 | Eingespielte Version | 2.4 |
 | Eingespielt am | *(Datum deiner Einrichtung)* |
-| Quelle | https://github.com/flomeile/leo-starter |
+| Quelle | https://github.com/flomeile/leo-core |
 
 ---
 
@@ -85,6 +85,8 @@ Welche Version des Grundgerüsts bei dir eingespielt ist. Der Skill `leo-mechani
 Kurznotizen zu deiner Umgebung, damit das LLM nicht jedes Mal nachfragt. Was hier nicht steht, ist auch nicht schlimm.
 
 - **Nutzungsmodus:** *(`mitbauen` oder `benutzen`. `mitbauen` heisst: Du löst Wartung selbst aus, mit Trigger-Worten wie "health check" und "wrap up". `benutzen` heisst: Du arbeitest nur inhaltlich mit dem System, und das LLM fährt fällige Wartung ungefragt selbst; die Regel dazu steht in der AGENTS.md, Abschnitt 1. Wenn du das hier liest und nicht weisst, was ein Trigger-Wort ist, bist du `benutzen`.)*
+- **Git-Modus:** *(`alleinarbeiter` oder `zweige`. `alleinarbeiter` heisst: Du bist die einzige Person auf diesem Repo, alles wird direkt auf `main` committet und gepusht; das ist der Standard, und er gilt auch, wenn hier nichts steht. `zweige` heisst: Mehrere Personen schreiben auf dem Repo oder du willst jede Änderung vor dem Merge freigeben; dann gilt das Zweig-Modell aus der AGENTS.md, Abschnitt 12, der Agent arbeitet nur auf `feature`-Zweigen, und der Merge gehört dir.)*
+- **Antwortstil bei Dateien:** *(`zusammenfassen` oder `nur nennen`. `zusammenfassen` heisst: Was der Agent in eine Datei geschrieben hat, fasst er in der Antwort zusammen, weil du im Chat arbeitest und Dateien selten öffnest. `nur nennen` heisst: Er nennt die Datei mit Pfad und einem Satz, was drin ist, und du öffnest sie selbst. Fehlt der Eintrag, gilt `zusammenfassen`; die Regel dazu steht in der AGENTS.md, Abschnitt 1, "Kurz und prüfbar".)*
 - **Werkzeug:** *(z.B. Claude Code auf dem eigenen Rechner, oder ein Chat-Harness mit Dateizugriff)*
 - **Fernsicherung:** *(privates GitHub-Repo? nur lokal? Wenn nur lokal: es gibt kein Netz unter dir, siehe ANLEITUNG Teil 5)*
 - **Automatik:** *(läuft der tägliche Index-Sync als geplante Aufgabe? Hook aktiv?)*

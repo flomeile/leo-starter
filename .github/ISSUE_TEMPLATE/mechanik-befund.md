@@ -7,7 +7,9 @@ labels: mechanik
 
 <!--
 WOHIN DIESES FORMULAR GEHÖRT
-Es gilt für Befunde am geteilten Grundgerüst und gehört ins Repo flomeile/leo-starter.
+Es gilt für Befunde am geteilten Grundgerüst (Leo Core) und gehört ins Repo flomeile/leo-core.
+Hast du die Behebung schon gebaut, ist ein Pull Request aus einem Fork der bessere Weg
+(ANLEITUNG.md, Teil 8, "Verbesserungen zurückgeben").
 In deiner eigenen Kopie ist es wirkungslos, dort schaut niemand hinein.
 
 WAS HIER NICHT HINEINGEHÖRT, UND ZWAR OHNE AUSNAHME

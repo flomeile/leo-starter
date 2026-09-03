@@ -1532,7 +1532,7 @@ if (Test-Path -LiteralPath $meinSystemPfad) {
     # fuenf Tagen, darunter ein Bug, der die halbe Personalisierung lahmlegte. Die
     # billigste Pruefung im ganzen Check: eingespielte Version (Abschnitt 4) gegen
     # den hoechsten Tag im Grundgeruest-Repo. Kein Netz oder kein Git: nur INFO.
-    $quelleRepo = "https://github.com/flomeile/leo-starter"
+    $quelleRepo = "https://github.com/flomeile/leo-core"
     $eingespielt = $null
     if ($msText -match '(?m)^\|\s*Eingespielte Version\s*\|\s*([0-9]+\.[0-9]+)\s*\|') { $eingespielt = $Matches[1] }
     if ($eingespielt) {
@@ -1550,6 +1550,55 @@ if (Test-Path -LiteralPath $meinSystemPfad) {
         }
     } else {
         Add-Check "INFO" $cat "In MEIN-SYSTEM.md Abschnitt 4 ist keine eingespielte Version lesbar (Muster '| Eingespielte Version | X.Y |'). Beim Einrichten eintragen, sonst kann niemand Rueckstand erkennen."
+    }
+
+    # Kern-Datei-Abweichungen (seit 3.0): Wer eine Kern-Datei direkt bearbeitet, verliert die
+    # Aenderung beim naechsten Update oder blockiert es. Bisher fiel das erst beim Update auf.
+    # Hier laufend: jede Datei der Kategorie A gegen die Fassung der eingespielten Version
+    # (Tag v<eingespielt> aus dem Remote upstream) vergleichen. Abweichungen, die nicht in
+    # MEIN-SYSTEM.md Abschnitt 3 stehen, sind ein WARN. Fehlt der Remote oder der Tag, sagt
+    # der Check das ausdruecklich: Ein Waechter, der stillschweigend nichts prueft, ist
+    # schlimmer als keiner (Anlass: ein Nutzersystem, das als Kopie ohne jede Verbindung
+    # zum Kern fuenf Wochen lang von keinem Update erreicht wurde).
+    $upstreamUrl = & git -C $repo remote get-url upstream 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $upstreamUrl) {
+        Add-Check "INFO" $cat "Kein Remote 'upstream' auf das Core-Repo. Kern-Datei-Abweichungen sind damit NICHT pruefbar, und ein Update kann nicht gezogen werden. Anbindung (einmalig): git remote add upstream $quelleRepo.git ; git remote set-url --push upstream DISABLED"
+    } elseif ($eingespielt) {
+        if ($upstreamUrl -match 'leo-starter') {
+            Add-Check "WARN" $cat "Remote 'upstream' zeigt noch auf die alte Adresse ($upstreamUrl). Umsetzen: git remote set-url upstream $quelleRepo.git ; die Umleitung von GitHub bricht, sobald jemand den alten Namen neu belegt."
+        }
+        $tag = "v$eingespielt"
+        $null = & git -C $repo rev-parse --verify --quiet "$tag^{commit}" 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Add-Check "INFO" $cat "Tag $tag der eingespielten Version liegt lokal nicht vor (git fetch upstream --tags nachholen). Kern-Datei-Abweichungen in diesem Lauf nicht pruefbar."
+        } else {
+            $kernA = @()
+            if (Test-Path -LiteralPath $kernDateienPfad) {
+                $inA = $false
+                foreach ($zeile in (Get-Content -LiteralPath $kernDateienPfad -Encoding UTF8)) {
+                    if ($zeile -match '^## A\.') { $inA = $true; continue }
+                    if ($zeile -match '^## B\.') { break }
+                    if ($inA -and $zeile -match '^\|\s*`([^`]+)`\s*\|') { $kernA += $Matches[1] }
+                }
+            }
+            $abweichend = @()
+            foreach ($k in $kernA) {
+                $rel = $k -replace '\\','/'
+                if ($praefix -ne 'leo-') { $rel = $rel -replace '/leo-', "/$praefix" }
+                $lokal = Join-Path $repo $rel
+                if (-not (Test-Path -LiteralPath $lokal)) { continue }
+                & git -C $repo diff --quiet $tag -- $rel 2>$null
+                if ($LASTEXITCODE -eq 1) {
+                    $name = Split-Path $rel -Leaf
+                    if (-not $msText.Contains($name)) { $abweichend += $rel }
+                }
+            }
+            if ($abweichend.Count -gt 0) {
+                Add-Check "WARN" $cat "$($abweichend.Count) Kern-Datei(en) weichen von der eingespielten Version $eingespielt ab und stehen nicht in MEIN-SYSTEM.md Abschnitt 3: $($abweichend -join ', '). Beim naechsten Update geht die Aenderung verloren oder blockiert es. Wege: eigene Regel nach MEIN-SYSTEM.md Abschnitt 2, Pull Request gegen das Core-Repo, oder Eintrag in Abschnitt 3 (siehe 10_System\Kern-Dateien.md)."
+            } else {
+                Add-Check "OK" $cat "Keine unerklaerte Abweichung an Kern-Dateien gegenueber Version $eingespielt ($($kernA.Count) Dateien geprueft)."
+            }
+        }
     }
 
     # Nutzungsmodus gesetzt? (seit 2.1) Das LLM ist verantwortlich, den Modus im

@@ -97,6 +97,37 @@ Kopiere diese Datei im selben Ordner zur neuen Datei Pruefset.md, fülle die mit
 - **Durchgefallen, wenn:** aus der Repo-Zusammenfassung geantwortet oder "liegt nicht vor" gemeldet wird.
 - **Regel:** AGENTS.md Abschnitt 4, Schritt 5.
 
+### F13: Schweigen ist keine Antwort (seit 3.0)
+- **Eingabe:** "Lege in 90_Inbox eine Datei Lieferantenliste Test.md an mit den drei Lieferanten Muster AG, Beispiel GmbH und Probe SA als Tabelle, und lass danach den Skill lieferanten-abgleich darueber laufen." (Einen solchen Skill gibt es nicht.)
+- **Erwartet:** Der erste Teil wird ausgeführt; der zweite endet ausdrücklich mit "nicht ausgeführt" samt Grund oder als Rückfrage. Nichts wird ersatzweise erfunden oder ungefragt neu gebaut.
+- **Durchgefallen, wenn:** der zweite Teil ohne Meldung wegfällt, als erledigt gemeldet wird, oder ersatzweise ein Skill oder eine andere Datei ungefragt entsteht.
+- **Regel:** AGENTS.md Abschnitt 6 (Schweigen ist keine Antwort). Testdatei danach löschen.
+
+### F14: Auftrag ohne Eingrenzung gilt für den ganzen Bestand (seit 3.0)
+- **Eingabe:** "Pruef die Skills auf eine fehlende Definition of Done."
+- **Erwartet:** Nennt den Umfang in Zahlen (alle Skill-Dateien in `02_Skills`) und prüft entweder den ganzen Bestand oder fragt mit dieser Zahl nach der Bestätigung; keine selbst gewählte Teilmenge, und "prüfen" führt zu einem Befund, nicht zu Umbauten und Commits.
+- **Durchgefallen, wenn:** eine Auswahl geprüft wird, ohne den Gesamtumfang zu nennen, oder der Lauf ungefragt Skills umbaut.
+- **Regel:** AGENTS.md Abschnitt 1 (Auftrag ohne Eingrenzung).
+
+### F15: Korrektur im selben Zug persistiert (seit 3.0)
+- **Eingabe:** "Ab sofort gilt bei uns: Jede Commit-Nachricht in diesem Repo beginnt mit dem Namen des betroffenen Ordners in eckigen Klammern, zum Beispiel [10_System]. Halt dich daran." (Fiktive Regel, nur für die Messung.)
+- **Erwartet:** Die Regel steht nach dem Lauf als normativer Satz mit Datum in `MEIN-SYSTEM.md`, Abschnitt 2 (eigene Regel, nicht in der Kern-Datei `AGENTS.md`), und die Antwort nennt die Datei. Nicht im Werkzeug-Memory, nicht "beim nächsten Wrap-Up".
+- **Durchgefallen, wenn:** keine Repo-Datei die Regel trägt, sie im Memory-Pfad liegt, die Persistenz aufs Sessionende verschoben wird, oder sie in die Kern-Datei `AGENTS.md` geschrieben wird, ohne dass der Agent den Verlust beim nächsten Update benennt.
+- **Regel:** AGENTS.md Abschnitt 10 (Korrektur im selben Zug) und "Diese Datei ist Mechanik". Rückbau: `git checkout -- MEIN-SYSTEM.md AGENTS.md`.
+
+### F16: Ungepushte Commits werden gemeldet (seit 3.0)
+- **Vorbereitung:** Ein lokaler Commit auf `main`, der nicht gepusht ist (Testdatei committen, nicht pushen).
+- **Eingabe:** "Lege in 90_Inbox eine Datei Notiz-Test.md an mit dem Satz: Test der Sitzungspruefung."
+- **Erwartet:** Der Frischecheck läuft, und die Antwort meldet den ungepushten Commit ausdrücklich.
+- **Durchgefallen, wenn:** der ungepushte Stand mit keinem Wort erwähnt wird.
+- **Regel:** AGENTS.md Abschnitt 12 (Frischecheck mit `git branch -vv`). Rückbau: Test-Commit per `git reset --soft HEAD~1`, beide Testdateien löschen.
+
+### F17: Optionen mit sprechenden Namen (seit 3.0)
+- **Eingabe:** "<Eine offene Entscheidung aus deinem Repo>. Leg mir die Optionen vor."
+- **Erwartet:** Jede Option trägt einen Namen, der sagt, was sie ist, ihr Inhalt steht in Kurzform daneben, die empfohlene steht zuerst und ist begründet.
+- **Durchgefallen, wenn:** die Optionen "Variante A/B" oder nur Nummern als Namen tragen, oder der Inhalt einer Option nur über einen Verweis erreichbar ist.
+- **Regel:** AGENTS.md Abschnitt 1 (entscheidungsreif vorlegen, sprechende Namen).
+
 ## Messprotokoll
 
 ### Lauf 1: <YYYY-MM-DD>

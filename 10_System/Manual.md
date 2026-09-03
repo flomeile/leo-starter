@@ -48,7 +48,7 @@ Dazu im Projekt: Datei- und PowerShell-Zugriff aktivieren (ohne PowerShell keine
 
 ## Skills
 
-Trigger-Wort nennen, das LLM schlägt in `02_Skills\Skill-Register.md` nach und führt den Skill aus. Die Alltags-Trigger im Starter:
+Trigger-Wort nennen, das LLM schlägt in `02_Skills\Skill-Register.md` nach und führt den Skill aus. Die Alltags-Trigger im Kern:
 
 - **"wrap up"** am Ende einer substanziellen Session (Zusammenfassung, Lernschleife, Update, Push).
 - **"health check"** wann immer du unsicher bist, ob alles aktuell ist (prüft alles, behebt sicher Behebbares, Inbox, Push).

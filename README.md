@@ -8,7 +8,7 @@ type: readme
 
 Harness-unabhängiges Wissenssystem. Alles Wissen liegt als Markdown in thematischen Ordnern; jedes LLM mit Datei- und Werkzeug-Zugriff kann darauf arbeiten.
 
-Dies ist ein leeres Grundgerüst (Starter Pack, Version 2.6). Es enthält die komplette Mechanik, aber keine Inhalte. Du füllst es mit deinen eigenen Themen.
+Dies ist **Leo Core**, Version 3.0: das leere Grundgerüst mit der kompletten Mechanik, aber ohne Inhalte. Du füllst es mit deinen eigenen Themen. Bis Version 2.6 hiess dieses Repo `leo-starter`; "Starter" beschrieb den ersten Tag, "Core" beschreibt, was es geworden ist: ein laufend aktualisierter Kern, den die abgeleiteten Systeme ziehen (Skill `leo-mechanik-update`) und an den sie Verbesserungen zurückschicken. Die Kernschicht, die ein Update ersetzt, steht in `10_System\Kern-Dateien.md`; alles Persönliche bleibt stehen.
 
 
 ## Zwei Regeln für den Betrieb
@@ -19,7 +19,7 @@ Dies ist ein leeres Grundgerüst (Starter Pack, Version 2.6). Es enthält die ko
 
 ## Einen Fehler in der Mechanik gefunden?
 
-Melde ihn als Issue **in diesem Repo** (`flomeile/leo-starter`), nicht in deiner eigenen Kopie. Beim Anlegen erscheint die Vorlage "Befund an der Mechanik". Sie fragt genau das ab, was zur Behebung gebraucht wird, insbesondere deine Umgebung: Die meisten Befunde hängen daran, und was auf einem Rechner läuft, beweist nichts über den anderen.
+Melde ihn als Issue **in diesem Repo** (`flomeile/leo-core`), nicht in deiner eigenen Kopie. Hast du die Behebung schon gebaut, geht sie als Pull Request aus einem Fork dieses Repos zurück; der Ablauf steht in `ANLEITUNG.md`, Teil 8, "Verbesserungen zurückgeben". Beim Anlegen erscheint die Vorlage "Befund an der Mechanik". Sie fragt genau das ab, was zur Behebung gebraucht wird, insbesondere deine Umgebung: Die meisten Befunde hängen daran, und was auf einem Rechner läuft, beweist nichts über den anderen.
 
 **Zwei Dinge, die dabei zählen.** Dieses Repo ist öffentlich und ein Issue bleibt dauerhaft auffindbar, deshalb gehört kein Inhalt aus deinem eigenen System hinein, keine Personendaten und kein wörtliches Zitat aus einer privaten Datei. Und ein Befund wird gemessen statt übernommen: Ein Vorschlag kann zutreffen und trotzdem mit einer Konvention kollidieren, die von aussen nicht sichtbar ist. Wird er abgeändert, steht der Grund als Antwort im Issue.
 
