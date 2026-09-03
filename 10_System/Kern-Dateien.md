@@ -40,6 +40,7 @@ Diese Dateien sind Mechanik. Sie sind bei allen Nutzern identisch und sollen es 
 | `00_INDEX\githooks\pre-commit` | Schutz vor beschädigten Commits |
 | `.gitattributes` | Zeilenenden-Behandlung |
 | `README.md` | Was dieses Grundgerüst ist. Beschreibt die Mechanik, nicht dich |
+| `.github\ISSUE_TEMPLATE\mechanik-befund.md` | Die Issue-Vorlage für Befunde am Kern; wirkt nur im Core-Repo, gehört aber zur Mechanik (Lücke, gefunden im kalten Update-Lauf am 03.09.2026) |
 | `00_INDEX\README.md` | Erklärt, wie die Indexdateien zusammenspielen |
 
 Die generierten Skill-Zeiger in `.claude\skills\`, `.agents\skills\`, `.gemini\skills\`, `.cursor\skills\`, `.cline\skills\` und `.opencode\skills\` stehen bewusst in keiner der drei Kategorien: Sie werden bei jedem Health-Check neu aus deinem Register erzeugt und sind jederzeit wegwerfbar. Ein Update muss sie weder ersetzen noch schützen. Eigene Skills, die du dort liegen siehst, sind kein Verlust, wenn sie verschwinden: Die Wahrheit steht in `02_Skills`.

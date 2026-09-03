@@ -1564,7 +1564,7 @@ if (Test-Path -LiteralPath $meinSystemPfad) {
     if ($LASTEXITCODE -ne 0 -or -not $upstreamUrl) {
         Add-Check "INFO" $cat "Kein Remote 'upstream' auf das Core-Repo. Kern-Datei-Abweichungen sind damit NICHT pruefbar, und ein Update kann nicht gezogen werden. Anbindung (einmalig): git remote add upstream $quelleRepo.git ; git remote set-url --push upstream DISABLED"
     } elseif ($eingespielt) {
-        if ($upstreamUrl -match 'leo-starter') {
+        if ($upstreamUrl -match 'github\.com[/:]flomeile/leo-starter') {
             Add-Check "WARN" $cat "Remote 'upstream' zeigt noch auf die alte Adresse ($upstreamUrl). Umsetzen: git remote set-url upstream $quelleRepo.git ; die Umleitung von GitHub bricht, sobald jemand den alten Namen neu belegt."
         }
         $tag = "v$eingespielt"
@@ -1583,12 +1583,29 @@ if (Test-Path -LiteralPath $meinSystemPfad) {
             }
             $abweichend = @()
             foreach ($k in $kernA) {
-                $rel = $k -replace '\\','/'
+                $relTag = $k -replace '\\','/'
+                $rel = $relTag
                 if ($praefix -ne 'leo-') { $rel = $rel -replace '/leo-', "/$praefix" }
                 $lokal = Join-Path $repo $rel
                 if (-not (Test-Path -LiteralPath $lokal)) { continue }
-                & git -C $repo diff --quiet $tag -- $rel 2>$null
-                if ($LASTEXITCODE -eq 1) {
+                $weicht = $false
+                if ($rel -eq $relTag) {
+                    & git -C $repo diff --quiet $tag -- $rel 2>$null
+                    if ($LASTEXITCODE -eq 1) { $weicht = $true }
+                } else {
+                    # Umbenannter Skill (eigenes Praefix): Der lokale Pfad existiert im Tag nicht,
+                    # git diff meldet dann immer "anders". Deshalb Inhalt gegen die Tag-Fassung
+                    # unter dem Grundgeruest-Namen vergleichen, Zeilenenden normalisiert
+                    # (kalt gemessen am 03.09.2026: ohne das galten alle zehn Kern-Skills eines
+                    # umbenannten Systems als abweichend, obwohl sie identisch waren).
+                    $tagInhalt = (& git -C $repo show "${tag}:${relTag}" 2>$null) -join "`n"
+                    if ($LASTEXITCODE -eq 0) {
+                        $lokalInhalt = ([System.IO.File]::ReadAllText($lokal)) -replace "`r`n","`n"
+                        $tagInhalt = ($tagInhalt -replace "`r`n","`n").TrimEnd("`n")
+                        if ($lokalInhalt.TrimEnd("`n") -ne $tagInhalt) { $weicht = $true }
+                    }
+                }
+                if ($weicht) {
                     $name = Split-Path $rel -Leaf
                     if (-not $msText.Contains($name)) { $abweichend += $rel }
                 }
