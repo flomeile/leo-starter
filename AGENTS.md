@@ -2,7 +2,7 @@
 titel: AGENTS.md (Master-Anweisung)
 zweck: Herstellerneutrale, zentrale Anweisung für jedes LLM, das auf diesem Repo arbeitet
 type: master-regeln
-version: 3.0-core
+version: 3.1-core
 letzte_aenderung: 2026-09-03
 ---
 
@@ -61,7 +61,7 @@ Kein Tool besitzt den Kontext. Das Wissen wächst in den Dateien, nicht im Harne
 
 ## 2. Rollen (Selbst-Routing)
 
-Jeder Themenordner enthält eine lokale `AGENTS.md`, die deine Rolle und die themenspezifischen Regeln dort definiert. Die folgende Tabelle wird mechanisch aus den lokalen AGENTS.md erzeugt (Zeile `# Rolle: ...`); nicht von Hand ändern. Im frischen Starter ist sie leer, bis der erste Themenordner angelegt ist (Skill `leo-themenordner-anlegen`).
+Jeder Themenordner enthält eine lokale `AGENTS.md`, die deine Rolle und die themenspezifischen Regeln dort definiert. Die folgende Tabelle wird mechanisch aus den lokalen AGENTS.md erzeugt (Zeile `# Rolle: ...`); nicht von Hand ändern. Im frischen Kern ist sie leer, bis der erste Themenordner angelegt ist (Skill `leo-themenordner-anlegen`).
 
 <!-- AUTO:ROLLEN:BEGIN -->
 | Ordner | Rolle |
@@ -118,7 +118,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
   **Warum ein Archiv und nicht das Repo:** Ohne den Ordner endet jede Herkunftsangabe bei einem Satz ("Mail von X vom 12.08."), und ob der stimmt, kann später niemand mehr prüfen. Eine Notiz wird damit zu ihrem eigenen Beleg. Mit dem Archiv endet die Kette bei einem Dokument, und der Health-Check prüft in der Kategorie `Herkunft` mechanisch, ob es dieses Dokument wirklich gibt. Die Rohquellen dafür ins Repo zu legen wäre der falsche Weg: Binärdateien blähen Git auf, und die Suche könnte Wissen nicht mehr von Rohmaterial unterscheiden.
 
   **Struktur:** eine Ebene Themenordner wie im Repo, darin die Dateien direkt als `YYYY-MM-DD_Sprechender Name.ext` mit dem Datum der Quelle. Keine Vorgangsordner, keine Zusammenfassungen, keine Indexdateien: Das Archiv trägt nur Dateien. **Lege beim ersten Gebrauch eine `AGENTS.md` im Archiv an**, die diese Regeln wiederholt; ein Werkzeug kann über einen Belegpfad dort landen, ohne dieses Repo je gelesen zu haben, und ein Ordner ohne Regeln ist einen übereifrigen Aufräumlauf von einem Datenverlust entfernt. Sechs Regeln gehören hinein: Das Archiv trägt nie Bewertungen oder Notizen (Wissen entsteht nur im Repo). Es wird nie durchsucht, sondern nur gezielt geöffnet, wenn ein Beleg strittig ist. Dateien werden nie umbenannt, verschoben oder verändert, damit ein Pfad aus einer alten Notiz in Jahren noch stimmt. Gelöscht wird nur auf ausdrückliche Ansage im Einzelfall. Ein eigenes lokales Git im Archiv (ohne Remote, weil dort Originale mit Personendaten liegen) ist billig zu haben, weil sich archivierte Dateien nie ändern, ersetzt aber kein Backup, da es auf derselben Platte liegt. Und was ohne zugehörige Wissensnotiz im Archiv liegt, ist nicht archiviert, sondern vergessen: melden statt selbst verarbeiten.
-- **Die Formatregel gilt auch für selbst erzeugte Dateien.** Erzeugst du auf Wunsch ein Ausgabeformat (PDF, DOCX, PPTX, Bild), etwa ein druckfertiges Handout, ist das ein Artefakt für einen konkreten Anlass, kein Wissen: Es gehört nicht in den Themenordner. Der Themenordner trägt Markdown, und die Datei dupliziert die Information, die im `.md` schon steht. Der Ablageort dafür ist der Geschwisterordner `<Repo> Artifacts` neben diesem Repo, für rein Wegwerfbares der Scratchpad. Beides sind ausdrückliche Ausnahmen von der Arbeitsbereich-Sperre in Abschnitt 18; einen dritten Ort ausserhalb des Repos wählst du nicht selbst. Der Ordner liegt ausserhalb von Git, ist also weder versioniert noch rückrollbar: Dort darf nie der einzige Träger einer Information liegen.
+- **Die Formatregel gilt auch für selbst erzeugte Dateien.** Erzeugst du auf Wunsch ein Ausgabeformat (PDF, DOCX, PPTX, Bild), etwa ein druckfertiges Handout, ist das ein Artefakt für einen konkreten Anlass, kein Wissen: Es gehört nicht in den Themenordner. Der Themenordner trägt Markdown, und die Datei dupliziert die Information, die im `.md` schon steht. Der Ablageort dafür ist der Geschwisterordner `<Repo> Artifacts` neben diesem Repo, für rein Wegwerfbares der Scratchpad. Beides sind ausdrückliche Ausnahmen von der Arbeitsbereich-Sperre in Abschnitt 18; einen dritten Ort ausserhalb des Repos wählst du nicht selbst. **Eine Ortsangabe im Auftrag ("speichere es im selben Ordner") hebt diese Regel nicht still auf, und sie ist auch noch kein Override** (seit 3.1, kalt gemessen): Die Regel wird in einem Satz benannt, der Artefakte-Ordner vorgeschlagen, und ein Override ist erst die Antwort von `[NAME]` auf diese Einordnung. Bis dahin wird nichts in den Themenordner geschrieben, kein Schreibversuch dorthin unternommen und kein Befehl vorgelegt, der die Datei dorthin legt; die Einordnung steht in der Antwort, bevor irgendein Werkzeug läuft. Der Ordner liegt ausserhalb von Git, ist also weder versioniert noch rückrollbar: Dort darf nie der einzige Träger einer Information liegen.
 - Neue Themenordner NUR über den Skill `leo-themenordner-anlegen` (denkt an README, AGENTS.md, Index; die Rollen-Tabelle oben zieht das Index-Skript mechanisch nach).
 - Nach jeder Ablage: Der mechanische Index-Teil aktualisiert sich automatisch (Task Scheduler, täglich). Beschreibungen ergänzt der Skill `leo-system-health-check`.
 
@@ -154,7 +154,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 
 ## 8. Basiskontext-Schutz
 
-- `01_Basiskontext` ist der dauerhafte Kernkontext über `[NAME]`. Änderungen daran NUR mit expliziter Bestätigung.
+- `01_Basiskontext` ist der dauerhafte Kernkontext über `[NAME]`. Änderungen daran NUR mit expliziter Bestätigung. **Ein Auftrag wie "merk dir das", "notier das" oder eine Personenangabe im Gespräch ist diese Bestätigung nicht** (seit 3.1, kalt gemessen: Ein Lauf trug eine Person ungefragt ins Personenregister ein und schrieb den Changelog-Eintrag dazu, als wäre der Auftrag das Ja). Er ist die Freigabe zum Notieren, nicht die Freigabe für den geschützten Ordner. Führt die Suche nach der zuständigen Datei in `01_Basiskontext`, wird die fertige Zeile mit Datei und Einfügestelle vorgelegt, und geschrieben wird erst nach dem Ja von `[NAME]`; ein Changelog-Eintrag ersetzt das Ja nicht.
 - Jede bestätigte Änderung wird in `04_Changelog\Changelog.md` protokolliert (Datum, Datei, Kurzbeschreibung).
 
 ## 9. Index-Regeln
@@ -178,7 +178,7 @@ Der Index ist Beschleuniger, nicht Filter: Er gibt den semantischen Einstieg, di
 
 - Skills sind harness-neutrale Markdown-Anweisungen in `02_Skills`, auffindbar über `02_Skills\Skill-Register.md`.
 - Jede Skill-Datei trägt das Präfix `leo-` (z.B. `leo-wrap-up.md`), Trigger-Worte selbst nicht.
-- Nennt `[NAME]` ein Trigger-Wort (z.B. "wrap up"), schlag im Register nach, öffne die Skill-Datei und führe sie aus.
+- Nennt `[NAME]` ein Trigger-Wort (z.B. "wrap up"), schlag im Register nach, öffne die Skill-Datei und führe sie aus. **Ohne realen Leseaufruf der Skill-Datei in derselben Antwort ist es keine Skill-Ausführung** (seit 3.1, kalt gemessen: zwei Läufe erkannten "merk dir das", lasen die Skill-Datei nicht und verfehlten deshalb die Basiskontext-Sperre, die nur dort steht). Die Kurzliste unten und die Skill-Zeiger der Werkzeuge nennen nur Trigger und Zweck; die Regeln, an denen ein Lauf scheitert, stehen ausschliesslich in der Datei.
 - Skills bleiben die einzige Wahrheit; erzeuge keine harness-spezifischen Command-Dateien oder App-Skills als Ersatz. Findest du solche, die denselben Trigger wie ein Repo-Skill beanspruchen: `[NAME]` aktiv informieren, das ist eine Kollisionsgefahr.
 - **Kein Bestandteil des Systems lebt ausserhalb des Repos.** Ein Skill, eine Regel oder ein Stück Wissen, das nur im Werkzeug existiert, steht in jedem anderen Werkzeug nicht zur Verfügung; die Unabhängigkeit vom Anbieter wäre dann nur behauptet. Bewusste, begründete Zugeständnisse sind in Ordnung, eine echte Bindung nicht. Übernimmst du einen fremden Skill aus einem Marketplace oder einer geteilten Sammlung, gehört sein Inhalt als `leo-*.md` ins Repo und ins Register, statt installiert und dort belassen zu werden.
 - **Ein Skill wird nach der Ausführung nachgebessert, wenn er gehakt hat** (seit 3.0). Fehlt bei der Ausführung ein Schritt, ist er unklar oder führt er in die Irre, wird die Skill-Datei nach der Ausführung ergänzt; Korrekturen von `[NAME]` zu einem Skill gehören in den Skill, nicht nur in die Antwort (Abschnitt 10, Korrektur im selben Zug). Sonst wiederholt sich derselbe Fehler in der nächsten Session. Bei einem Kern-Skill gilt der Protest aus "Diese Datei ist Mechanik": Die Korrektur geht als eigene Regel nach `MEIN-SYSTEM.md` oder als Pull Request in den Kern, nicht still in die Kern-Datei.

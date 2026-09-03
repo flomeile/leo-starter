@@ -2,7 +2,7 @@
 titel: Technik
 zweck: Technische Lösungen und Stolperfallen des Systems, mit Problem, Lösung, Begründung
 type: systemdoku
-version: 1.1-starter
+version: 1.1-core
 letzte_aenderung: 2026-08-03
 ---
 

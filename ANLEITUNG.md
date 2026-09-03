@@ -2,7 +2,7 @@
 titel: Anleitung zum eigenen Leo
 zweck: Erklärt, was Leo ist, wie er funktioniert und wie man ihn einsatzbereit macht, auf einem Windows-Rechner oder nur mit einem Tablet
 type: readme
-version: 3.0-core
+version: 3.1-core
 letzte_aenderung: 2026-09-03
 ---
 
@@ -40,7 +40,7 @@ Sechs Bausteine, die ineinandergreifen:
 
 **Die Anweisung (AGENTS.md).** Im Wurzelordner liegt `AGENTS.md`, die einzige Quelle der Wahrheit für alle Arbeitsregeln. Jedes LLM liest sie zu Beginn und weiss dann, wie es arbeiten soll: wie es sucht, wie es ablegt, was es nie tun darf. Coding-Agents und Claude-Produkte laden diese Datei automatisch. Reine Chat-Programme brauchen einen einzigen Satz als Systemprompt, der auf sie zeigt. Änderst du eine Regel, änderst du genau eine Datei.
 
-**Die Rollen.** Jeder Themenordner trägt eine eigene kleine `AGENTS.md` mit einer Rollen-Definition ("Business-Sparringpartner", "Gesundheitsberater", was du willst). Das LLM erkennt aus deiner Frage selbst, welches Thema betroffen ist, und nimmt die passende Rolle ein. Im leeren Starter gibt es noch keine Themen, also noch keine Rollen.
+**Die Rollen.** Jeder Themenordner trägt eine eigene kleine `AGENTS.md` mit einer Rollen-Definition ("Business-Sparringpartner", "Gesundheitsberater", was du willst). Das LLM erkennt aus deiner Frage selbst, welches Thema betroffen ist, und nimmt die passende Rolle ein. Im leeren Kern gibt es noch keine Themen, also noch keine Rollen.
 
 **Der Zugriff (Agentic Search).** Statt einer Vektor-Datenbank sucht das LLM selbst: Es liest zuerst den Index (die Landkarte), dann durchsucht es den Volltext mit selbst erzeugten Synonymen, dann liest es nur die Treffer ganz. Das ist günstig (eine normale Frage kostet Cents), verliert keinen Zusammenhang und funktioniert mit jedem Tool.
 
@@ -54,7 +54,7 @@ Darunter liegt Git plus ein privates GitHub-Repo als Sicherheitsnetz: Jede Ände
 
 ---
 
-## Teil 3: Was in diesem Starter Pack steckt (und was nicht)
+## Teil 3: Was in Leo Core steckt (und was nicht)
 
 **Drin ist das komplette Rohgerüst:**
 
@@ -148,7 +148,7 @@ Bist du über Schritt 0 gekommen, ist das alles schon erledigt: Das Repo existie
 cd C:\Leo
 git init
 git add .
-git commit -m "Leo Starter"
+git commit -m "Leo Core"
 ```
 Dann auf GitHub ein **privates** Repo anlegen (Weboberfläche oder `gh repo create`), und lokal verbinden:
 ```powershell
@@ -180,7 +180,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\build-ind
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Leo\00_INDEX\scripts\health-check.ps1"
 ```
-Der Check ist rein lesend. Erwartetes Ergebnis im frischen Starter: "einsatzbereit mit Hinweisen". Die Punkte, die du sehen wirst, betreffen den noch fehlenden Scheduled Task (kommt in Schritt 6) und den noch fehlenden Themenordner. Beides ist normal. Meldet der Check dagegen `[FAIL] core.hooksPath ist NICHT gesetzt`, hast du den Hook-Befehl aus Schritt 3 übersprungen; hol ihn nach.
+Der Check ist rein lesend. Erwartetes Ergebnis im frischen Kern: "einsatzbereit mit Hinweisen". Die Punkte, die du sehen wirst, betreffen den noch fehlenden Scheduled Task (kommt in Schritt 6) und den noch fehlenden Themenordner. Beides ist normal. Meldet der Check dagegen `[FAIL] core.hooksPath ist NICHT gesetzt`, hast du den Hook-Befehl aus Schritt 3 übersprungen; hol ihn nach.
 
 ### Schritt 6: Täglichen Automatik-Lauf einrichten
 Der Windows Task Scheduler soll einmal täglich das Index-Skript laufen lassen und danach committen und pushen. Am einfachsten in einer PowerShell-Sitzung, alle Zeilen zusammen einfügen:
@@ -331,6 +331,7 @@ Beides ist öffentlich und bleibt dauerhaft auffindbar: kein Inhalt aus deinem S
 
 ### Versionen dieses Pakets
 
+- **3.1 (2026-09-03):** Drei Härtungen aus den kalten Messläufen desselben Tages, alle in der `AGENTS.md`: Eine Ortsangabe im Auftrag ("im selben Ordner") ist noch kein Override der Formatregel, erst die Antwort auf die Einordnung ist einer (Abschnitt 5). Ein Notier-Auftrag wie "merk dir das" ist keine Freigabe für `01_Basiskontext`, die Zeile wird vorgelegt und erst nach dem Ja geschrieben (Abschnitt 8). Und ohne realen Leseaufruf der Skill-Datei ist es keine Skill-Ausführung, weil Kurzliste und Skill-Zeiger nur Trigger und Zweck tragen (Abschnitt 11). Dazu der letzte Rest "Starter" in Doku und Versionssuffixen durch "Core" ersetzt. **Was du tun musst:** nichts.
 - **3.0 (2026-09-03), neuer Name Leo Core, neue Adresse `flomeile/leo-core`:** Der grösste inhaltliche Zuwachs seit 2.0, entstanden aus dem Regelwerk eines Nutzers, der fünf Wochen auf einem eingefrorenen Ableger gearbeitet hatte, und aus seinem Feedback. **Was neu ist:** (1) Zwei Git-Modi, gesetzt in `MEIN-SYSTEM.md`, Abschnitt 5: "Alleinarbeiter auf main" bleibt der Standard; "Zweige mit Freigabe" bringt ein vollständiges Zweig-Modell (main, rc, dev, feature, hotfix), die Pflicht, jeden Merge über eine Merge-Anfrage zu führen, und den Grundsatz, dass der Merge dem Besitzer gehört, nie dem Agenten. (2) Die Sitzungsprüfung meldet ungepushte Commits und Zweige ohne Remote, im Frischecheck und im Health-Check. (3) Eine Korrektur des Besitzers wird im selben Zug in die zuständige Datei geschrieben, nicht erst im Wrap-Up; ein Skill, der gehakt hat, wird nach der Ausführung nachgebessert. (4) Schweigen ist keine Antwort: Jeder Teil eines Auftrags endet mit ausgeführt, nicht ausgeführt oder nicht verstanden. (5) Ein Auftrag ohne Eingrenzung gilt für den ganzen Bestand, und was nie trivial ist (Skill-Namen, Ordnerstruktur, Namensschemata, Frontmatter-Felder, Kennungen), bleibt immer die Entscheidung des Besitzers. (6) Sechs prüfbare Kürze-Regeln plus ein Prüfstein: Eine Antwort, nach der der Besitzer die Aufgabe lieber selbst macht, hat ihr Ziel verfehlt; ob Dateiinhalte im Chat zusammengefasst werden, entscheidet der Besitzer in `MEIN-SYSTEM.md`, Abschnitt 5. (7) Sprechende Namen für Optionen, Pfade statt Kurznamen, "ein Commit ist keine Rückmeldung", Eigennamen folgen der Person. (8) Der Agent protestiert, bevor eine Kern-Datei direkt bearbeitet wird, und zeigt die zwei sicheren Wege (eigene Regel in `MEIN-SYSTEM.md`, Pull Request gegen den Kern); der Health-Check prüft Kern-Datei-Abweichungen laufend und sagt ausdrücklich, wenn er mangels `upstream`-Remote nichts prüfen kann. (9) Der Modus `mitbauen` ist nachweislich frei von Automatik; Update-Vorschlag und Diagnose-Zusammenfassung gibt es nur im Modus `benutzen`, dort liest der Agent die Wochendiagnose zu Sitzungsbeginn vor. (10) Teil 8 erklärt Vorlage, Kopie und Fork und den Weg für einen Pull Request. **Was du tun musst:** Der Update-Skill setzt deinen `upstream`-Remote selbst auf die neue Adresse. Trag danach den Git-Modus und den Antwortstil in `MEIN-SYSTEM.md`, Abschnitt 5 ein, oder lass es deinen Agenten fragen; fehlt der Eintrag, gilt Alleinarbeiter und Zusammenfassen. Wer im Modus `benutzen` die Wochendiagnose noch nicht registriert hat, holt Teil 5, Schritt 6 nach.
 - **2.6 (2026-09-01):** Der Scheduled-Task-Check findet jetzt auch die Tasks eines umbenannten Systems. Bisher suchte er fest nach "Leo" im Task-Namen; wer sein System anders genannt hat, musste seinen Task trotzdem "Leo ..." nennen, sonst meldete der Health-Check ihn als fehlend, obwohl er lief und sauber durchlief. Der Check löst den Systemnamen jetzt aus `MEIN-SYSTEM.md`, Abschnitt 1 auf, genau wie es 2.4 für das Skill-Präfix eingeführt hat. Zwei Details dabei: Der eigene Name wird mit Wortgrenzen gesucht, und die Tasks des Betriebssystems unter `\Microsoft\` bleiben aussen vor. Beides ist nötig, weil ein kurzer Systemname sonst fremde Tasks einsammelt (der Name "AI" traf auf einem Testrechner 23 von 224 Tasks, alles Office, Google und Gerätehersteller). "Leo" und das alte "KI-REPO" bleiben im Muster, für bestehende Systeme ändert sich nichts. **Was du tun musst:** nichts. Wer seinen Task bisher nur wegen dieser Prüfung "Leo ..." genannt hat, darf ihn jetzt nach seinem eigenen System benennen. Gemeldet von einem Nutzer des Grundgerüsts als Issue #4.
 - **2.5 (2026-08-31):** Zwei Mechanik-Korrekturen, beide aus Nutzer-Meldungen am Grundgerüst. **Erstens, Code-Projekte in Themenordnern:** Die Formatdisziplin-Sperre hält erzeugte Ausgabeformate (PDF, Bilder, Office, HTML) aus deinen Themenordnern heraus, damit dein Gedächtnis Markdown bleibt. Sie hat dabei bisher auch Quelldateien echter Code-Projekte blockiert: In einem Projekt ist eine `.html` oder `.svg` kein Artefakt, sondern Quelltext, und sie gehört zwingend neben den Rest des Projekts. Liegt in einem Ordner eine `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `tsconfig.json`, `pom.xml`, `composer.json` oder eine leere `.code-projekt`, gilt der ganze Unterbaum als Projekt und die Sperre lässt ihn in Ruhe. Überall sonst greift sie unverändert. **Zweitens, teure Skills lösen nicht mehr von selbst aus:** `leo-system-optimierung` startet je Lauf mehrere kalte Modell-Aufrufe und stand trotzdem nicht auf der Liste der Skills, die ein Modell nie von sich aus starten darf. Er steht jetzt darauf, wie `leo-mechanik-update`. Getriggert wird er weiterhin von dir. **Was du tun musst:** nichts.

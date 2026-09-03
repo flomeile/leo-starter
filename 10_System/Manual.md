@@ -2,7 +2,7 @@
 titel: Manual (Bedien-Anleitung)
 zweck: Alltags-Anleitung, wie das KI-System aus allen Endpunkten genutzt wird
 type: systemdoku
-version: 1.1-starter
+version: 1.1-core
 letzte_aenderung: 2026-08-03
 ---
 
